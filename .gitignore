@@ -1,8 +1,8 @@
 __pycache__/
 *.pyc
-*.zip
+archive.zip
 data/
 models/
 notebooks/
-*.py
-
+patch_data_prep.py
+patch_train_seq.py
