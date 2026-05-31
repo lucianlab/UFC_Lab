@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import pandas as pd
+from pathlib import Path
+import json
 
 app = FastAPI()
 
@@ -11,15 +12,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-df = pd.read_csv("data/clean/fighters_all.csv")
+# 載入 pipeline 產出的資料（三軸座標 / 相似選手 / 分級 / 每回合統計）
+# Load the pipeline output (axis coords / similar fighters / tier / per-round stats)
+DATA_PATH = Path(__file__).parent / "data" / "fighters.json"
+with open(DATA_PATH, encoding="utf-8") as f:
+    FIGHTERS = json.load(f)
+
+_by_name = {f["name"]: f for f in FIGHTERS}
+
 
 @app.get("/api/fighters")
 def get_fighters():
-    return df.fillna(0).to_dict(orient="records")
+    return FIGHTERS
+
 
 @app.get("/api/fighters/{name}")
 def get_fighter(name: str):
-    fighter = df[df["name"] == name]
-    if fighter.empty:
+    fighter = _by_name.get(name)
+    if fighter is None:
         return {"error": "Fighter not found"}
-    return fighter.fillna(0).to_dict(orient="records")[0]
+    return fighter
