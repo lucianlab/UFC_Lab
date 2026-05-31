@@ -57,7 +57,7 @@ body {
 /* ─── HEADER ─── */
 #header {
   padding: 0 28px;
-  height: 52px;
+  height: 64px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
   display: flex;
@@ -81,28 +81,30 @@ body {
 
 #header h1 {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 17px;
+  font-size: 22px;
   font-weight: 600;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.15em;
   color: var(--text-hi);
   text-transform: uppercase;
-  line-height: 1;
+  line-height: 1.05;
 }
 
 #header-sub {
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text-lo);
-  letter-spacing: 0.05em;
-  margin-top: 3px;
+  letter-spacing: 0.06em;
+  margin-top: 6px;
   line-height: 1;
 }
 
-/* Mode toggle — anchored left, never moves */
+/* Mode toggle — horizontally centered on the page */
 #mode-toggle {
   display: flex;
   gap: 0;
-  margin-left: 28px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   flex-shrink: 0;
 }
 
@@ -131,9 +133,9 @@ body {
 }
 
 .mode-btn.active {
-  color: var(--champagne);
+  color: var(--text-hi);
   background: var(--surface-3);
-  border-color: var(--champagne-dim);
+  border-color: var(--border-2);
 }
 
 .mode-btn#btn-vs.active {
@@ -246,10 +248,11 @@ body {
 #fighter-wc {
   font-family: 'DM Mono', monospace;
   font-size: 9px;
-  color: var(--champagne-2);
+  color: var(--text-md);
   margin-bottom: 14px;
   letter-spacing: 0.05em;
 }
+#fighter-wc.is-champ { color: var(--champagne); }
 
 .stat-row {
   display: flex;
@@ -273,7 +276,7 @@ body {
 }
 
 .stat-val.elite {
-  color: var(--champagne);
+  color: var(--crimson-2);
   font-weight: 500;
 }
 
@@ -294,7 +297,7 @@ body {
 }
 
 .stat-bar.elite {
-  background: var(--champagne);
+  background: var(--crimson-2);
 }
 
 #similar-list { list-style: none; margin-top: 4px; }
@@ -821,7 +824,7 @@ body {
 <div id="header">
   <div class="header-brand">
     <h1>UFC Fighter Universe</h1>
-    <span id="header-sub">1,237 fighters · style vectors via PCA</span>
+    <span id="header-sub">3-axis style space</span>
   </div>
 
   <div id="mode-toggle">
@@ -870,7 +873,7 @@ body {
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:#555"><div style="width:8px;height:8px;border-radius:50%;background:#7F8FA6;flex-shrink:0"></div>Ranked Top 15</div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:#333"><div style="width:8px;height:8px;border-radius:50%;background:#2a2a3a;flex-shrink:0"></div>Unranked</div>
     </div>
-    <div id="hint">X: Striker ↔ Grappler<br>Y: Decision ↔ Finisher<br>Z: Patient ↔ High-Output</div>
+    <div id="hint">X: Grappler ↔ Striker<br>Y: Decision ↔ Finisher<br>Z: High-Output ↔ Patient</div>
   </div>
 
   <!-- VS MODE OVERLAY -->
@@ -991,6 +994,8 @@ async function boot(){
     return;
   }
 
+  document.getElementById('header-sub').textContent = FIGHTERS.length.toLocaleString()+' fighters · 3-axis style space';
+
 const THRESHOLDS = {"sig_per_r":20.3,"td_per_r":0.74,"ctrl_per_r":85.78,"ko_rate":0.5,"sub_rate":0.33,"gas_tank":1.33};
 
 const WC_COLORS = {
@@ -1053,9 +1058,9 @@ const univLayout={
   paper_bgcolor:'#09090d', plot_bgcolor:'#09090d',
   scene:{
     bgcolor:'#09090d',
-    xaxis:{title:'Striker ↔ Grappler',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
+    xaxis:{title:'Grappler ↔ Striker',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
     yaxis:{title:'Decision ↔ Finisher',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
-    zaxis:{title:'Patient ↔ High-Output',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
+    zaxis:{title:'High-Output ↔ Patient',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
     camera:{eye:{x:1.5,y:1.5,z:1.2}},
   },
   margin:{l:0,r:0,t:0,b:0},
@@ -1077,7 +1082,16 @@ function selectFighter(name){
   document.getElementById('fighter-name').textContent=f.name;
   const tierBadge=f.tier==='champion'?' 🥇':f.tier==='ex_champion'?' 🏆':f.tier==='ranked'?' ★':'';
   const wcDisplay=(f.all_wc&&f.all_wc.length>1)?f.all_wc.join(' / '):(f.wc||'Unknown');
-  document.getElementById('fighter-wc').textContent=`${wcDisplay} · ${f.n_fights} fights${tierBadge}`;
+  const wcEl=document.getElementById('fighter-wc');
+  wcEl.textContent=`${wcDisplay} · ${f.n_fights} fights${tierBadge}`;
+  const isChamp=(f.tier==='champion'||f.tier==='ex_champion');
+  wcEl.classList.toggle('is-champ',isChamp);
+  const stEl=document.getElementById('fighter-status');
+  if(stEl){
+    const stTxt=f.tier==='champion'?'CHAMPION':f.tier==='ex_champion'?'FORMER CHAMPION':'';
+    stEl.textContent=stTxt;
+    stEl.style.display=stTxt?'block':'none';
+  }
   function setBar(sid,bid,val,display,max,thr){
     const sv=document.getElementById(sid), bv=document.getElementById(bid);
     sv.textContent=display; bv.style.width=pct(val,max);
@@ -1164,9 +1178,9 @@ const vsLayout={
   paper_bgcolor:'#09090d', plot_bgcolor:'#09090d',
   scene:{
     bgcolor:'#09090d',
-    xaxis:{title:'Striker ↔ Grappler',color:'#1f1f2c',gridcolor:'#0d0d12',zerolinecolor:'#1a1a24',showticklabels:false},
+    xaxis:{title:'Grappler ↔ Striker',color:'#1f1f2c',gridcolor:'#0d0d12',zerolinecolor:'#1a1a24',showticklabels:false},
     yaxis:{title:'Decision ↔ Finisher',color:'#1f1f2c',gridcolor:'#0d0d12',zerolinecolor:'#1a1a24',showticklabels:false},
-    zaxis:{title:'Patient ↔ High-Output',color:'#1f1f2c',gridcolor:'#0d0d12',zerolinecolor:'#1a1a24',showticklabels:false},
+    zaxis:{title:'High-Output ↔ Patient',color:'#1f1f2c',gridcolor:'#0d0d12',zerolinecolor:'#1a1a24',showticklabels:false},
     camera:{eye:{x:1.8,y:1.8,z:1.4}},
   },
   margin:{l:0,r:0,t:0,b:0},
@@ -1539,7 +1553,7 @@ function setMode(mode){
     univEl.style.display='block'; sideEl.style.display='flex';
     vsEl.classList.remove('active');
     searchWrap.style.display='block';
-    document.getElementById('header-sub').textContent='1,237 fighters · style vectors via PCA';
+    document.getElementById('header-sub').textContent=FIGHTERS.length.toLocaleString()+' fighters · 3-axis style space';
   } else {
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.add('active');
