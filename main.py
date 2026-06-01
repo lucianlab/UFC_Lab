@@ -31,9 +31,6 @@ _by_name = {f["name"]: f for f in FIGHTERS}
 BUILDER_PATH = Path(__file__).parent / "data" / "clean" / "fighter_builder_features.csv"
 BUILDER_DF   = pd.read_csv(BUILDER_PATH)
 
-# ── PCT_TO_RAW: 玩家輸入欄位 → CSV pct 欄位 ──────────
-# v3: 13 features, 移除 height, 新增 body/td_accuracy
-# KNN 直接在 pct 空間算距離 (已經是 1-10 百分位,不需 quantile 反查)
 PCT_COLS = [
     'pct_reach',
     'pct_striking_power', 'pct_striking_volume',
@@ -43,7 +40,6 @@ PCT_COLS = [
     'pct_submission', 'pct_control', 'pct_ground_pound',
 ]
 
-# 啟動時驗證所有欄位都在 BUILDER_DF 且不全是 NaN
 def _valid_pct_cols():
     valid = []
     for col in PCT_COLS:
@@ -59,7 +55,6 @@ def _valid_pct_cols():
 KNN_COLS = _valid_pct_cols()
 print(f"KNN_COLS ({len(KNN_COLS)}): {KNN_COLS}")
 
-# ── z-score 標準化 (在 pct 空間做,確保各維度權重相等) ─
 _means = {}
 _stds  = {}
 for col in KNN_COLS:
@@ -67,7 +62,6 @@ for col in KNN_COLS:
     _means[col] = float(vals.mean())
     _stds[col]  = float(vals.std()) if float(vals.std()) > 0 else 1.0
 
-# ── 預建 KNN matrix ────────────────────────────────────
 def _build_matrix():
     rows = []
     for _, row in BUILDER_DF.iterrows():
@@ -122,16 +116,31 @@ def safe_str(val, default=''):
         return default
 
 def clean_json(obj):
-    if isinstance(obj, dict):   return {k: clean_json(v) for k, v in obj.items()}
-    if isinstance(obj, list):   return [clean_json(v) for v in obj]
+    if isinstance(obj, dict):       return {k: clean_json(v) for k, v in obj.items()}
+    if isinstance(obj, list):       return [clean_json(v) for v in obj]
     if isinstance(obj, np.integer): return int(obj)
     if isinstance(obj, np.floating):
         v = float(obj)
         return None if (math.isnan(v) or math.isinf(v)) else v
-    if isinstance(obj, np.bool_): return bool(obj)
+    if isinstance(obj, np.bool_):   return bool(obj)
     if isinstance(obj, float):
         return None if (math.isnan(obj) or math.isinf(obj)) else obj
     return obj
+
+def _row_to_result(row, dist):
+    return {
+        "name":       safe_str(row.get('name'), 'Unknown'),
+        "wc":         safe_str(row.get('wc'), ''),
+        "tier_label": safe_str(row.get('tier_label'), 'E') or 'E',
+        "tier_score": safe_int(row.get('tier_score'), 0),
+        "best_rank":  None if pd.isna(row.get('best_rank')) else safe_float(row['best_rank']),
+        "win_rate":   None if pd.isna(row.get('win_rate'))  else round(safe_float(row['win_rate']), 3),
+        "distance":   round(float(dist), 3),
+        "pct": {
+            col: round(safe_float(row.get(col), 5.0), 1)
+            for col in KNN_COLS
+        }
+    }
 
 # ══════════════════════════════════════════════════════
 #  既有端點
@@ -151,8 +160,6 @@ def get_fighter(name: str):
 #  Fighter Builder
 # ══════════════════════════════════════════════════════
 class BuilderInput(BaseModel):
-    # 玩家輸入的 13 個 pct 分數 (1-10)
-    # 直接對應 CSV 的 pct_* 欄位,不需要 quantile 反查
     pct_reach:             Optional[float] = 5.0
     pct_striking_power:    Optional[float] = 5.0
     pct_striking_volume:   Optional[float] = 5.0
@@ -169,7 +176,6 @@ class BuilderInput(BaseModel):
     pct_ground_pound:      Optional[float] = 5.0
 
 def _input_to_zvec(inp: BuilderInput) -> np.ndarray:
-    """玩家 pct 輸入 → z-score 標準化向量"""
     vec = []
     for col in KNN_COLS:
         pct_val = safe_float(getattr(inp, col, 5.0), 5.0)
@@ -180,53 +186,50 @@ def _input_to_zvec(inp: BuilderInput) -> np.ndarray:
     return np.nan_to_num(arr, nan=0.0, posinf=0.0, neginf=0.0)
 
 @app.post("/api/nearest")
-def find_nearest(inp: BuilderInput, k: int = 5):
+def find_nearest(inp: BuilderInput):
     query = _input_to_zvec(inp)
 
     if query.shape[0] != _MATRIX.shape[1]:
         raise HTTPException(status_code=500,
             detail=f"Vector dim mismatch: query={query.shape[0]}, matrix={_MATRIX.shape[1]}")
 
-    # 純歐氏距離,不做 tier 加權
     diffs = _MATRIX - query
     dists = np.sqrt((diffs ** 2).sum(axis=1))
 
-    # 取最近 50 個,從裡面找 tier 最高的 k 個展示
-    top50_idx  = np.argsort(dists)[:50]
-    candidates = []
-    for idx in top50_idx:
+    # ── 你的戰士：純距離最近的 1 個，不管 tier ────────
+    closest_idx  = int(np.argmin(dists))
+    your_fighter = _row_to_result(BUILDER_DF.iloc[closest_idx], dists[closest_idx])
+
+    # ── 最近知名選手：top30 裡 tier 最高的 2 個 ───────
+    # 排除已經是「你的戰士」的那個
+    top30_idx = np.argsort(dists)[:30]
+    notable_candidates = []
+    for idx in top30_idx:
+        if idx == closest_idx:
+            continue
         row = BUILDER_DF.iloc[idx]
-        candidates.append({
-            "idx":        int(idx),
-            "tier_label": safe_str(row.get('tier_label'), 'E') or 'E',
-            "tier_score": safe_int(row.get('tier_score'), 0),
-            "distance":   float(dists[idx]),
+        tier  = safe_str(row.get('tier_label'), 'E') or 'E'
+        score = safe_int(row.get('tier_score'), 0)
+        # 只考慮 B tier 以上
+        if tier in ('D+', 'D', 'E'):
+            continue
+        notable_candidates.append({
+            'idx':   int(idx),
+            'score': score,
+            'dist':  float(dists[idx]),
+            'tier':  tier,
         })
 
-    # 在 top50 裡按 tier_score 降序,取前 k 個
-    # 這樣保證結果是「離你最近的 50 個人裡最知名的」
-    candidates.sort(key=lambda x: (-x['tier_score'], x['distance']))
-    top_k = candidates[:k]
+    # 按 tier_score 降序，同分按距離升序
+    notable_candidates.sort(key=lambda x: (-x['score'], x['dist']))
+    notable = []
+    for c in notable_candidates[:2]:
+        notable.append(_row_to_result(BUILDER_DF.iloc[c['idx']], c['dist']))
 
-    results = []
-    for c in top_k:
-        idx = c['idx']
-        row = BUILDER_DF.iloc[idx]
-        results.append({
-            "name":       safe_str(row.get('name'), 'Unknown'),
-            "wc":         safe_str(row.get('wc'), ''),
-            "tier_label": c['tier_label'],
-            "tier_score": c['tier_score'],
-            "best_rank":  None if pd.isna(row.get('best_rank')) else safe_float(row['best_rank']),
-            "win_rate":   None if pd.isna(row.get('win_rate'))  else round(safe_float(row['win_rate']), 3),
-            "distance":   round(c['distance'], 3),
-            "pct": {
-                col: round(safe_float(row.get(col), 5.0), 1)
-                for col in KNN_COLS
-            }
-        })
-
-    return clean_json({"matches": results})
+    return clean_json({
+        "your_fighter": your_fighter,
+        "notable":      notable,
+    })
 
 # ══════════════════════════════════════════════════════
 #  排行榜

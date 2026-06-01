@@ -244,18 +244,23 @@ print("=== 7. Tier（冠軍 / 前冠軍 / 排名）===")
 champ_hist = pd.read_csv(CHAMP, encoding='utf-8-sig')
 rank = pd.read_csv(RANK, encoding='utf-8-sig')
 
-current = set(rank.loc[rank['is_champion'].astype(str).str.strip().str.lower() == 'yes', 'fighter'].dropna())
+import unicodedata as _ud
+def _norm(s):
+    return _ud.normalize('NFKD', str(s)).encode('ascii','ignore').decode().strip().lower()
+
+current = set(_norm(n) for n in rank.loc[rank['is_champion'].astype(str).str.strip().str.lower() == 'yes', 'fighter'].dropna())
 if 'incumbent' in champ_hist.columns:
     inc = champ_hist['incumbent'].astype(str).str.lower().isin(['true','1'])
-    current |= set(champ_hist.loc[inc, 'champion'].dropna())
-ever = set(champ_hist['champion'].dropna())
-ex = ever - current
-ranked = set(rank['fighter'].dropna()) - current - ex
+    current |= set(_norm(n) for n in champ_hist.loc[inc, 'champion'].dropna())
+ever    = set(_norm(n) for n in champ_hist['champion'].dropna())
+ex      = ever - current
+ranked  = set(_norm(n) for n in rank['fighter'].dropna()) - current - ex
 
 def tier_of(name):
-    if name in current: return 'champion'
-    if name in ex:      return 'ex_champion'
-    if name in ranked:  return 'ranked'
+    n = _norm(name)
+    if n in current: return 'champion'
+    if n in ex:      return 'ex_champion'
+    if n in ranked:  return 'ranked'
     return ''
 data['tier'] = data['name'].map(tier_of)
 
