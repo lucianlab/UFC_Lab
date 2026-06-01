@@ -1504,7 +1504,7 @@ function runVsAnalysis(){
       div.className='sm-fight animate-in';
       div.innerHTML=`
         <div class="sm-names"><span style="color:#c23030">${s.a}</span><span class="sm-vs">vs</span><span style="color:#2b5fb3">${s.bName}</span></div>
-        <div class="sm-dist">style similarity: ${(1-s.dist/9)(Math.round((1-s.dist/8)*100))}% match</div>`;
+        <div class="sm-dist">style similarity: ${Math.round((1-s.dist/9)*100)}% match</div>`;
       div.onclick=()=>{
         const fa=nameToFighter[s.a], fb=nameToFighter[s.bName];
         if(fa&&fb){ vsRed=fa; vsBlue=fb; setPickerUI('red',fa); setPickerUI('blue',fb); updateVsPlot(); runVsAnalysis(); }
