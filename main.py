@@ -173,13 +173,20 @@ class BuilderInput(BaseModel):
 def _pct_to_raw(pct_col: str, pct_val: float) -> float:
     raw_col = PCT_TO_RAW[pct_col]
     q = max(0.01, min(0.99, (pct_val - 1) / 9.0))
-    return float(BUILDER_DF[raw_col].quantile(q))
+    result = BUILDER_DF[raw_col].quantile(q)
+    # quantile 可能回傳 nan (欄位全是 nan 時)
+    if pd.isna(result):
+        return _feat_means[raw_col]
+    return float(result)
 
 def _input_to_zvec(inp: BuilderInput) -> np.ndarray:
     vec = []
     for pct_col, raw_col in PCT_TO_RAW.items():
         pct_val = getattr(inp, pct_col) or 5.0
         raw_val = _pct_to_raw(pct_col, pct_val)
+        # raw_val 如果還是 nan，用 mean 替代
+        if math.isnan(raw_val):
+            raw_val = _feat_means[raw_col]
         z = (raw_val - _feat_means[raw_col]) / _feat_stds[raw_col]
         vec.append(z)
     return np.array(vec, dtype=np.float32)
