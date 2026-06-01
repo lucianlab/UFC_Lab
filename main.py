@@ -32,7 +32,7 @@ KNN_FEATURES = [
     'ko_rate', 'sig_per_r', 'sig_acc', 'str_def',
     'leg_pct', 'clinch_pct',
     'td_per_r', 'td_def', 'ctrl_per_r',
-    'sub_rate', 'gnp_per_r', 'gas_tank',
+    'sub_rate', 'gnp_per_r',
 ]
 
 PCT_TO_RAW = {
