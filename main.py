@@ -157,6 +157,12 @@ def _input_to_zvec(inp: BuilderInput) -> np.ndarray:
         vec.append(z)
     return np.array(vec, dtype=np.float32)
 
+def safe_float(val, default=5.0):
+    try:
+        v = float(val)
+        return default if math.isnan(v) or math.isinf(v) else v
+    except:
+        return default
 
 @app.post("/api/nearest")
 def find_nearest(inp: BuilderInput, k: int = 5):
@@ -194,7 +200,7 @@ def find_nearest(inp: BuilderInput, k: int = 5):
             "distance":    round(w_dist, 3),
             # pct features 方便前端顯示雷達圖
             "pct": {
-                pct_col: round(float(row[pct_col]), 1) if pct_col in row and pd.notna(row[pct_col]) else 5.0
+                pct_col: round(safe_float(row.get(pct_col), 5.0), 1)
                 for pct_col in PCT_TO_RAW.keys()
             }
         })
