@@ -816,6 +816,185 @@ body {
 
 /* Plotly bg overrides via CSS vars */
 .js-plotly-plot { background: transparent !important; }
+
+/* ─── 3-button mode toggle ─── */
+.mode-btn:not(:first-child):not(:last-child){ border-right:none; border-radius:0; }
+
+/* ─── FIGHTER BUILDER ─── */
+#builder-mode{
+  display:none; position:absolute; inset:0;
+  background:var(--obsidian); z-index:5;
+  flex-direction:row; overflow:hidden;
+}
+#builder-mode.active{ display:flex; }
+
+#builder-left{
+  flex:1; min-width:0; display:flex; flex-direction:column;
+  overflow:hidden; border-right:1px solid var(--border);
+}
+
+/* Top bar */
+#builder-topbar{
+  height:42px; padding:0 18px; border-bottom:1px solid var(--border);
+  background:var(--surface); flex-shrink:0;
+  display:flex; align-items:center; gap:12px;
+}
+.b-mode-toggle{
+  display:flex; border:1px solid var(--border-2); border-radius:2px; overflow:hidden;
+}
+.b-mode-btn{
+  padding:4px 11px; font-family:'DM Mono',monospace; font-size:9px;
+  font-weight:500; letter-spacing:0.12em; text-transform:uppercase;
+  cursor:pointer; background:transparent; border:none; color:var(--text-lo); transition:all 0.15s;
+}
+.b-mode-btn.active{ background:var(--surface-3); color:var(--text-hi); }
+
+#b-diff{ display:none; gap:4px; }
+#b-diff.show{ display:flex; }
+.b-diff-btn{
+  padding:3px 8px; font-family:'DM Mono',monospace; font-size:9px;
+  letter-spacing:0.08em; text-transform:uppercase; cursor:pointer;
+  border:1px solid var(--border-2); border-radius:2px;
+  background:transparent; color:var(--text-lo); transition:all 0.15s;
+}
+.b-diff-btn.on.easy  { border-color:#2b5a30; color:#4caf50; background:rgba(76,175,80,0.07); }
+.b-diff-btn.on.medium{ border-color:var(--champagne-dim); color:var(--champagne); background:rgba(201,169,110,0.07); }
+.b-diff-btn.on.hard  { border-color:var(--crimson); color:var(--crimson-2); background:rgba(194,48,48,0.07); }
+
+#b-budget{ display:none; align-items:baseline; gap:5px; margin-left:auto; }
+#b-budget.show{ display:flex; }
+#b-budget-rem{
+  font-family:'DM Mono',monospace; font-size:18px; font-weight:500;
+  color:var(--champagne); transition:color 0.2s; min-width:28px; text-align:right;
+}
+#b-budget-rem.over{ color:var(--crimson-2); }
+.b-budget-label{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-lo); }
+
+@keyframes flash-red{
+  0%,100%{ color:var(--champagne); }
+  30%,60%{ color:var(--crimson-2); transform:scale(1.1); }
+}
+#b-budget-rem.flash{ animation:flash-red 0.4s ease; }
+
+/* Find button */
+#b-find-wrap{
+  padding:8px 16px; border-top:1px solid var(--border);
+  background:var(--surface); flex-shrink:0;
+}
+#b-find-btn{
+  width:100%; padding:8px; border-radius:2px;
+  background:transparent; border:1px solid var(--border-2);
+  color:var(--text-md); font-family:'DM Mono',monospace;
+  font-size:10px; cursor:pointer; letter-spacing:0.16em;
+  text-transform:uppercase; transition:all 0.18s;
+}
+#b-find-btn:hover:not(:disabled){ border-color:var(--champagne-dim); color:var(--champagne); background:rgba(201,169,110,0.04); }
+#b-find-btn:disabled{ opacity:0.3; cursor:not-allowed; }
+
+/* Attribute grid — compact, no scroll */
+#b-grid{
+  flex:1; overflow-y:auto; padding:10px 16px;
+  display:flex; flex-direction:column; gap:8px;
+}
+.b-cat-section{}
+.b-cat-title{
+  font-family:'DM Mono',monospace; font-size:8px; font-weight:500;
+  letter-spacing:0.2em; text-transform:uppercase;
+  padding-bottom:5px; margin-bottom:6px;
+  border-bottom:1px solid var(--border);
+}
+.b-attrs{ display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+.b-attr-box{
+  padding:5px 8px 6px; background:var(--surface-2);
+  border:1px solid var(--border); border-radius:2px;
+  cursor:default; transition:border-color 0.2s;
+}
+.b-attr-label{
+  font-family:'DM Mono',monospace; font-size:7.5px;
+  color:var(--text-lo); letter-spacing:0.1em;
+  text-transform:uppercase; margin-bottom:5px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.b-attr-val{
+  font-size:10px; font-weight:500; color:var(--cobalt-2);
+  transition:color 0.2s;
+}
+
+/* 2K-style pip: taller rectangle with slight skew */
+.b-pips{ display:flex; gap:2px; }
+.b-pip{
+  flex:1; height:10px; border-radius:1px;
+  background:var(--border); cursor:pointer;
+  transform:skewX(-6deg);
+  transition:background 0.08s, box-shadow 0.08s;
+}
+.b-pip:hover{ filter:brightness(1.3); }
+
+/* Right: results panel */
+#builder-right{
+  width:272px; flex-shrink:0; background:var(--surface);
+  border-left:1px solid var(--border);
+  overflow-y:auto; display:flex; flex-direction:column;
+}
+#b-empty{
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:10px; padding:28px 18px; text-align:center;
+}
+#b-empty .b-empty-icon{ font-size:24px; opacity:0.06; }
+#b-empty p{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-xlo); line-height:1.9; letter-spacing:0.04em; }
+
+#b-results{ display:none; flex-direction:column; padding:12px 12px 6px; gap:0; }
+#b-results.show{ display:flex; }
+
+/* Section labels */
+.b-section-label{
+  font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo);
+  letter-spacing:0.16em; text-transform:uppercase;
+  padding:8px 0 5px; border-bottom:1px solid var(--border); margin-bottom:8px;
+}
+.b-section-label:first-child{ padding-top:0; }
+
+.b-result-card{
+  background:var(--surface-2); border:1px solid var(--border);
+  border-radius:2px; padding:10px; margin-bottom:8px;
+}
+.b-result-card:last-child{ margin-bottom:0; }
+.b-res-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
+.b-res-name{
+  font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:700;
+  color:var(--text-hi); letter-spacing:0.04em; text-transform:uppercase; line-height:1.1;
+}
+.b-res-wc{ font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); margin-top:2px; }
+.b-tier-badge{
+  font-family:'DM Mono',monospace; font-size:9px; font-weight:500;
+  padding:2px 6px; border-radius:2px; border:1px solid; letter-spacing:0.1em; flex-shrink:0;
+}
+.b-res-score{ font-family:'DM Mono',monospace; font-size:9px; margin-bottom:7px; color:var(--text-lo); }
+.b-res-bars{ display:flex; flex-direction:column; gap:4px; }
+.b-res-bar-row{ display:grid; grid-template-columns:68px 1fr; align-items:center; gap:5px; }
+.b-res-bar-label{ font-family:'Barlow',sans-serif; font-size:9px; color:var(--text-lo); }
+.b-res-bar-track{ height:2px; background:var(--border); border-radius:1px; overflow:hidden; position:relative; }
+.b-res-bar-fill{ height:100%; border-radius:1px; background:var(--cobalt-2); transition:width 0.5s cubic-bezier(.4,0,.2,1); }
+.b-res-bar-you{ position:absolute; top:-1px; width:2px; height:4px; background:rgba(255,255,255,0.4); border-radius:1px; }
+
+/* Compete submit + leaderboard */
+#b-submit{ display:none; margin:4px 12px 8px; padding:10px; background:var(--surface-2); border:1px solid var(--border); border-radius:2px; }
+#b-submit.show{ display:block; }
+.b-submit-title{ font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); letter-spacing:0.18em; text-transform:uppercase; margin-bottom:7px; }
+#b-username{ width:100%; background:var(--surface-3); border:1px solid var(--border-2); color:var(--text-hi); padding:5px 9px; border-radius:2px; font-family:'Barlow',sans-serif; font-size:11px; outline:none; margin-bottom:6px; }
+#b-username::placeholder{ color:var(--text-lo); }
+#b-submit-btn{ width:100%; padding:6px; background:transparent; border:1px solid var(--champagne-dim); color:var(--champagne-2); font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; cursor:pointer; border-radius:2px; transition:all 0.15s; }
+#b-submit-btn:hover{ background:rgba(201,169,110,0.06); color:var(--champagne); }
+
+#b-leaderboard{ display:none; margin:0 12px 14px; }
+#b-leaderboard.show{ display:block; }
+.b-lb-title{ font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); letter-spacing:0.18em; text-transform:uppercase; margin-bottom:7px; padding-bottom:5px; border-bottom:1px solid var(--border); }
+.b-lb-row{ display:grid; grid-template-columns:16px 1fr 76px 34px; align-items:center; gap:5px; padding:4px 0; border-bottom:1px solid var(--border); }
+.b-lb-rank{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-lo); }
+.b-lb-user{ font-family:'Barlow',sans-serif; font-size:10px; color:var(--text-md); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.b-lb-fighter{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-lo); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.b-lb-pts{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-lo); text-align:right; }
 </style>
 
 </head>
@@ -830,6 +1009,7 @@ body {
   <div id="mode-toggle">
     <button class="mode-btn active" id="btn-universe" onclick="setMode('universe')">Universe</button>
     <button class="mode-btn" id="btn-vs" onclick="setMode('vs')">VS Mode</button>
+    <button class="mode-btn" id="btn-builder" onclick="setMode('builder')">Build Your Fighter</button>
   </div>
 
   <div id="search-wrap">
@@ -976,6 +1156,47 @@ body {
       </div>
     </div>
   </div>
+
+  <!-- BUILD YOUR FIGHTER OVERLAY -->
+  <div id="builder-mode">
+    <div id="builder-left">
+      <div id="builder-topbar">
+        <div class="b-mode-toggle">
+          <button class="b-mode-btn active" data-m="creative" onclick="bSetMode('creative')">Creative</button>
+          <button class="b-mode-btn" data-m="compete" onclick="bSetMode('compete')">Compete</button>
+        </div>
+        <div id="b-diff">
+          <button class="b-diff-btn on easy" data-d="easy" onclick="bSetDiff('easy')">Easy 100</button>
+          <button class="b-diff-btn" data-d="medium" onclick="bSetDiff('medium')">Med 80</button>
+          <button class="b-diff-btn" data-d="hard" onclick="bSetDiff('hard')">Hard 60</button>
+        </div>
+        <div id="b-budget">
+          <span class="b-budget-label">Points Left</span>
+          <span id="b-budget-rem">86</span>
+          <span class="b-budget-label">/ <span id="b-budget-total">100</span></span>
+        </div>
+      </div>
+      <div id="b-grid"><!-- populated by JS --></div>
+      <div id="b-find-wrap">
+        <button id="b-find-btn" onclick="bFind()">Find My Fighter</button>
+      </div>
+    </div>
+
+    <div id="builder-right">
+      <div id="b-empty">
+        <div class="b-empty-icon">🥊</div>
+        <p>Allocate attributes and<br>find your real-world match</p>
+      </div>
+      <div id="b-results"></div>
+      <div id="b-submit">
+        <div class="b-submit-title">Submit to Leaderboard</div>
+        <input id="b-username" type="text" placeholder="Your name / handle" maxlength="24">
+        <button id="b-submit-btn" onclick="bSubmit()">Submit Score</button>
+      </div>
+      <div id="b-leaderboard"></div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -1546,30 +1767,349 @@ function setMode(mode){
   const univEl=document.getElementById('plot');
   const sideEl=document.getElementById('sidebar');
   const vsEl=document.getElementById('vs-mode');
+  const bEl=document.getElementById('builder-mode');
   const searchWrap=document.getElementById('search-wrap');
   document.getElementById('btn-universe').classList.toggle('active',mode==='universe');
   document.getElementById('btn-vs').classList.toggle('active',mode==='vs');
+  document.getElementById('btn-builder').classList.toggle('active',mode==='builder');
   if(mode==='universe'){
     univEl.style.display='block'; sideEl.style.display='flex';
-    vsEl.classList.remove('active');
+    vsEl.classList.remove('active'); bEl.classList.remove('active');
     searchWrap.style.display='block';
     document.getElementById('header-sub').textContent=FIGHTERS.length.toLocaleString()+' fighters · 3-axis style space';
-  } else {
+  } else if(mode==='vs'){
     univEl.style.display='none'; sideEl.style.display='none';
-    vsEl.classList.add('active');
+    vsEl.classList.add('active'); bEl.classList.remove('active');
     searchWrap.style.display='none';
     document.getElementById('header-sub').textContent='Style Matchup Analyser';
     initVsPlot();
     if(vsRed&&vsBlue) updateVsPlot();
+  } else if(mode==='builder'){
+    univEl.style.display='none'; sideEl.style.display='none';
+    vsEl.classList.remove('active'); bEl.classList.add('active');
+    searchWrap.style.display='none';
+    document.getElementById('header-sub').textContent='Build Your Fighter';
+    bInit();
   }
 }
 
+// ══════════════════════════════════════════════════════
+//  BUILD YOUR FIGHTER
+// ══════════════════════════════════════════════════════
 
-  // 將 HTML inline onclick 需要的函式暴露到全域 / expose handlers used by inline onclick=""
-  window.setMode = setMode;
-  window.openVsPicker = openVsPicker;
-  window.loadRandomMatchup = loadRandomMatchup;
-  window.selectVsFighter = selectVsFighter;
+const B_DEFS = [
+  {id:'pct_reach',             label:'Reach',          cat:'physical'},
+  {id:'pct_striking_power',    label:'KO Power',       cat:'boxing'},
+  {id:'pct_striking_volume',   label:'Volume',         cat:'boxing'},
+  {id:'pct_striking_accuracy', label:'Accuracy',       cat:'boxing'},
+  {id:'pct_striking_defense',  label:'Defense',        cat:'boxing'},
+  {id:'pct_leg_kicks',         label:'Leg Kicks',      cat:'muaythai'},
+  {id:'pct_clinch',            label:'Clinch',         cat:'muaythai'},
+  {id:'pct_body',              label:'Body',           cat:'muaythai'},
+  {id:'pct_td_frequency',      label:'TD Frequency',   cat:'wrestling'},
+  {id:'pct_td_accuracy',       label:'TD Accuracy',    cat:'wrestling'},
+  {id:'pct_td_defense',        label:'TD Defense',     cat:'wrestling'},
+  {id:'pct_submission',        label:'Submission',     cat:'jiujitsu'},
+  {id:'pct_control',           label:'Control',        cat:'jiujitsu'},
+  {id:'pct_ground_pound',      label:'Ground & Pound', cat:'jiujitsu'},
+];
+
+const B_CATS = {
+  physical: {label:'Physical'},
+  boxing:   {label:'Boxing',    color:'#c23030'},
+  muaythai: {label:'Muay Thai', color:'#c07030'},
+  wrestling:{label:'Wrestling', color:'#2b5fb3'},
+  jiujitsu: {label:'Jiu-Jitsu',color:'#7b3fa0'},
+};
+
+// Gold only for champion tiers (S/A+/A), neutral for the rest
+const B_TIER_STYLE = {
+  S:   {color:'#FFD700', bg:'rgba(255,215,0,0.08)',    border:'rgba(255,215,0,0.3)',    gold:true},
+  'A+':{color:'#c9a96e', bg:'rgba(201,169,110,0.08)',  border:'rgba(201,169,110,0.3)',  gold:true},
+  A:   {color:'#c9a96e', bg:'rgba(201,169,110,0.07)',  border:'rgba(201,169,110,0.25)', gold:true},
+  'B+':{color:'var(--text-md)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
+  B:   {color:'var(--text-md)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
+  'C+':{color:'var(--text-lo)', bg:'transparent',      border:'var(--border-2)',        gold:false},
+  C:   {color:'var(--text-lo)', bg:'transparent',      border:'var(--border)',          gold:false},
+  'D+':{color:'var(--text-xlo)',bg:'transparent',      border:'var(--border)',          gold:false},
+  D:   {color:'var(--text-xlo)',bg:'transparent',      border:'var(--border)',          gold:false},
+  E:   {color:'var(--text-xlo)',bg:'transparent',      border:'var(--border)',          gold:false},
+};
+
+const BUDGETS = {easy:100, medium:80, hard:60};
+let bVals = {};
+let bMode2 = 'creative';
+let bDiff2 = 'easy';
+let bInited = false;
+
+B_DEFS.forEach(d => bVals[d.id] = 5);
+
+function bTotalPts(){ return Object.values(bVals).reduce((a,b)=>a+b,0); }
+function bBudget(){ return bMode2==='compete' ? BUDGETS[bDiff2] : Infinity; }
+
+function bInit(){
+  if(!bInited){ bBuildGrid(); bInited=true; }
+}
+
+function bBuildGrid(){
+  const grid = document.getElementById('b-grid');
+  grid.innerHTML='';
+  const cats = [...new Set(B_DEFS.map(d=>d.cat))];
+  cats.forEach(cat=>{
+    const info = B_CATS[cat];
+    const defs = B_DEFS.filter(d=>d.cat===cat);
+    const sec = document.createElement('div');
+    sec.className='b-cat-section';
+    const titleColor = info.color || 'var(--text-lo)';
+    sec.innerHTML=`<div class="b-cat-title" style="color:${titleColor}">${info.label}</div>`;
+    const attrsDiv = document.createElement('div');
+    attrsDiv.className='b-attrs';
+    if(defs.length===1) attrsDiv.style.gridTemplateColumns='1fr';
+    defs.forEach(def=>{
+      const box = document.createElement('div');
+      box.className='b-attr-box'; box.id='attr-'+def.id;
+      const pipsHtml = Array.from({length:10},(_,i)=>
+        `<div class="b-pip" id="pip-${def.id}-${i+1}" onclick="bPipClick('${def.id}',${i+1})"></div>`
+      ).join('');
+      box.innerHTML=`
+        <div class="b-attr-label">
+          <span>${def.label}</span>
+          <span class="b-attr-val" id="val-${def.id}">5</span>
+        </div>
+        <div class="b-pips">${pipsHtml}</div>`;
+      attrsDiv.appendChild(box);
+    });
+    sec.appendChild(attrsDiv);
+    grid.appendChild(sec);
+  });
+  bRefreshAll();
+}
+
+function bPipClick(featId, v){
+  const cur = bVals[featId];
+  const nv = (v===cur) ? Math.max(1,v-1) : v;
+  const delta = nv - cur;
+  if(bMode2==='compete' && bTotalPts()+delta > bBudget()){
+    bFlashBudget(); return;
+  }
+  bVals[featId]=nv;
+  bUpdateBox(featId);
+  bUpdateBudget();
+}
+
+function bUpdateBox(featId){
+  const val  = bVals[featId];
+  const elite = val >= 8;
+  const fillColor = elite ? 'var(--crimson-2)' : 'var(--cobalt-2)';
+  for(let i=1;i<=10;i++){
+    const pip=document.getElementById(`pip-${featId}-${i}`);
+    if(!pip) continue;
+    pip.style.background = i<=val ? fillColor : 'var(--border)';
+    pip.style.boxShadow  = (i<=val&&elite) ? '0 0 3px rgba(194,48,48,0.45)' : 'none';
+  }
+  const valEl=document.getElementById('val-'+featId);
+  if(valEl){
+    valEl.textContent=val;
+    valEl.style.color = elite ? 'var(--crimson-2)' : 'var(--cobalt-2)';
+  }
+  const box=document.getElementById('attr-'+featId);
+  if(box) box.style.borderColor = elite ? 'rgba(194,48,48,0.35)' : 'var(--border)';
+}
+
+function bRefreshAll(){ B_DEFS.forEach(d=>bUpdateBox(d.id)); bUpdateBudget(); }
+
+function bUpdateBudget(){
+  if(bMode2!=='compete') return;
+  const used=bTotalPts(), budget=bBudget(), rem=budget-used;
+  const el=document.getElementById('b-budget-rem');
+  const btn=document.getElementById('b-find-btn');
+  if(el){ el.textContent=rem; el.classList.toggle('over',rem<0); }
+  if(btn) btn.disabled=(rem<0);
+}
+
+function bFlashBudget(){
+  const el=document.getElementById('b-budget-rem');
+  if(!el) return;
+  el.classList.remove('flash');
+  void el.offsetWidth; // reflow
+  el.classList.add('flash');
+  setTimeout(()=>el.classList.remove('flash'),500);
+}
+
+function bSetMode(mode){
+  bMode2=mode;
+  document.querySelectorAll('.b-mode-btn').forEach(b=>
+    b.classList.toggle('active',b.dataset.m===mode));
+  const isC=mode==='compete';
+  document.getElementById('b-diff').classList.toggle('show',isC);
+  document.getElementById('b-budget').classList.toggle('show',isC);
+  const hasRes=document.getElementById('b-results').classList.contains('show');
+  document.getElementById('b-submit').classList.toggle('show',isC&&hasRes);
+  document.getElementById('b-leaderboard').classList.toggle('show',isC);
+  if(isC){ bUpdateBudget(); bLoadLeaderboard(); }
+  // Reset default values based on mode
+  B_DEFS.forEach(d=>bVals[d.id]=isC?1:5);
+  bRefreshAll();
+}
+
+function bSetDiff(diff){
+  bDiff2=diff;
+  document.querySelectorAll('.b-diff-btn').forEach(b=>{
+    b.classList.remove('on','easy','medium','hard');
+    if(b.dataset.d===diff) b.classList.add('on',diff);
+  });
+  document.getElementById('b-budget-total').textContent=BUDGETS[diff];
+  B_DEFS.forEach(d=>bVals[d.id]=1);
+  bRefreshAll();
+}
+
+async function bFind(){
+  const btn=document.getElementById('b-find-btn');
+  btn.textContent='SEARCHING...'; btn.disabled=true;
+  try{
+    const res=await fetch(API_BASE+'/api/nearest',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(bVals),
+    });
+    const data=await res.json();
+    bRenderResults(data.your_fighter, data.notable||[]);
+  }catch(e){ console.error(e); }
+  finally{
+    btn.textContent='FIND MY FIGHTER';
+    btn.disabled=(bMode2==='compete'&&bTotalPts()>bBudget());
+  }
+}
+
+function bRenderResults(yourFighter, notable){
+  const emptyEl  = document.getElementById('b-empty');
+  const resultsEl= document.getElementById('b-results');
+  const submitEl = document.getElementById('b-submit');
+  emptyEl.style.display='none';
+  resultsEl.innerHTML='';
+  resultsEl.classList.add('show');
+
+  const DISP=[
+    {id:'pct_striking_power', label:'KO Power'},
+    {id:'pct_striking_volume',label:'Striking'},
+    {id:'pct_td_frequency',   label:'Takedowns'},
+    {id:'pct_control',        label:'Control'},
+    {id:'pct_submission',     label:'Submission'},
+  ];
+
+  function makeCard(m){
+    const ts   = B_TIER_STYLE[m.tier_label]||B_TIER_STYLE['E'];
+    const wr   = m.win_rate!=null ? Math.round(m.win_rate*100)+'%' : '—';
+    const rk   = m.best_rank!=null ? '#'+Math.round(m.best_rank) : 'unranked';
+    // score line: gold only for champion tiers
+    const scoreColor = ts.gold ? ts.color : 'var(--text-lo)';
+    const bars = DISP.map(f=>{
+      const mv = m.pct ? ((m.pct[f.id]||5)-1)/9*100 : 50;
+      const pv = ((bVals[f.id]||5)-1)/9*100;
+      return `<div class="b-res-bar-row">
+        <span class="b-res-bar-label">${f.label}</span>
+        <div class="b-res-bar-track">
+          <div class="b-res-bar-fill" style="width:${mv}%"></div>
+          <div class="b-res-bar-you" style="left:calc(${pv}% - 1px)"></div>
+        </div>
+      </div>`;
+    }).join('');
+    const card=document.createElement('div');
+    card.className='b-result-card';
+    card.innerHTML=`
+      <div class="b-res-top">
+        <div>
+          <div class="b-res-name">${m.name}</div>
+          <div class="b-res-wc">${m.wc||''}</div>
+        </div>
+        <div class="b-tier-badge" style="color:${ts.color};background:${ts.bg};border-color:${ts.border}">${m.tier_label}</div>
+      </div>
+      <div class="b-res-score" style="color:${scoreColor}">
+        Strength ${m.tier_score}/100 · Win ${wr} · ${rk}
+      </div>
+      <div class="b-res-bars">${bars}</div>`;
+    return card;
+  }
+
+  // ── Section 1: YOUR FIGHTER ──
+  const yourLabel=document.createElement('div');
+  yourLabel.className='b-section-label'; yourLabel.textContent='Your Fighter';
+  resultsEl.appendChild(yourLabel);
+  if(yourFighter) resultsEl.appendChild(makeCard(yourFighter));
+
+  // ── Section 2: CLOSEST NOTABLE ──
+  if(notable && notable.length){
+    const notableLabel=document.createElement('div');
+    notableLabel.className='b-section-label';
+    notableLabel.style.marginTop='4px';
+    notableLabel.textContent='Closest Notable';
+    resultsEl.appendChild(notableLabel);
+    notable.forEach(m=>resultsEl.appendChild(makeCard(m)));
+  }
+
+  // Compete: submit uses notable[0] tier (the goal), or yourFighter if no notable
+  if(bMode2==='compete' && submitEl){
+    const ref = (notable&&notable.length) ? notable[0] : yourFighter;
+    if(ref){
+      submitEl.classList.add('show');
+      submitEl.dataset.nearest = ref.name;
+      submitEl.dataset.score   = ref.tier_score;
+    }
+  }
+}
+
+async function bSubmit(){
+  const un=(document.getElementById('b-username').value||'').trim();
+  if(!un) return;
+  const se=document.getElementById('b-submit');
+  try{
+    await fetch(API_BASE+'/api/leaderboard',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        username:un,
+        tier_score:parseInt(se.dataset.score||0),
+        nearest:se.dataset.nearest||'',
+        points_used:bTotalPts(),
+        features:bVals,
+      }),
+    });
+    bLoadLeaderboard();
+  }catch(e){ console.error(e); }
+}
+
+async function bLoadLeaderboard(){
+  const el=document.getElementById('b-leaderboard');
+  if(!el) return;
+  try{
+    const res=await fetch(API_BASE+'/api/leaderboard');
+    const data=await res.json();
+    el.classList.add('show');
+    el.innerHTML='<div class="b-lb-title">Compete Leaderboard</div>';
+    if(!data.length){
+      el.innerHTML+=`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-xlo);padding:8px 0">No entries yet.</div>`;
+      return;
+    }
+    data.slice(0,10).forEach((e,i)=>{
+      const row=document.createElement('div');
+      row.className='b-lb-row';
+      row.innerHTML=`
+        <span class="b-lb-rank">${i+1}</span>
+        <span class="b-lb-user">${e.username}</span>
+        <span class="b-lb-fighter">${e.nearest}</span>
+        <span class="b-lb-pts">${e.points_used}pt</span>`;
+      el.appendChild(row);
+    });
+  }catch(e){ console.error(e); }
+}
+
+  window.setMode=setMode;
+  window.openVsPicker=openVsPicker;
+  window.loadRandomMatchup=loadRandomMatchup;
+  window.selectVsFighter=selectVsFighter;
+  window.bSetMode=bSetMode;
+  window.bSetDiff=bSetDiff;
+  window.bFind=bFind;
+  window.bPipClick=bPipClick;
+  window.bSubmit=bSubmit;
 }
 boot();
 </script>
