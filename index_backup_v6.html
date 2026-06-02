@@ -876,46 +876,13 @@ body {
 }
 #b-budget-rem.flash{ animation:flash-red 0.4s ease; }
 
-/* Attribute grid — flex row, both cols same height automatically */
-#b-grid{
-  flex:1; overflow:hidden; padding:10px 14px;
-  display:flex; flex-direction:row; gap:12px;
-  min-height:0;
-}
-#b-col-left, #b-col-right{
-  flex:1; display:flex; flex-direction:column;
-  gap:4px; overflow:hidden; min-height:0;
-}
-
-/* Tier Reference — flex:1 fills remaining height to align with left col bottom */
-#b-tier-ref{
-  flex:1; padding:7px 9px;
-  background:var(--surface-2); border:1px solid var(--border);
-  border-radius:2px; overflow:hidden; min-height:0;
-  display:flex; flex-direction:column;
-}
-.b-tier-ref-title{
-  font-family:'DM Mono',monospace; font-size:7.5px; font-weight:500;
-  letter-spacing:0.18em; text-transform:uppercase; color:var(--text-lo);
-  padding-bottom:5px; margin-bottom:6px;
-  border-bottom:1px solid var(--border); flex-shrink:0;
-}
-.b-tier-grid{
-  display:grid; grid-template-columns:1fr 1fr; gap:0 10px;
-  flex:1; min-height:0;
-}
-.b-tier-col{ display:flex; flex-direction:column; justify-content:space-between; gap:3px; }
-.b-tier-row{ display:grid; grid-template-columns:26px 1fr; align-items:baseline; gap:3px; }
-.b-tier-lbl{ font-family:'DM Mono',monospace; font-size:7.5px; font-weight:500; }
-.b-tier-desc{ font-family:'Barlow',sans-serif; font-size:7.5px; color:var(--text-md); line-height:1.3; }
-
-/* Find My Fighter — full width bottom, height auto */
+/* Find button */
 #b-find-wrap{
-  padding:8px 14px 10px; border-top:1px solid var(--border);
+  padding:8px 16px; border-top:1px solid var(--border);
   background:var(--surface); flex-shrink:0;
 }
 #b-find-btn{
-  width:100%; padding:13px; border-radius:2px;
+  width:100%; padding:8px; border-radius:2px;
   background:transparent; border:1px solid var(--border-2);
   color:var(--text-md); font-family:'DM Mono',monospace;
   font-size:10px; cursor:pointer; letter-spacing:0.16em;
@@ -923,6 +890,31 @@ body {
 }
 #b-find-btn:hover:not(:disabled){ border-color:var(--champagne-dim); color:var(--champagne); background:rgba(201,169,110,0.04); }
 #b-find-btn:disabled{ opacity:0.3; cursor:not-allowed; }
+
+/* Attribute grid — two independent columns, no scroll */
+#b-grid{
+  flex:1; overflow:hidden; padding:10px 14px;
+  display:grid; grid-template-columns:1fr 1fr; gap:0 12px;
+}
+#b-col-left, #b-col-right{
+  display:flex; flex-direction:column; gap:4px; overflow:hidden;
+}
+#b-col-right{ position:relative; }
+
+/* Find My Fighter lives in right column bottom */
+#b-find-inline{
+  flex:1; margin-top:4px; min-height:52px;
+  border-radius:2px; background:transparent;
+  border:1px solid var(--border-2); color:var(--text-md);
+  font-family:'DM Mono',monospace; font-size:10px; cursor:pointer;
+  letter-spacing:0.16em; text-transform:uppercase; transition:all 0.18s;
+  display:flex; align-items:center; justify-content:center;
+}
+#b-find-inline:hover:not(:disabled){
+  border-color:var(--champagne-dim); color:var(--champagne);
+  background:rgba(201,169,110,0.04);
+}
+#b-find-inline:disabled{ opacity:0.3; cursor:not-allowed; }
 
 .b-col-section-title{
   font-family:'DM Mono',monospace; font-size:7.5px; font-weight:500;
@@ -981,32 +973,30 @@ body {
 #b-results{ display:none; flex-direction:column; padding:12px 12px 6px; gap:0; }
 #b-results.show{ display:flex; }
 
-/* Section labels — with extending line */
+/* Section labels */
 .b-section-label{
   font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo);
   letter-spacing:0.16em; text-transform:uppercase;
-  padding:8px 0 6px; margin-bottom:6px;
-  display:flex; align-items:center; gap:8px;
+  padding:8px 0 5px; border-bottom:1px solid var(--border); margin-bottom:8px;
 }
-.b-section-label::after{ content:''; flex:1; height:1px; background:var(--border); }
 .b-section-label:first-child{ padding-top:0; }
-.b-section-label.your-label{ color:var(--champagne-2); }
-.b-section-label.your-label::after{ background:rgba(201,169,110,0.2); }
 
-/* Result cards */
 .b-result-card{
   background:var(--surface-2); border:1px solid var(--border);
-  border-radius:2px; padding:10px; margin-bottom:6px;
+  border-radius:2px; padding:10px; margin-bottom:8px;
 }
-.b-result-card.your-card{ border-left:3px solid var(--champagne-2); padding-left:8px; }
 .b-result-card:last-child{ margin-bottom:0; }
-
-/* Result card elements */
 .b-res-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
-.b-res-name{ font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:700; color:var(--text-hi); letter-spacing:0.04em; text-transform:uppercase; line-height:1.1; }
+.b-res-name{
+  font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:700;
+  color:var(--text-hi); letter-spacing:0.04em; text-transform:uppercase; line-height:1.1;
+}
 .b-res-wc{ font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); margin-top:2px; }
-.b-tier-badge{ font-family:'DM Mono',monospace; font-size:9px; font-weight:500; padding:2px 6px; border-radius:2px; border:1px solid; letter-spacing:0.1em; flex-shrink:0; }
-.b-res-score{ font-family:'DM Mono',monospace; font-size:9px; margin-bottom:7px; }
+.b-tier-badge{
+  font-family:'DM Mono',monospace; font-size:9px; font-weight:500;
+  padding:2px 6px; border-radius:2px; border:1px solid; letter-spacing:0.1em; flex-shrink:0;
+}
+.b-res-score{ font-family:'DM Mono',monospace; font-size:9px; margin-bottom:7px; color:var(--text-lo); }
 .b-res-bars{ display:flex; flex-direction:column; gap:4px; }
 .b-res-bar-row{ display:grid; grid-template-columns:68px 1fr; align-items:center; gap:5px; }
 .b-res-bar-label{ font-family:'Barlow',sans-serif; font-size:9px; color:var(--text-lo); }
@@ -1014,9 +1004,23 @@ body {
 .b-res-bar-fill{ height:100%; border-radius:1px; background:var(--cobalt-2); transition:width 0.5s cubic-bezier(.4,0,.2,1); }
 .b-res-bar-you{ position:absolute; top:-1px; width:2px; height:4px; background:rgba(255,255,255,0.4); border-radius:1px; }
 
-/* Compete submit + leaderboard — hidden until further notice */
-#b-submit{ display:none !important; }
-#b-leaderboard{ display:none !important; }
+/* Compete submit + leaderboard */
+#b-submit{ display:none; margin:4px 12px 8px; padding:10px; background:var(--surface-2); border:1px solid var(--border); border-radius:2px; }
+#b-submit.show{ display:block; }
+.b-submit-title{ font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); letter-spacing:0.18em; text-transform:uppercase; margin-bottom:7px; }
+#b-username{ width:100%; background:var(--surface-3); border:1px solid var(--border-2); color:var(--text-hi); padding:5px 9px; border-radius:2px; font-family:'Barlow',sans-serif; font-size:11px; outline:none; margin-bottom:6px; }
+#b-username::placeholder{ color:var(--text-lo); }
+#b-submit-btn{ width:100%; padding:6px; background:transparent; border:1px solid var(--champagne-dim); color:var(--champagne-2); font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; cursor:pointer; border-radius:2px; transition:all 0.15s; }
+#b-submit-btn:hover{ background:rgba(201,169,110,0.06); color:var(--champagne); }
+
+#b-leaderboard{ display:none; margin:0 12px 14px; }
+#b-leaderboard.show{ display:block; }
+.b-lb-title{ font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); letter-spacing:0.18em; text-transform:uppercase; margin-bottom:7px; padding-bottom:5px; border-bottom:1px solid var(--border); }
+.b-lb-row{ display:grid; grid-template-columns:16px 1fr 76px 34px; align-items:center; gap:5px; padding:4px 0; border-bottom:1px solid var(--border); }
+.b-lb-rank{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-lo); }
+.b-lb-user{ font-family:'Barlow',sans-serif; font-size:10px; color:var(--text-md); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.b-lb-fighter{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-lo); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.b-lb-pts{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-lo); text-align:right; }
 </style>
 
 </head>
@@ -1201,9 +1205,6 @@ body {
       <div id="b-grid">
         <div id="b-col-left"><!-- populated by JS --></div>
         <div id="b-col-right"><!-- populated by JS --></div>
-      </div>
-      <div id="b-find-wrap">
-        <button id="b-find-btn" onclick="bFind()">Find My Fighter</button>
       </div>
     </div>
 
@@ -1851,13 +1852,13 @@ const B_TIER_STYLE = {
   S:   {color:'#FFD700', bg:'rgba(255,215,0,0.08)',    border:'rgba(255,215,0,0.3)',    gold:true},
   'A+':{color:'#c9a96e', bg:'rgba(201,169,110,0.08)',  border:'rgba(201,169,110,0.3)',  gold:true},
   A:   {color:'#c9a96e', bg:'rgba(201,169,110,0.07)',  border:'rgba(201,169,110,0.25)', gold:true},
-  'B+':{color:'var(--champagne-2)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
-  B:   {color:'var(--champagne-2)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
-  'C+':{color:'#a0a0b0',           bg:'transparent',      border:'var(--border-2)',        gold:false},
-  C:   {color:'#a0a0b0',           bg:'transparent',      border:'var(--border)',          gold:false},
-  'D+':{color:'#a0a0b0',           bg:'transparent',      border:'var(--border)',          gold:false},
-  D:   {color:'#a0a0b0',           bg:'transparent',      border:'var(--border)',          gold:false},
-  E:   {color:'#a0a0b0',           bg:'transparent',      border:'var(--border)',          gold:false},
+  'B+':{color:'var(--text-md)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
+  B:   {color:'var(--text-md)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
+  'C+':{color:'var(--text-lo)', bg:'transparent',      border:'var(--border-2)',        gold:false},
+  C:   {color:'var(--text-lo)', bg:'transparent',      border:'var(--border)',          gold:false},
+  'D+':{color:'var(--text-xlo)',bg:'transparent',      border:'var(--border)',          gold:false},
+  D:   {color:'var(--text-xlo)',bg:'transparent',      border:'var(--border)',          gold:false},
+  E:   {color:'var(--text-xlo)',bg:'transparent',      border:'var(--border)',          gold:false},
 };
 
 const BUDGETS = {easy:100, medium:80, hard:60};
@@ -1891,46 +1892,7 @@ function bBuildGrid(){
     return box;
   }
 
-  const TIER_LEFT = [
-    {t:'S',  color:'#FFD700',           desc:'Gods of the sport. The one. The only.'},
-    {t:'A+', color:'#c9a96e',           desc:'Legends of their era. Untouchable at their peak.'},
-    {t:'A',  color:'#c9a96e',           desc:'Dynasty builders. Reigned supreme.'},
-    {t:'B+', color:'var(--champagne-2)',desc:'Champions who defended. Proved gold is earned, not given.'},
-  ];
-  const TIER_RIGHT = [
-    {t:'B',  color:'var(--champagne-2)',desc:'Once a champion, always a champion.'},
-    {t:'C+', color:'#a0a0b0',           desc:'Greatness needs no gold to be proven.'},
-    {t:'C-D',color:'#a0a0b0',           desc:'Historically ranked Top 5 / 10 / 15.'},
-    {t:'E',  color:'#a0a0b0',           desc:'World-class. The UFC is the sharkest tank on earth.'},
-  ];
-
-  function makeTierRef(){
-    const panel = document.createElement('div');
-    panel.id = 'b-tier-ref';
-    const title = document.createElement('div');
-    title.className = 'b-col-section-title b-tier-ref-title';
-    title.textContent = 'Tier Reference';
-    panel.appendChild(title);
-    const grid = document.createElement('div');
-    grid.className = 'b-tier-grid';
-    const makeCol = (items) => {
-      const col = document.createElement('div');
-      col.className = 'b-tier-col';
-      items.forEach(r=>{
-        const row = document.createElement('div');
-        row.className = 'b-tier-row';
-        row.innerHTML = `<span class="b-tier-lbl" style="color:${r.color}">${r.t}</span><span class="b-tier-desc">${r.desc}</span>`;
-        col.appendChild(row);
-      });
-      return col;
-    };
-    grid.appendChild(makeCol(TIER_LEFT));
-    grid.appendChild(makeCol(TIER_RIGHT));
-    panel.appendChild(grid);
-    return panel;
-  }
-
-  function fillCol(colId, defs, addTierRef=false){
+  function fillCol(colId, defs, addFind=false){
     const col = document.getElementById(colId);
     col.innerHTML='';
     defs.forEach(def=>{
@@ -1942,7 +1904,14 @@ function bBuildGrid(){
       }
       col.appendChild(makeAttrBox(def));
     });
-    if(addTierRef) col.appendChild(makeTierRef());
+    if(addFind){
+      const btn=document.createElement('button');
+      btn.id='b-find-btn';
+      btn.className='b-find-inline';
+      btn.textContent='FIND MY FIGHTER';
+      btn.onclick=bFind;
+      col.appendChild(btn);
+    }
   }
 
   fillCol('b-col-left',  B_LEFT,  false);
@@ -2124,14 +2093,9 @@ function bRenderResults(yourFighter, notable){
 
   // ── Section 1: YOUR FIGHTER ──
   const yourLabel=document.createElement('div');
-  yourLabel.className='b-section-label your-label';
-  yourLabel.textContent='Your Fighter';
+  yourLabel.className='b-section-label'; yourLabel.textContent='Your Fighter';
   resultsEl.appendChild(yourLabel);
-  if(yourFighter){
-    const card=makeCard(yourFighter);
-    card.classList.add('your-card');
-    resultsEl.appendChild(card);
-  }
+  if(yourFighter) resultsEl.appendChild(makeCard(yourFighter));
 
   // ── Section 2: CLOSEST NOTABLE ──
   if(notable && notable.length){

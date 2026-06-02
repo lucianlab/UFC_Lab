@@ -6,3 +6,4 @@ models/
 notebooks/
 patch_data_prep.py
 patch_train_seq.py
+!data/clean/fighter_builder_features.csv

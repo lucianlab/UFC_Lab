@@ -828,6 +828,7 @@ body {
 }
 #builder-mode.active{ display:flex; }
 
+/* Left: attribute panel */
 #builder-left{
   flex:1; min-width:0; display:flex; flex-direction:column;
   overflow:hidden; border-right:1px solid var(--border);
@@ -835,136 +836,107 @@ body {
 
 /* Top bar */
 #builder-topbar{
-  height:42px; padding:0 18px; border-bottom:1px solid var(--border);
+  height:48px; padding:0 20px; border-bottom:1px solid var(--border);
   background:var(--surface); flex-shrink:0;
-  display:flex; align-items:center; gap:12px;
+  display:flex; align-items:center; gap:14px;
 }
 .b-mode-toggle{
   display:flex; border:1px solid var(--border-2); border-radius:2px; overflow:hidden;
 }
 .b-mode-btn{
-  padding:4px 11px; font-family:'DM Mono',monospace; font-size:9px;
+  padding:4px 12px; font-family:'DM Mono',monospace; font-size:9px;
   font-weight:500; letter-spacing:0.12em; text-transform:uppercase;
-  cursor:pointer; background:transparent; border:none; color:var(--text-lo); transition:all 0.15s;
+  cursor:pointer; background:transparent; border:none; color:var(--text-lo);
+  transition:all 0.15s;
 }
 .b-mode-btn.active{ background:var(--surface-3); color:var(--text-hi); }
 
 #b-diff{ display:none; gap:4px; }
 #b-diff.show{ display:flex; }
 .b-diff-btn{
-  padding:3px 8px; font-family:'DM Mono',monospace; font-size:9px;
+  padding:3px 9px; font-family:'DM Mono',monospace; font-size:9px;
   letter-spacing:0.08em; text-transform:uppercase; cursor:pointer;
   border:1px solid var(--border-2); border-radius:2px;
   background:transparent; color:var(--text-lo); transition:all 0.15s;
 }
-.b-diff-btn.on.easy  { border-color:#2b5a30; color:#4caf50; background:rgba(76,175,80,0.07); }
+.b-diff-btn.on.easy { border-color:#2b5a30; color:#4caf50; background:rgba(76,175,80,0.07); }
 .b-diff-btn.on.medium{ border-color:var(--champagne-dim); color:var(--champagne); background:rgba(201,169,110,0.07); }
-.b-diff-btn.on.hard  { border-color:var(--crimson); color:var(--crimson-2); background:rgba(194,48,48,0.07); }
+.b-diff-btn.on.hard { border-color:var(--crimson); color:var(--crimson-2); background:rgba(194,48,48,0.07); }
 
 #b-budget{ display:none; align-items:baseline; gap:5px; margin-left:auto; }
 #b-budget.show{ display:flex; }
 #b-budget-rem{
-  font-family:'DM Mono',monospace; font-size:18px; font-weight:500;
-  color:var(--champagne); transition:color 0.2s; min-width:28px; text-align:right;
+  font-family:'DM Mono',monospace; font-size:20px; font-weight:500;
+  color:var(--champagne); transition:color 0.2s; min-width:32px; text-align:right;
 }
 #b-budget-rem.over{ color:var(--crimson-2); }
 .b-budget-label{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-lo); }
 
 @keyframes flash-red{
   0%,100%{ color:var(--champagne); }
-  30%,60%{ color:var(--crimson-2); transform:scale(1.1); }
+  30%{ color:var(--crimson-2); }
 }
-#b-budget-rem.flash{ animation:flash-red 0.4s ease; }
+#b-budget-rem.flash{ animation:flash-red 0.45s ease; }
 
-/* Attribute grid — flex row, both cols same height automatically */
-#b-grid{
-  flex:1; overflow:hidden; padding:10px 14px;
-  display:flex; flex-direction:row; gap:12px;
-  min-height:0;
-}
-#b-col-left, #b-col-right{
-  flex:1; display:flex; flex-direction:column;
-  gap:4px; overflow:hidden; min-height:0;
-}
-
-/* Tier Reference — flex:1 fills remaining height to align with left col bottom */
-#b-tier-ref{
-  flex:1; padding:7px 9px;
-  background:var(--surface-2); border:1px solid var(--border);
-  border-radius:2px; overflow:hidden; min-height:0;
-  display:flex; flex-direction:column;
-}
-.b-tier-ref-title{
-  font-family:'DM Mono',monospace; font-size:7.5px; font-weight:500;
-  letter-spacing:0.18em; text-transform:uppercase; color:var(--text-lo);
-  padding-bottom:5px; margin-bottom:6px;
-  border-bottom:1px solid var(--border); flex-shrink:0;
-}
-.b-tier-grid{
-  display:grid; grid-template-columns:1fr 1fr; gap:0 10px;
-  flex:1; min-height:0;
-}
-.b-tier-col{ display:flex; flex-direction:column; justify-content:space-between; gap:3px; }
-.b-tier-row{ display:grid; grid-template-columns:26px 1fr; align-items:baseline; gap:3px; }
-.b-tier-lbl{ font-family:'DM Mono',monospace; font-size:7.5px; font-weight:500; }
-.b-tier-desc{ font-family:'Barlow',sans-serif; font-size:7.5px; color:var(--text-md); line-height:1.3; }
-
-/* Find My Fighter — full width bottom, height auto */
+/* Find button - fixed bottom */
 #b-find-wrap{
-  padding:8px 14px 10px; border-top:1px solid var(--border);
+  padding:12px 20px; border-top:1px solid var(--border);
   background:var(--surface); flex-shrink:0;
 }
 #b-find-btn{
-  width:100%; padding:13px; border-radius:2px;
+  width:100%; padding:9px; border-radius:2px;
   background:transparent; border:1px solid var(--border-2);
   color:var(--text-md); font-family:'DM Mono',monospace;
   font-size:10px; cursor:pointer; letter-spacing:0.16em;
   text-transform:uppercase; transition:all 0.18s;
 }
-#b-find-btn:hover:not(:disabled){ border-color:var(--champagne-dim); color:var(--champagne); background:rgba(201,169,110,0.04); }
+#b-find-btn:hover:not(:disabled){
+  border-color:var(--champagne-dim); color:var(--champagne);
+  background:rgba(201,169,110,0.04);
+}
 #b-find-btn:disabled{ opacity:0.3; cursor:not-allowed; }
 
-.b-col-section-title{
-  font-family:'DM Mono',monospace; font-size:7.5px; font-weight:500;
-  letter-spacing:0.18em; text-transform:uppercase; color:var(--text-lo);
-  padding:6px 0 4px; border-bottom:1px solid var(--border); margin-bottom:2px;
+/* Attribute grid */
+#b-grid{
+  flex:1; overflow-y:auto; padding:18px 20px;
+  display:flex; flex-direction:column; gap:18px;
 }
-.b-col-section-title:first-child{ padding-top:2px; }
-
+.b-cat-section{}
+.b-cat-title{
+  font-family:'DM Mono',monospace; font-size:8px; font-weight:500;
+  letter-spacing:0.2em; text-transform:uppercase;
+  padding-bottom:8px; margin-bottom:8px;
+  border-bottom:1px solid var(--border);
+}
+.b-attrs{
+  display:grid; grid-template-columns:1fr 1fr; gap:6px;
+}
 .b-attr-box{
-  padding:5px 8px 6px; background:var(--surface-2);
+  padding:9px 10px 8px; background:var(--surface-2);
   border:1px solid var(--border); border-radius:2px;
   cursor:default; transition:border-color 0.2s;
 }
 .b-attr-label{
-  font-family:'DM Mono',monospace; font-size:7.5px;
-  color:var(--text-lo); letter-spacing:0.1em;
-  text-transform:uppercase; margin-bottom:5px;
+  font-family:'DM Mono',monospace; font-size:8px;
+  color:var(--text-lo); letter-spacing:0.12em;
+  text-transform:uppercase; margin-bottom:7px;
   display:flex; justify-content:space-between; align-items:center;
 }
 .b-attr-val{
-  font-size:10px; font-weight:500; color:var(--champagne-2);
-  transition:color 0.15s;
+  font-size:11px; font-weight:500; color:var(--text-md);
+  transition:color 0.2s;
 }
-
-/* 2K-style pip */
-.b-pips{ display:flex; gap:2px; }
+.b-pips{
+  display:flex; gap:2px;
+}
 .b-pip{
-  flex:1; height:10px; border-radius:1px;
+  flex:1; height:5px; border-radius:1px;
   background:var(--border); cursor:pointer;
-  transform:skewX(-6deg);
-  transition:background 0.06s, box-shadow 0.06s;
+  transition:background 0.1s, transform 0.08s;
 }
-.b-pip:hover{ filter:brightness(1.25); }
+.b-pip:hover{ transform:scaleY(1.4); }
 
-/* Budget zero pulse */
-@keyframes pulse-zero{
-  0%,100%{ transform:scale(1); }
-  40%{ transform:scale(1.18); color:var(--crimson-2); }
-}
-#b-budget-rem.pulse-zero{ animation:pulse-zero 0.28s ease; }
-
-/* Right: results panel */
+/* Right: results panel (same width as sidebar) */
 #builder-right{
   width:272px; flex-shrink:0; background:var(--surface);
   border-left:1px solid var(--border);
@@ -973,50 +945,59 @@ body {
 #b-empty{
   flex:1; display:flex; flex-direction:column;
   align-items:center; justify-content:center;
-  gap:10px; padding:28px 18px; text-align:center;
+  gap:10px; padding:32px 20px; text-align:center;
 }
-#b-empty .b-empty-icon{ font-size:24px; opacity:0.06; }
-#b-empty p{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-xlo); line-height:1.9; letter-spacing:0.04em; }
-
-#b-results{ display:none; flex-direction:column; padding:12px 12px 6px; gap:0; }
+#b-empty .b-empty-icon{ font-size:28px; opacity:0.06; }
+#b-empty p{
+  font-family:'DM Mono',monospace; font-size:9px;
+  color:var(--text-xlo); line-height:1.9; letter-spacing:0.04em;
+}
+#b-results{ display:none; flex-direction:column; padding:14px 14px 8px; gap:10px; }
 #b-results.show{ display:flex; }
 
-/* Section labels — with extending line */
-.b-section-label{
-  font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo);
-  letter-spacing:0.16em; text-transform:uppercase;
-  padding:8px 0 6px; margin-bottom:6px;
-  display:flex; align-items:center; gap:8px;
-}
-.b-section-label::after{ content:''; flex:1; height:1px; background:var(--border); }
-.b-section-label:first-child{ padding-top:0; }
-.b-section-label.your-label{ color:var(--champagne-2); }
-.b-section-label.your-label::after{ background:rgba(201,169,110,0.2); }
-
-/* Result cards */
 .b-result-card{
   background:var(--surface-2); border:1px solid var(--border);
-  border-radius:2px; padding:10px; margin-bottom:6px;
+  border-radius:3px; padding:12px;
 }
-.b-result-card.your-card{ border-left:3px solid var(--champagne-2); padding-left:8px; }
-.b-result-card:last-child{ margin-bottom:0; }
+.b-result-card:nth-child(1){ animation:slideUp 0.3s ease both; }
+.b-result-card:nth-child(2){ animation:slideUp 0.3s 0.06s ease both; }
+.b-result-card:nth-child(3){ animation:slideUp 0.3s 0.12s ease both; }
 
-/* Result card elements */
-.b-res-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
-.b-res-name{ font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:700; color:var(--text-hi); letter-spacing:0.04em; text-transform:uppercase; line-height:1.1; }
+.b-res-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+.b-res-name{
+  font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:700;
+  color:var(--text-hi); letter-spacing:0.04em; text-transform:uppercase; line-height:1.1;
+}
 .b-res-wc{ font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); margin-top:2px; }
-.b-tier-badge{ font-family:'DM Mono',monospace; font-size:9px; font-weight:500; padding:2px 6px; border-radius:2px; border:1px solid; letter-spacing:0.1em; flex-shrink:0; }
-.b-res-score{ font-family:'DM Mono',monospace; font-size:9px; margin-bottom:7px; }
+.b-tier-badge{
+  font-family:'DM Mono',monospace; font-size:9px; font-weight:500;
+  padding:2px 7px; border-radius:2px; border:1px solid; letter-spacing:0.1em; flex-shrink:0;
+}
+.b-res-score{ font-family:'DM Mono',monospace; font-size:9px; margin-bottom:8px; }
 .b-res-bars{ display:flex; flex-direction:column; gap:4px; }
-.b-res-bar-row{ display:grid; grid-template-columns:68px 1fr; align-items:center; gap:5px; }
+.b-res-bar-row{ display:grid; grid-template-columns:72px 1fr; align-items:center; gap:6px; }
 .b-res-bar-label{ font-family:'Barlow',sans-serif; font-size:9px; color:var(--text-lo); }
 .b-res-bar-track{ height:2px; background:var(--border); border-radius:1px; overflow:hidden; position:relative; }
-.b-res-bar-fill{ height:100%; border-radius:1px; background:var(--cobalt-2); transition:width 0.5s cubic-bezier(.4,0,.2,1); }
-.b-res-bar-you{ position:absolute; top:-1px; width:2px; height:4px; background:rgba(255,255,255,0.4); border-radius:1px; }
+.b-res-bar-fill{ height:100%; border-radius:1px; transition:width 0.5s cubic-bezier(.4,0,.2,1); }
+.b-res-bar-you{ position:absolute; top:-1px; width:2px; height:4px; background:rgba(255,255,255,0.35); border-radius:1px; }
 
-/* Compete submit + leaderboard — hidden until further notice */
-#b-submit{ display:none !important; }
-#b-leaderboard{ display:none !important; }
+/* Compete submit + leaderboard */
+#b-submit{ display:none; margin:0 14px 10px; padding:12px; background:var(--surface-2); border:1px solid var(--border); border-radius:3px; }
+#b-submit.show{ display:block; }
+.b-submit-title{ font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); letter-spacing:0.18em; text-transform:uppercase; margin-bottom:8px; }
+#b-username{ width:100%; background:var(--surface-3); border:1px solid var(--border-2); color:var(--text-hi); padding:6px 10px; border-radius:2px; font-family:'Barlow',sans-serif; font-size:12px; outline:none; margin-bottom:7px; }
+#b-username::placeholder{ color:var(--text-lo); }
+#b-submit-btn{ width:100%; padding:7px; background:transparent; border:1px solid var(--champagne-dim); color:var(--champagne-2); font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.14em; text-transform:uppercase; cursor:pointer; border-radius:2px; transition:all 0.15s; }
+#b-submit-btn:hover{ background:rgba(201,169,110,0.06); color:var(--champagne); }
+
+#b-leaderboard{ display:none; margin:0 14px 16px; }
+#b-leaderboard.show{ display:block; }
+.b-lb-title{ font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); letter-spacing:0.18em; text-transform:uppercase; margin-bottom:8px; padding-bottom:5px; border-bottom:1px solid var(--border); }
+.b-lb-row{ display:grid; grid-template-columns:16px 1fr 80px 36px; align-items:center; gap:5px; padding:5px 0; border-bottom:1px solid var(--border); }
+.b-lb-rank{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-lo); }
+.b-lb-user{ font-family:'Barlow',sans-serif; font-size:10px; color:var(--text-md); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.b-lb-fighter{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-lo); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.b-lb-pts{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-lo); text-align:right; }
 </style>
 
 </head>
@@ -1198,10 +1179,7 @@ body {
           <span class="b-budget-label">/ <span id="b-budget-total">100</span></span>
         </div>
       </div>
-      <div id="b-grid">
-        <div id="b-col-left"><!-- populated by JS --></div>
-        <div id="b-col-right"><!-- populated by JS --></div>
-      </div>
+      <div id="b-grid"><!-- populated by JS --></div>
       <div id="b-find-wrap">
         <button id="b-find-btn" onclick="bFind()">Find My Fighter</button>
       </div>
@@ -1822,42 +1800,42 @@ function setMode(mode){
 //  BUILD YOUR FIGHTER
 // ══════════════════════════════════════════════════════
 
-// Left column: Boxing(KO,Acc) + Muay Thai(3) + Wrestling(3)
-// Right column: Boxing(Vol,Def) + JiuJitsu(3) + Physical(Reach) + Find button
-const B_LEFT = [
-  {id:'pct_striking_power',    label:'KO Power',    sec:'Boxing'},
-  {id:'pct_striking_accuracy', label:'Accuracy',    sec:null},
-  {id:'pct_leg_kicks',         label:'Leg Kicks',   sec:'Muay Thai'},
-  {id:'pct_clinch',            label:'Clinch',      sec:null},
-  {id:'pct_body',              label:'Body',        sec:null},
-  {id:'pct_td_frequency',      label:'TD Frequency',sec:'Wrestling'},
-  {id:'pct_td_accuracy',       label:'TD Accuracy', sec:null},
-  {id:'pct_td_defense',        label:'TD Defense',  sec:null},
-];
-const B_RIGHT = [
-  {id:'pct_striking_volume',   label:'Volume',      sec:'Boxing'},
-  {id:'pct_striking_defense',  label:'Defense',     sec:null},
-  {id:'pct_submission',        label:'Submission',  sec:'Jiu-Jitsu'},
-  {id:'pct_control',           label:'Control',     sec:null},
-  {id:'pct_ground_pound',      label:'Grd & Pound', sec:null},
-  {id:'pct_reach',             label:'Reach',       sec:'Physical'},
+const B_DEFS = [
+  {id:'pct_reach',             label:'Reach',          cat:'physical'},
+  {id:'pct_striking_power',    label:'KO Power',       cat:'boxing'},
+  {id:'pct_striking_volume',   label:'Volume',         cat:'boxing'},
+  {id:'pct_striking_accuracy', label:'Accuracy',       cat:'boxing'},
+  {id:'pct_striking_defense',  label:'Defense',        cat:'boxing'},
+  {id:'pct_leg_kicks',         label:'Leg Kicks',      cat:'muaythai'},
+  {id:'pct_clinch',            label:'Clinch',         cat:'muaythai'},
+  {id:'pct_body',              label:'Body',           cat:'muaythai'},
+  {id:'pct_td_frequency',      label:'TD Frequency',   cat:'wrestling'},
+  {id:'pct_td_accuracy',       label:'TD Accuracy',    cat:'wrestling'},
+  {id:'pct_td_defense',        label:'TD Defense',     cat:'wrestling'},
+  {id:'pct_submission',        label:'Submission',     cat:'jiujitsu'},
+  {id:'pct_control',           label:'Control',        cat:'jiujitsu'},
+  {id:'pct_ground_pound',      label:'Ground & Pound', cat:'jiujitsu'},
 ];
 
-// Keep B_DEFS for bVals init
-const B_DEFS = [...B_LEFT, ...B_RIGHT];
+const B_CATS = {
+  physical: {label:'Physical',  dim:'#16202e', bright:'#7F8FA6'},
+  boxing:   {label:'Boxing',    dim:'#2a0d0d', bright:'#c23030'},
+  muaythai: {label:'Muay Thai', dim:'#28160a', bright:'#c07030'},
+  wrestling:{label:'Wrestling', dim:'#0c1828', bright:'#2b5fb3'},
+  jiujitsu: {label:'Jiu-Jitsu',dim:'#180a28', bright:'#7b3fa0'},
+};
 
-// Gold only for champion tiers (S/A+/A)
 const B_TIER_STYLE = {
-  S:   {color:'#FFD700', bg:'rgba(255,215,0,0.08)',    border:'rgba(255,215,0,0.3)',    gold:true},
-  'A+':{color:'#c9a96e', bg:'rgba(201,169,110,0.08)',  border:'rgba(201,169,110,0.3)',  gold:true},
-  A:   {color:'#c9a96e', bg:'rgba(201,169,110,0.07)',  border:'rgba(201,169,110,0.25)', gold:true},
-  'B+':{color:'var(--champagne-2)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
-  B:   {color:'var(--champagne-2)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
-  'C+':{color:'#a0a0b0',           bg:'transparent',      border:'var(--border-2)',        gold:false},
-  C:   {color:'#a0a0b0',           bg:'transparent',      border:'var(--border)',          gold:false},
-  'D+':{color:'#a0a0b0',           bg:'transparent',      border:'var(--border)',          gold:false},
-  D:   {color:'#a0a0b0',           bg:'transparent',      border:'var(--border)',          gold:false},
-  E:   {color:'#a0a0b0',           bg:'transparent',      border:'var(--border)',          gold:false},
+  S:   {color:'#FFD700', bg:'rgba(255,215,0,0.08)',    border:'rgba(255,215,0,0.3)'},
+  'A+':{color:'#c9a96e', bg:'rgba(201,169,110,0.08)',  border:'rgba(201,169,110,0.3)'},
+  A:   {color:'#a07c46', bg:'rgba(160,124,70,0.08)',   border:'rgba(160,124,70,0.3)'},
+  'B+':{color:'#7F8FA6', bg:'rgba(127,143,166,0.08)',  border:'rgba(127,143,166,0.3)'},
+  B:   {color:'#6a7a8a', bg:'rgba(106,122,138,0.08)',  border:'rgba(106,122,138,0.3)'},
+  'C+':{color:'#556677', bg:'rgba(85,102,119,0.08)',   border:'rgba(85,102,119,0.3)'},
+  C:   {color:'#445566', bg:'transparent',             border:'var(--border-2)'},
+  'D+':{color:'#3a4858', bg:'transparent',             border:'var(--border)'},
+  D:   {color:'#2e3c4a', bg:'transparent',             border:'var(--border)'},
+  E:   {color:'#272535', bg:'transparent',             border:'var(--border)'},
 };
 
 const BUDGETS = {easy:100, medium:80, hard:60};
@@ -1876,128 +1854,65 @@ function bInit(){
 }
 
 function bBuildGrid(){
-  function makeAttrBox(def){
-    const box = document.createElement('div');
-    box.className='b-attr-box'; box.id='attr-'+def.id;
-    const pipsHtml = Array.from({length:10},(_,i)=>
-      `<div class="b-pip" id="pip-${def.id}-${i+1}" onclick="bPipClick('${def.id}',${i+1})"></div>`
-    ).join('');
-    box.innerHTML=`
-      <div class="b-attr-label">
-        <span>${def.label}</span>
-        <span class="b-attr-val" id="val-${def.id}">5</span>
-      </div>
-      <div class="b-pips">${pipsHtml}</div>`;
-    return box;
-  }
-
-  const TIER_LEFT = [
-    {t:'S',  color:'#FFD700',           desc:'Gods of the sport. The one. The only.'},
-    {t:'A+', color:'#c9a96e',           desc:'Legends of their era. Untouchable at their peak.'},
-    {t:'A',  color:'#c9a96e',           desc:'Dynasty builders. Reigned supreme.'},
-    {t:'B+', color:'var(--champagne-2)',desc:'Champions who defended. Proved gold is earned, not given.'},
-  ];
-  const TIER_RIGHT = [
-    {t:'B',  color:'var(--champagne-2)',desc:'Once a champion, always a champion.'},
-    {t:'C+', color:'#a0a0b0',           desc:'Greatness needs no gold to be proven.'},
-    {t:'C-D',color:'#a0a0b0',           desc:'Historically ranked Top 5 / 10 / 15.'},
-    {t:'E',  color:'#a0a0b0',           desc:'World-class. The UFC is the sharkest tank on earth.'},
-  ];
-
-  function makeTierRef(){
-    const panel = document.createElement('div');
-    panel.id = 'b-tier-ref';
-    const title = document.createElement('div');
-    title.className = 'b-col-section-title b-tier-ref-title';
-    title.textContent = 'Tier Reference';
-    panel.appendChild(title);
-    const grid = document.createElement('div');
-    grid.className = 'b-tier-grid';
-    const makeCol = (items) => {
-      const col = document.createElement('div');
-      col.className = 'b-tier-col';
-      items.forEach(r=>{
-        const row = document.createElement('div');
-        row.className = 'b-tier-row';
-        row.innerHTML = `<span class="b-tier-lbl" style="color:${r.color}">${r.t}</span><span class="b-tier-desc">${r.desc}</span>`;
-        col.appendChild(row);
-      });
-      return col;
-    };
-    grid.appendChild(makeCol(TIER_LEFT));
-    grid.appendChild(makeCol(TIER_RIGHT));
-    panel.appendChild(grid);
-    return panel;
-  }
-
-  function fillCol(colId, defs, addTierRef=false){
-    const col = document.getElementById(colId);
-    col.innerHTML='';
+  const grid = document.getElementById('b-grid');
+  grid.innerHTML='';
+  const cats = [...new Set(B_DEFS.map(d=>d.cat))];
+  cats.forEach(cat=>{
+    const info = B_CATS[cat];
+    const defs = B_DEFS.filter(d=>d.cat===cat);
+    const sec = document.createElement('div');
+    sec.className='b-cat-section';
+    sec.innerHTML=`<div class="b-cat-title" style="color:${info.bright}">${info.label}</div>`;
+    const attrsDiv = document.createElement('div');
+    attrsDiv.className='b-attrs';
     defs.forEach(def=>{
-      if(def.sec){
-        const t=document.createElement('div');
-        t.className='b-col-section-title';
-        t.textContent=def.sec;
-        col.appendChild(t);
-      }
-      col.appendChild(makeAttrBox(def));
+      const box = document.createElement('div');
+      box.className='b-attr-box'; box.id='attr-'+def.id;
+      const pipsHtml = Array.from({length:10},(_,i)=>
+        `<div class="b-pip" id="pip-${def.id}-${i+1}" onclick="bPipClick('${def.id}',${i+1})"></div>`
+      ).join('');
+      box.innerHTML=`
+        <div class="b-attr-label">
+          <span>${def.label}</span>
+          <span class="b-attr-val" id="val-${def.id}">5</span>
+        </div>
+        <div class="b-pips">${pipsHtml}</div>`;
+      attrsDiv.appendChild(box);
     });
-    if(addTierRef) col.appendChild(makeTierRef());
-  }
-
-  fillCol('b-col-left',  B_LEFT,  false);
-  fillCol('b-col-right', B_RIGHT, true);
+    sec.appendChild(attrsDiv);
+    grid.appendChild(sec);
+  });
   bRefreshAll();
 }
 
 function bPipClick(featId, v){
   const cur = bVals[featId];
-  const nv  = (v===cur) ? Math.max(1,v-1) : v;
+  const nv = (v===cur) ? Math.max(1,v-1) : v;
   const delta = nv - cur;
   if(bMode2==='compete' && bTotalPts()+delta > bBudget()){
-    bFlashPip(featId, nv);   // flash to target then bounce back
-    bFlashBudget();
-    return;
+    bFlashBudget(); return;
   }
   bVals[featId]=nv;
   bUpdateBox(featId);
   bUpdateBudget();
 }
 
-function bFlashPip(featId, targetVal){
-  // Briefly show target value then bounce back to current
-  const cur = bVals[featId];
-  const elite = targetVal >= 8;
-  const flashColor = elite ? 'var(--crimson-2)' : 'var(--champagne)';
-  for(let i=1;i<=10;i++){
-    const pip=document.getElementById(`pip-${featId}-${i}`);
-    if(!pip) continue;
-    pip.style.background = i<=targetVal ? flashColor : 'var(--border)';
-    pip.style.boxShadow  = (i<=targetVal&&elite) ? '0 0 4px rgba(194,48,48,0.5)' : 'none';
-  }
-  const valEl=document.getElementById('val-'+featId);
-  if(valEl){ valEl.textContent=targetVal; valEl.style.color=flashColor; }
-  setTimeout(()=>bUpdateBox(featId), 220);
-}
-
 function bUpdateBox(featId){
-  const val   = bVals[featId];
-  const elite = val >= 8;
-  const fillColor = elite ? 'var(--crimson-2)' : 'var(--champagne)';
-  const glowColor = elite ? 'rgba(194,48,48,0.45)' : 'rgba(201,169,110,0.3)';
+  const val = bVals[featId];
+  const def = B_DEFS.find(d=>d.id===featId);
+  const ci  = B_CATS[def.cat];
+  const elite = val>=8;
+  const fillColor = elite ? ci.bright : ci.dim;
   for(let i=1;i<=10;i++){
     const pip=document.getElementById(`pip-${featId}-${i}`);
     if(!pip) continue;
     pip.style.background = i<=val ? fillColor : 'var(--border)';
-    pip.style.boxShadow  = (i<=val&&elite) ? `0 0 3px ${glowColor}` : 'none';
+    pip.style.boxShadow  = (i<=val&&elite) ? `0 0 4px ${ci.bright}60` : 'none';
   }
   const valEl=document.getElementById('val-'+featId);
-  if(valEl){
-    valEl.textContent=val;
-    valEl.style.color = elite ? 'var(--crimson-2)' : 'var(--champagne-2)';
-  }
+  if(valEl){ valEl.textContent=val; valEl.style.color=elite?ci.bright:'var(--text-md)'; }
   const box=document.getElementById('attr-'+featId);
-  if(box) box.style.borderColor = elite ? 'rgba(194,48,48,0.35)' : 'var(--border)';
+  if(box) box.style.borderColor=elite?ci.bright+'50':'var(--border)';
 }
 
 function bRefreshAll(){ B_DEFS.forEach(d=>bUpdateBox(d.id)); bUpdateBudget(); }
@@ -2007,16 +1922,7 @@ function bUpdateBudget(){
   const used=bTotalPts(), budget=bBudget(), rem=budget-used;
   const el=document.getElementById('b-budget-rem');
   const btn=document.getElementById('b-find-btn');
-  if(el){
-    el.textContent=rem;
-    el.classList.toggle('over',rem<0);
-    if(rem===0){
-      el.classList.remove('pulse-zero');
-      void el.offsetWidth;
-      el.classList.add('pulse-zero');
-      setTimeout(()=>el.classList.remove('pulse-zero'),350);
-    }
-  }
+  if(el){ el.textContent=rem; el.classList.toggle('over',rem<0); }
   if(btn) btn.disabled=(rem<0);
 }
 
@@ -2024,7 +1930,7 @@ function bFlashBudget(){
   const el=document.getElementById('b-budget-rem');
   if(!el) return;
   el.classList.remove('flash');
-  void el.offsetWidth;
+  void el.offsetWidth; // reflow
   el.classList.add('flash');
   setTimeout(()=>el.classList.remove('flash'),500);
 }
@@ -2058,27 +1964,36 @@ function bSetDiff(diff){
 
 async function bFind(){
   const btn=document.getElementById('b-find-btn');
-  if(btn){ btn.textContent='SEARCHING...'; btn.disabled=true; }
+  btn.textContent='SEARCHING...'; btn.disabled=true;
   try{
-    const res=await fetch(API_BASE+'/api/nearest',{
+    const res=await fetch(API_BASE+'/api/nearest?k=5',{
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify(bVals),
     });
     const data=await res.json();
-    bRenderResults(data.your_fighter, data.notable||[]);
+    bRenderResults(data.matches||[]);
   }catch(e){ console.error(e); }
   finally{
-    if(btn){ btn.textContent='FIND MY FIGHTER'; btn.disabled=(bMode2==='compete'&&bTotalPts()>bBudget()); }
+    btn.textContent='FIND MY FIGHTER';
+    btn.disabled=(bMode2==='compete'&&bTotalPts()>bBudget());
   }
 }
 
-function bRenderResults(yourFighter, notable){
+function bRenderResults(matches){
   const emptyEl  = document.getElementById('b-empty');
   const resultsEl= document.getElementById('b-results');
   const submitEl = document.getElementById('b-submit');
   emptyEl.style.display='none';
   resultsEl.innerHTML='';
   resultsEl.classList.add('show');
+
+  const notable=matches.filter(m=>!['D+','D','E'].includes(m.tier_label));
+  const toShow =notable.length ? notable.slice(0,3) : matches.slice(0,1);
+
+  if(!toShow.length){
+    resultsEl.innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-xlo);text-align:center;padding:20px 0">No notable match found.</div>`;
+    return;
+  }
 
   const DISP=[
     {id:'pct_striking_power', label:'KO Power'},
@@ -2088,19 +2003,17 @@ function bRenderResults(yourFighter, notable){
     {id:'pct_submission',     label:'Submission'},
   ];
 
-  function makeCard(m){
-    const ts   = B_TIER_STYLE[m.tier_label]||B_TIER_STYLE['E'];
-    const wr   = m.win_rate!=null ? Math.round(m.win_rate*100)+'%' : '—';
-    const rk   = m.best_rank!=null ? '#'+Math.round(m.best_rank) : 'unranked';
-    // score line: gold only for champion tiers
-    const scoreColor = ts.gold ? ts.color : 'var(--text-lo)';
-    const bars = DISP.map(f=>{
-      const mv = m.pct ? ((m.pct[f.id]||5)-1)/9*100 : 50;
-      const pv = ((bVals[f.id]||5)-1)/9*100;
+  toShow.forEach(m=>{
+    const ts=B_TIER_STYLE[m.tier_label]||B_TIER_STYLE['E'];
+    const wr=m.win_rate!=null?Math.round(m.win_rate*100)+'%':'—';
+    const rk=m.best_rank!=null?'#'+Math.round(m.best_rank):'unranked';
+    const bars=DISP.map(f=>{
+      const mv=m.pct?((m.pct[f.id]||5)-1)/9*100:50;
+      const pv=(bVals[f.id]||5-1)/9*100;
       return `<div class="b-res-bar-row">
         <span class="b-res-bar-label">${f.label}</span>
         <div class="b-res-bar-track">
-          <div class="b-res-bar-fill" style="width:${mv}%"></div>
+          <div class="b-res-bar-fill" style="width:${mv}%;background:${ts.color}"></div>
           <div class="b-res-bar-you" style="left:calc(${pv}% - 1px)"></div>
         </div>
       </div>`;
@@ -2115,42 +2028,17 @@ function bRenderResults(yourFighter, notable){
         </div>
         <div class="b-tier-badge" style="color:${ts.color};background:${ts.bg};border-color:${ts.border}">${m.tier_label}</div>
       </div>
-      <div class="b-res-score" style="color:${scoreColor}">
+      <div class="b-res-score" style="color:${ts.color}">
         Strength ${m.tier_score}/100 · Win ${wr} · ${rk}
       </div>
       <div class="b-res-bars">${bars}</div>`;
-    return card;
-  }
-
-  // ── Section 1: YOUR FIGHTER ──
-  const yourLabel=document.createElement('div');
-  yourLabel.className='b-section-label your-label';
-  yourLabel.textContent='Your Fighter';
-  resultsEl.appendChild(yourLabel);
-  if(yourFighter){
-    const card=makeCard(yourFighter);
-    card.classList.add('your-card');
     resultsEl.appendChild(card);
-  }
+  });
 
-  // ── Section 2: CLOSEST NOTABLE ──
-  if(notable && notable.length){
-    const notableLabel=document.createElement('div');
-    notableLabel.className='b-section-label';
-    notableLabel.style.marginTop='4px';
-    notableLabel.textContent='Closest Notable';
-    resultsEl.appendChild(notableLabel);
-    notable.forEach(m=>resultsEl.appendChild(makeCard(m)));
-  }
-
-  // Compete: submit uses notable[0] tier (the goal), or yourFighter if no notable
-  if(bMode2==='compete' && submitEl){
-    const ref = (notable&&notable.length) ? notable[0] : yourFighter;
-    if(ref){
-      submitEl.classList.add('show');
-      submitEl.dataset.nearest = ref.name;
-      submitEl.dataset.score   = ref.tier_score;
-    }
+  if(bMode2==='compete'&&submitEl){
+    submitEl.classList.add('show');
+    submitEl.dataset.nearest=toShow[0].name;
+    submitEl.dataset.score=toShow[0].tier_score;
   }
 }
 
