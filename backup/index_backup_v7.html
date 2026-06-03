@@ -6,7 +6,6 @@
 <title>UFC Fighter Universe</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@400;500&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 /* ═══════════════════════════════════════════════════════
    UFC FIGHTER UNIVERSE v7 — Luxury Data Laboratory
@@ -393,225 +392,8 @@ body {
   background: var(--obsidian);
   z-index: 5;
   flex-direction: column;
-  overflow: hidden;
 }
 #vs-mode.active { display: flex; }
-
-/* VS pickers row */
-#vs-pickers {
-  display: grid;
-  grid-template-columns: 1fr 52px 1fr;
-  align-items: center;
-  padding: 14px 24px 10px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  gap: 10px;
-  background: var(--surface);
-}
-
-.vs-picker {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 12px 16px;
-  cursor: pointer;
-  position: relative;
-  transition: border-color 0.18s, background 0.18s;
-  min-height: 66px;
-}
-.vs-picker:hover { border-color: var(--border-2); background: var(--surface-3); }
-.vs-picker.filled-red  { border-color: var(--crimson);   background: linear-gradient(135deg, rgba(140,31,31,0.12), var(--surface-2)); }
-.vs-picker.filled-blue { border-color: var(--cobalt-2);  background: linear-gradient(135deg, rgba(26,58,110,0.18), var(--surface-2)); }
-
-.vs-picker-label {
-  font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text-xlo);
-  text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 5px;
-}
-.vs-picker.filled-red  .vs-picker-label { color: rgba(194,48,48,0.5); }
-.vs-picker.filled-blue .vs-picker-label { color: rgba(43,95,179,0.5); }
-
-.vs-picker-name {
-  font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700;
-  color: var(--text-lo); letter-spacing: 0.04em; text-transform: uppercase;
-  transition: color 0.18s; line-height: 1.1;
-}
-.vs-picker.filled .vs-picker-name { color: var(--text-hi); }
-
-.vs-picker-wc {
-  font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-lo);
-  margin-top: 3px; letter-spacing: 0.04em;
-}
-.vs-picker.filled-red  .vs-picker-wc { color: rgba(194,48,48,0.5); }
-.vs-picker.filled-blue .vs-picker-wc { color: rgba(43,95,179,0.5); }
-
-.vs-divider {
-  text-align: center; font-family: 'Cormorant Garamond', serif;
-  font-size: 20px; font-weight: 500; color: var(--text-xlo); letter-spacing: 0.1em;
-}
-
-/* VS search dropdown */
-.vs-search-wrap { position: absolute; top: 100%; left: 0; right: 0; z-index: 300; display: none; margin-top: 3px; }
-.vs-search-wrap.open { display: block; }
-.vs-search-input {
-  width: 100%; background: var(--surface-2); border: 1px solid var(--border-2);
-  color: var(--text-hi); padding: 9px 14px; font-family: 'Barlow', sans-serif;
-  font-size: 12px; outline: none; border-radius: 3px 3px 0 0; border-bottom: none;
-}
-.vs-search-input::placeholder { color: var(--text-lo); }
-.vs-ac {
-  background: var(--surface-2); border: 1px solid var(--border-2); border-top: none;
-  border-radius: 0 0 3px 3px; max-height: 240px; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-}
-.vs-ac-item {
-  padding: 8px 14px; font-family: 'Barlow', sans-serif; font-size: 12px; cursor: pointer;
-  display: flex; justify-content: space-between; align-items: center;
-  color: var(--text-md); transition: background 0.1s;
-}
-.vs-ac-item:hover { background: var(--surface-3); color: var(--text-hi); }
-.vs-ac-wc { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-lo); }
-
-/* VS body — full page grid */
-#vs-body {
-  flex: 1; overflow-y: auto; overflow-x: hidden;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto auto;
-  gap: 0;
-  align-items: start;
-}
-
-/* Empty state */
-#vs-empty {
-  grid-column: 1 / -1;
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 14px; padding: 80px 40px;
-}
-#vs-empty .vs-empty-icon { font-size: 36px; opacity: 0.08; }
-#vs-empty p {
-  font-family: 'DM Mono', monospace; font-size: 10px;
-  color: var(--text-xlo); text-align: center; line-height: 1.8; letter-spacing: 0.04em;
-}
-
-/* Matchup grid */
-#vs-matchup { display: none; grid-column: 1 / -1; }
-#vs-matchup.visible { display: contents; }
-
-/* Left col: radar */
-#vs-radar-col {
-  padding: 20px 16px 20px 24px;
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-
-/* Right col: fight shape + win prob */
-#vs-analysis-col {
-  padding: 20px 24px 20px 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-/* Bottom row: finish prob + similar fights */
-#vs-bottom-left {
-  padding: 18px 16px 18px 24px;
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-#vs-bottom-right {
-  padding: 18px 24px 18px 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-/* SHAP row: full width */
-#vs-shap-row {
-  grid-column: 1 / -1;
-  padding: 16px 24px 20px;
-  border-bottom: 1px solid var(--border);
-}
-
-/* Random btn row */
-#vs-footer-row {
-  grid-column: 1 / -1;
-  padding: 12px 24px 16px;
-  display: flex; gap: 10px;
-}
-
-/* Fight Shape */
-.fight-shape-title {
-  font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text-lo);
-  text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 6px;
-}
-.fight-shape-verdict {
-  font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700;
-  letter-spacing: 0.06em; text-transform: uppercase; line-height: 1; margin-bottom: 6px;
-}
-.fight-shape-sub { font-size: 11px; color: var(--text-lo); line-height: 1.55; font-family: 'Barlow', sans-serif; }
-
-/* Finish odds */
-.fo-title {
-  font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text-lo);
-  text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 12px;
-}
-.fo-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
-.fo-label { font-family: 'Barlow', sans-serif; font-size: 10px; color: var(--text-lo); width: 86px; flex-shrink: 0; }
-.fo-track { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.fo-fill { height: 100%; border-radius: 2px; transition: width 1s cubic-bezier(.4,0,.2,1); }
-.fo-fill.ko  { background: var(--crimson-2); }
-.fo-fill.sub { background: #6b3fa0; }
-.fo-fill.dec { background: var(--cobalt-2); }
-.fo-pct { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-lo); width: 34px; text-align: right; }
-
-/* Similar matchups */
-.sm-title {
-  font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text-lo);
-  text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 10px;
-}
-.sm-fight {
-  background: var(--surface-2); border: 1px solid var(--border); border-radius: 3px;
-  padding: 9px 12px; margin-bottom: 5px; cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-}
-.sm-fight:hover { border-color: var(--border-2); background: var(--surface-3); }
-.sm-names { color: var(--text-md); display: flex; gap: 6px; align-items: center; font-family: 'Barlow', sans-serif; font-size: 11px; }
-.sm-vs    { color: var(--text-xlo); font-family: 'DM Mono', monospace; font-size: 8px; }
-.sm-dist  { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-lo); margin-top: 3px; }
-.sm-winner { font-family: 'DM Mono', monospace; font-size: 8px; color: var(--champagne-2); margin-top: 2px; }
-
-/* Random button */
-#vs-random-btn {
-  flex: 1; padding: 9px 14px; border-radius: 3px; background: transparent;
-  border: 1px solid var(--border); color: var(--text-lo); font-family: 'DM Mono', monospace;
-  font-size: 9px; cursor: pointer; text-align: center; letter-spacing: 0.14em;
-  text-transform: uppercase; transition: all 0.18s;
-}
-#vs-random-btn:hover { border-color: var(--champagne-dim); color: var(--champagne-2); background: rgba(201,169,110,0.04); }
-
-/* Section label reuse */
-.vs-section-label {
-  font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text-lo);
-  text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 10px;
-}
-
-/* Animations */
-@keyframes slideUp {
-  from { opacity:0; transform:translateY(8px); }
-  to   { opacity:1; transform:none; }
-}
-.animate-in { animation: slideUp 0.35s cubic-bezier(.4,0,.2,1) both; }
-.animate-in:nth-child(1) { animation-delay: 0s; }
-.animate-in:nth-child(2) { animation-delay: 0.04s; }
-.animate-in:nth-child(3) { animation-delay: 0.08s; }
-.animate-in:nth-child(4) { animation-delay: 0.12s; }
-.animate-in:nth-child(5) { animation-delay: 0.16s; }
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 2px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 1px; }
-
-/* Plotly bg overrides via CSS vars */
-.js-plotly-plot { background: transparent !important; }
-
-/* ─── 3-button mode toggle ─── */
-.mode-btn:not(:first-child):not(:last-child){ border-right:none; border-radius:0; }
 
 /* VS pickers row */
 #vs-pickers {
@@ -738,6 +520,305 @@ body {
 }
 .vs-ac-item:hover { background: var(--surface-3); color: var(--text-hi); }
 .vs-ac-wc { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-lo); }
+
+/* VS body */
+#vs-body { display: flex; flex: 1; overflow: hidden; }
+#vs-plot { flex: 1; min-width: 0; }
+
+/* VS analysis panel */
+#vs-panel {
+  width: 336px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* VS: empty state */
+#vs-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 40px;
+}
+
+#vs-empty .vs-empty-icon {
+  font-size: 36px;
+  opacity: 0.08;
+}
+
+#vs-empty p {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text-xlo);
+  text-align: center;
+  line-height: 1.8;
+  letter-spacing: 0.04em;
+}
+
+/* VS: matchup card */
+#vs-matchup { display: none; flex-direction: column; }
+#vs-matchup.visible { display: flex; }
+
+/* Fight Shape */
+#fight-shape-banner {
+  padding: 18px 18px 0;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+  margin-bottom: 0;
+}
+
+.fight-shape-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  color: var(--text-lo);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin-bottom: 6px;
+}
+
+.fight-shape-verdict {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.fight-shape-sub {
+  font-size: 11px;
+  color: var(--text-lo);
+  line-height: 1.55;
+  font-family: 'Barlow', sans-serif;
+}
+
+/* Style distance */
+#style-distance-wrap {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sd-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  color: var(--text-lo);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin-bottom: 8px;
+}
+
+.sd-track {
+  height: 2px;
+  background: var(--border);
+  border-radius: 1px;
+  overflow: hidden;
+  position: relative;
+}
+
+.sd-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 1s cubic-bezier(.4,0,.2,1);
+  background: linear-gradient(90deg, var(--cobalt-2), var(--crimson-2));
+}
+
+.sd-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  color: var(--text-xlo);
+}
+
+.sd-value {
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-md);
+  margin-top: 6px;
+  letter-spacing: 0.04em;
+}
+
+/* Stat compare */
+#stat-compare {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sc-row {
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 9px;
+}
+
+.sc-bar-wrap { height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
+.sc-bar-red { height: 2px; border-radius: 1px; background: var(--crimson-2); transition: width 0.8s cubic-bezier(.4,0,.2,1); margin-left: auto; }
+.sc-bar-blue { height: 2px; border-radius: 1px; background: var(--cobalt-2); transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+.sc-label { font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text-lo); text-align: center; letter-spacing: 0.06em; }
+.sc-val-red { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--crimson-2); text-align: right; }
+.sc-val-blue { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--cobalt-2); }
+.sc-val-red.winner { color: var(--crimson-2); font-weight: 500; }
+.sc-val-blue.winner { color: var(--cobalt-2); font-weight: 500; }
+
+/* Finish odds */
+#finish-odds {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.fo-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  color: var(--text-lo);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin-bottom: 12px;
+}
+
+.fo-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.fo-label { font-family: 'Barlow', sans-serif; font-size: 10px; color: var(--text-lo); width: 86px; flex-shrink: 0; }
+.fo-track { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.fo-fill { height: 100%; border-radius: 2px; transition: width 1s cubic-bezier(.4,0,.2,1); }
+.fo-fill.ko { background: var(--crimson-2); }
+.fo-fill.sub { background: #6b3fa0; }
+.fo-fill.dec { background: var(--cobalt-2); }
+.fo-pct { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-lo); width: 34px; text-align: right; }
+
+/* Similar matchups */
+#similar-matchup {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sm-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  color: var(--text-lo);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin-bottom: 10px;
+}
+
+.sm-fight {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 9px 12px;
+  margin-bottom: 5px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.sm-fight:hover { border-color: var(--border-2); background: var(--surface-3); }
+.sm-names { color: var(--text-md); display: flex; gap: 6px; align-items: center; font-family: 'Barlow', sans-serif; }
+.sm-vs { color: var(--text-xlo); font-family: 'DM Mono', monospace; font-size: 8px; }
+.sm-dist { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-lo); margin-top: 3px; }
+
+/* Chaos factor */
+#chaos-factor {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cf-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  color: var(--text-lo);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin-bottom: 10px;
+}
+
+.cf-meter-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.cf-meter-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.cf-meter-fill { height: 100%; border-radius: 2px; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
+
+.cf-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 16px;
+  font-weight: 500;
+  width: 40px;
+  text-align: right;
+  color: var(--text-md);
+}
+
+.cf-desc { font-family: 'Barlow', sans-serif; font-size: 10px; color: var(--text-lo); line-height: 1.55; }
+
+/* Verdict badge */
+#verdict-badge {
+  margin: 0 18px 14px;
+  padding: 12px 14px;
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 1.6;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  font-family: 'Barlow', sans-serif;
+  color: var(--text-lo);
+}
+
+/* Random button */
+#vs-random-btn {
+  margin: 0 18px 18px;
+  padding: 9px 14px;
+  border-radius: 3px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-lo);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  cursor: pointer;
+  text-align: center;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: all 0.18s;
+}
+#vs-random-btn:hover {
+  border-color: var(--champagne-dim);
+  color: var(--champagne-2);
+  background: rgba(201,169,110,0.04);
+}
+
+/* Tier legend */
+#tier-legend {
+  margin-top: 16px;
+  padding-top: 12px;
+}
+
+/* Animations */
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:none; }
+}
+.animate-in { animation: slideUp 0.35s cubic-bezier(.4,0,.2,1) both; }
+.animate-in:nth-child(1) { animation-delay: 0s; }
+.animate-in:nth-child(2) { animation-delay: 0.04s; }
+.animate-in:nth-child(3) { animation-delay: 0.08s; }
+.animate-in:nth-child(4) { animation-delay: 0.12s; }
+.animate-in:nth-child(5) { animation-delay: 0.16s; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 2px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 1px; }
+
+/* Plotly bg overrides via CSS vars */
+.js-plotly-plot { background: transparent !important; }
+
+/* ─── 3-button mode toggle ─── */
+.mode-btn:not(:first-child):not(:last-child){ border-right:none; border-radius:0; }
 
 /* ─── FIGHTER BUILDER ─── */
 #builder-mode{
@@ -1026,94 +1107,79 @@ body {
       </div>
     </div>
 
-    <!-- Body: full-page grid -->
+    <!-- Body: 3D plot + analysis -->
     <div id="vs-body">
+      <div id="vs-plot"></div>
 
-      <!-- Empty state -->
-      <div id="vs-empty">
-        <div class="vs-empty-icon">⚔</div>
-        <p>Select two fighters to generate<br>their style matchup analysis</p>
-        <div id="vs-random-btn" onclick="loadRandomMatchup()">⚡ RANDOM MATCHUP</div>
-      </div>
-
-      <!-- Matchup grid -->
-      <div id="vs-matchup">
-
-        <!-- TOP LEFT: Radar -->
-        <div id="vs-radar-col">
-          <div class="vs-section-label">Style Comparison</div>
-          <div id="vs-crosswc-warn" style="display:none;margin-bottom:10px;padding:7px 10px;border-radius:3px;background:rgba(180,120,0,0.08);border:1px solid rgba(180,120,0,0.25);font-size:9px;font-family:'DM Mono',monospace;color:#a07830;letter-spacing:0.05em;">
-            ⚠ Cross-weight class — absolute height & reach used (not p4p adjusted)
-          </div>
-          <canvas id="vs-radar"></canvas>
+      <div id="vs-panel">
+        <!-- Empty state -->
+        <div id="vs-empty">
+          <div class="vs-empty-icon">⚔</div>
+          <p>Select two fighters to generate<br>their style matchup analysis</p>
+          <div id="vs-random-btn" onclick="loadRandomMatchup()">⚡ RANDOM MATCHUP</div>
         </div>
 
-        <!-- TOP RIGHT: Fight shape + Win prob -->
-        <div id="vs-analysis-col">
-          <div style="margin-bottom:18px">
-            <div class="fight-shape-title">Fight Shape</div>
+        <!-- Matchup analysis (hidden until both selected) -->
+        <div id="vs-matchup">
+          <div id="fight-shape-banner">
+            <div class="fight-shape-title">Fight Shape Prediction</div>
             <div class="fight-shape-verdict" id="fight-shape-verdict">—</div>
             <div class="fight-shape-sub" id="fight-shape-sub"></div>
           </div>
-          <div>
-            <div class="vs-section-label">Win Probability <span id="vs-ml-loading" style="font-size:8px;color:#333;font-family:'DM Mono',monospace"></span></div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-              <span id="vs-prob-red-pct"  style="font-size:26px;font-weight:700;color:#c23030;font-family:'Barlow Condensed',sans-serif">—</span>
-              <span id="vs-prob-blue-pct" style="font-size:26px;font-weight:700;color:#2b5fb3;font-family:'Barlow Condensed',sans-serif">—</span>
+
+          <div id="style-distance-wrap" style="margin-top:16px">
+            <div class="sd-label">Style Distance</div>
+            <div class="sd-track"><div class="sd-fill" id="sd-fill" style="width:0%"></div></div>
+            <div class="sd-labels"><span>Identical</span><span>Polar Opposites</span></div>
+            <div class="sd-value" id="sd-value">—</div>
+          </div>
+
+          <div id="stat-compare" style="margin-top:4px">
+            <div class="panel-title" style="margin-bottom:10px">Style Breakdown</div>
+            <div id="sc-rows"></div>
+          </div>
+
+          <div id="finish-odds">
+            <div class="fo-title">Finish Probability</div>
+            <div class="fo-row">
+              <span class="fo-label">KO / TKO</span>
+              <div class="fo-track"><div class="fo-fill ko" id="fo-ko" style="width:0%"></div></div>
+              <span class="fo-pct" id="fo-ko-val">—</span>
             </div>
-            <div style="height:6px;background:var(--surface-3);border-radius:3px;overflow:hidden;position:relative;margin-bottom:5px">
-              <div id="vs-prob-bar-red"  style="position:absolute;left:0;top:0;height:100%;width:50%;background:#8c1f1f;transition:width 0.6s ease"></div>
-              <div id="vs-prob-bar-blue" style="position:absolute;right:0;top:0;height:100%;width:50%;background:#1a3a6e;transition:width 0.6s ease"></div>
+            <div class="fo-row">
+              <span class="fo-label">Submission</span>
+              <div class="fo-track"><div class="fo-fill sub" id="fo-sub" style="width:0%"></div></div>
+              <span class="fo-pct" id="fo-sub-val">—</span>
             </div>
-            <div style="display:flex;justify-content:space-between">
-              <span id="vs-prob-red-name"  style="font-size:9px;color:rgba(194,48,48,0.6);font-family:'DM Mono',monospace">—</span>
-              <span id="vs-prob-blue-name" style="font-size:9px;color:rgba(43,95,179,0.6);font-family:'DM Mono',monospace">—</span>
+            <div class="fo-row">
+              <span class="fo-label">Decision</span>
+              <div class="fo-track"><div class="fo-fill dec" id="fo-dec" style="width:0%"></div></div>
+              <span class="fo-pct" id="fo-dec-val">—</span>
             </div>
           </div>
-        </div>
 
-        <!-- BOTTOM LEFT: Finish probability -->
-        <div id="vs-bottom-left">
-          <div class="fo-title">Finish Probability</div>
-          <div class="fo-row">
-            <span class="fo-label">KO / TKO</span>
-            <div class="fo-track"><div class="fo-fill ko" id="fo-ko" style="width:0%"></div></div>
-            <span class="fo-pct" id="fo-ko-val">—</span>
+          <div id="chaos-factor">
+            <div class="cf-title">Chaos Factor</div>
+            <div class="cf-meter-wrap">
+              <div class="cf-meter-track"><div class="cf-meter-fill" id="cf-fill" style="width:0%"></div></div>
+              <div class="cf-value" id="cf-val">—</div>
+            </div>
+            <div class="cf-desc" id="cf-desc"></div>
           </div>
-          <div class="fo-row">
-            <span class="fo-label">Submission</span>
-            <div class="fo-track"><div class="fo-fill sub" id="fo-sub" style="width:0%"></div></div>
-            <span class="fo-pct" id="fo-sub-val">—</span>
+
+          <div id="similar-matchup">
+            <div class="sm-title">Most Similar Past Matchups</div>
+            <div id="sm-list"></div>
           </div>
-          <div class="fo-row">
-            <span class="fo-label">Decision</span>
-            <div class="fo-track"><div class="fo-fill dec" id="fo-dec" style="width:0%"></div></div>
-            <span class="fo-pct" id="fo-dec-val">—</span>
-          </div>
+
+          <div id="verdict-badge"></div>
+          <div id="vs-random-btn-bottom" style="margin:0 20px 20px;padding:10px;border-radius:8px;background:transparent;border:1px solid #1f1f2c;color:#4a4858;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;text-align:center;letter-spacing:1px;" onclick="loadRandomMatchup()">⚡ NEW RANDOM MATCHUP</div>
         </div>
+      </div>
+    </div>
+  </div>
 
-        <!-- BOTTOM RIGHT: Similar fights -->
-        <div id="vs-bottom-right">
-          <div class="sm-title">Most Similar Past Matchups</div>
-          <div id="sm-list"></div>
-        </div>
-
-        <!-- SHAP row: full width -->
-        <div id="vs-shap-row">
-          <div class="vs-section-label">Why This Prediction? <span style="color:#333;font-size:7px;text-transform:none">XGBoost · AUC 0.62 · UFC 2013–2026 · absolute height & reach</span></div>
-          <div id="vs-shap-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px 24px"></div>
-        </div>
-
-        <!-- Footer -->
-        <div id="vs-footer-row">
-          <div id="vs-random-btn-bottom" style="flex:1;padding:9px 14px;border-radius:3px;background:transparent;border:1px solid var(--border);color:#4a4858;font-size:9px;font-family:'DM Mono',monospace;cursor:pointer;text-align:center;letter-spacing:0.14em;text-transform:uppercase;" onclick="loadRandomMatchup()">⚡ NEW RANDOM MATCHUP</div>
-        </div>
-
-      </div><!-- end #vs-matchup -->
-    </div><!-- end #vs-body -->
-  </div><!-- end #vs-mode -->
-
-    <!-- BUILD YOUR FIGHTER OVERLAY -->
+  <!-- BUILD YOUR FIGHTER OVERLAY -->
   <div id="builder-mode">
     <div id="builder-left">
       <div id="builder-topbar">
@@ -1476,6 +1542,8 @@ function selectVsFighter(side, name){
   // Close search
   document.getElementById(`vs-search-${side}`).classList.remove('open');
   activePickerSide=null;
+  // Update plot
+  updateVsPlot();
   // Run analysis if both set
   if(vsRed && vsBlue) runVsAnalysis();
 }
@@ -1548,37 +1616,25 @@ function getChaos(r,b,styleDist){
   return{value:chaos,desc,color};
 }
 
-function getSimilarMatchups(r, b) {
-  const results = [];
-  const checked = new Set();
-  // Build a lookup of actual fight results from fighters data
-  // We use similar[] which contains fighters who actually fought each other
-  FIGHTERS.forEach(f => {
-    if (!f.similar || f === r || f === b) return;
-    f.similar.forEach(simName => {
-      const key = [f.name, simName].sort().join('|||');
-      if (checked.has(key)) return;
+function getSimilarMatchups(r,b){
+  // Find pairs where both fighters in each fight have similar style vectors to our pair
+  const results=[];
+  const checked=new Set();
+  FIGHTERS.forEach(f=>{
+    if(!f.similar||f===r||f===b) return;
+    f.similar.forEach(simName=>{
+      const key=[f.name,simName].sort().join('|||');
+      if(checked.has(key)) return;
       checked.add(key);
-      const g = nameToFighter[simName];
-      if (!g) return;
-      // Skip if either fighter in the historical match is same as our query fighters
-      if (f.name === r.name || f.name === b.name) return;
-      if (g.name === r.name || g.name === b.name) return;
-      // Score: style similarity to our matchup
-      const d1 = dist3d(r, f) + dist3d(b, g);
-      const d2 = dist3d(r, g) + dist3d(b, f);
-      const bestD = Math.min(d1, d2);
-      const flip = d2 < d1;
-      if (bestD < 6) {
-        results.push({
-          a: flip ? g.name : f.name,
-          bName: flip ? f.name : g.name,
-          dist: bestD,
-        });
-      }
+      const g=nameToFighter[simName]; if(!g) return;
+      // Score: how similar is (f,g) pair to (r,b) pair in PCA space
+      const d1=dist3d(r,f)+dist3d(b,g);
+      const d2=dist3d(r,g)+dist3d(b,f);
+      const bestD=Math.min(d1,d2);
+      if(bestD<5) results.push({a:f.name,bName:g.name,dist:bestD});
     });
   });
-  return results.sort((a, b2) => a.dist - b2.dist).slice(0, 3);
+  return results.sort((a,b2)=>a.dist-b2.dist).slice(0,3);
 }
 
 function getVerdict(r,b,probs,chaos,styleDist){
@@ -1600,216 +1656,113 @@ function getVerdict(r,b,probs,chaos,styleDist){
   return msgs.join(' ');
 }
 
-// ── Radar chart ──
-let vsRadarChart = null;
-
-function buildRadar(r, b) {
-  const labels = ['Striking', 'Str Defense', 'Takedown', 'TD Defense', 'Control', 'Submission'];
-  // Map fighter JSON fields to 0-10 scale
-  function toScale(val, max) { return Math.min(10, Math.round((val / max) * 10 * 10) / 10); }
-  const rData = [
-    toScale(r.sig_per_r || 0, 40),
-    toScale((r.ko_rate || 0) * 10 + 3, 10),  // proxy str_def not in fighters.json, use inverse ko_rate
-    toScale(r.td_per_r || 0, 5),
-    toScale(10 - (r.td_per_r || 0) * 1.5, 10),  // proxy td_def
-    toScale(r.ctrl_per_r || 0, 200),
-    toScale((r.sub_rate || 0) * 100, 50),
-  ];
-  const bData = [
-    toScale(b.sig_per_r || 0, 40),
-    toScale((b.ko_rate || 0) * 10 + 3, 10),
-    toScale(b.td_per_r || 0, 5),
-    toScale(10 - (b.td_per_r || 0) * 1.5, 10),
-    toScale(b.ctrl_per_r || 0, 200),
-    toScale((b.sub_rate || 0) * 100, 50),
-  ];
-
-  const ctx = document.getElementById('vs-radar').getContext('2d');
-  if (vsRadarChart) vsRadarChart.destroy();
-  vsRadarChart = new Chart(ctx, {
-    type: 'radar',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: r.name,
-          data: rData,
-          borderColor: '#c23030',
-          backgroundColor: 'rgba(194,48,48,0.12)',
-          borderWidth: 2,
-          pointBackgroundColor: '#c23030',
-          pointRadius: 3,
-        },
-        {
-          label: b.name,
-          data: bData,
-          borderColor: '#2b5fb3',
-          backgroundColor: 'rgba(43,95,179,0.12)',
-          borderWidth: 2,
-          pointBackgroundColor: '#2b5fb3',
-          pointRadius: 3,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      scales: {
-        r: {
-          min: 0, max: 10,
-          ticks: { display: false, stepSize: 2 },
-          grid: { color: 'rgba(255,255,255,0.06)' },
-          angleLines: { color: 'rgba(255,255,255,0.06)' },
-          pointLabels: {
-            color: '#6a6878',
-            font: { family: 'DM Mono', size: 9 },
-          },
-        },
-      },
-      plugins: {
-        legend: {
-          labels: {
-            color: '#9994a0',
-            font: { family: 'DM Mono', size: 9 },
-            boxWidth: 10,
-          },
-        },
-      },
-    },
-  });
-}
-
-// ── Feature explain toggle ──
-function toggleFeatExplain() {
-  const el = document.getElementById('vs-feat-explain');
-  const btn = document.getElementById('vs-feat-toggle');
-  const open = el.style.display === 'none';
-  el.style.display = open ? 'block' : 'none';
-  btn.textContent = open ? 'WHY THIS PREDICTION? ▴' : 'WHY THIS PREDICTION? ▾';
-}
-
-function renderShap(topFeatures) {
-  const el = document.getElementById('vs-shap-list');
-  if (!topFeatures || topFeatures.length === 0) {
-    el.innerHTML = '<div style="font-size:9px;color:#333;font-family:DM Mono,monospace">SHAP not available</div>';
-    return;
-  }
-  const maxAbs = Math.max(...topFeatures.map(f => Math.abs(f.shap)));
-  el.innerHTML = topFeatures.map(f => {
-    const pct = Math.round(Math.abs(f.shap) / maxAbs * 100);
-    const color = f.shap > 0 ? '#8c1f1f' : '#1a3a6e';
-    const dir = f.shap > 0 ? '▲ Red' : '▲ Blue';
-    const label = f.feature.replace('delta_', '').replace(/_/g, ' ');
-    return `<div style="margin-bottom:5px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:2px">
-        <span style="font-size:8.5px;color:#6a6878;font-family:'DM Mono',monospace">${label}</span>
-        <span style="font-size:8px;color:${color};font-family:'DM Mono',monospace">${dir}</span>
-      </div>
-      <div style="height:3px;background:var(--surface-3);border-radius:2px">
-        <div style="height:100%;width:${pct}%;background:${color};border-radius:2px"></div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function runVsAnalysis() {
-  if (!vsRed || !vsBlue) return;
-  const r = vsRed, b = vsBlue;
+function runVsAnalysis(){
+  if(!vsRed||!vsBlue) return;
+  const r=vsRed, b=vsBlue;
+  const styleDist=dist3d(r,b);
+  const probs=computeFinishProbs(r,b);
+  const shape=getFightShape(r,b,probs,styleDist);
+  const chaos=getChaos(r,b,styleDist);
+  const similar=getSimilarMatchups(r,b);
+  const verdict=getVerdict(r,b,probs,chaos,styleDist);
 
   // Show matchup panel
-  document.getElementById('vs-empty').style.display = 'none';
-  document.getElementById('vs-matchup').classList.add('visible');
+  document.getElementById('vs-empty').style.display='none';
+  const mm=document.getElementById('vs-matchup');
+  mm.classList.add('visible');
 
   // Fight shape
-  const styleDist = dist3d(r, b);
-  const probs = computeFinishProbs(r, b);
-  const shape = getFightShape(r, b, probs, styleDist);
-  const shapeEl = document.getElementById('fight-shape-verdict');
-  shapeEl.textContent = shape.verdict;
-  const colors = {
-    'EXPLOSIVE FIREFIGHT': '#c23030', 'STRIKING BATTLE': '#b07030',
-    'SUBMISSION HUNT': '#8a50b0', 'WAR OF ATTRITION': '#2b5fb3', 'UNPREDICTABLE': '#6a6a7a'
-  };
-  shapeEl.style.color = colors[shape.verdict] || '#fff';
-  document.getElementById('fight-shape-sub').textContent = shape.sub;
+  const shapeEl=document.getElementById('fight-shape-verdict');
+  shapeEl.textContent=shape.verdict;
+  // Color based on verdict
+  const colors={'EXPLOSIVE FIREFIGHT':'#c23030','STRIKING BATTLE':'#b07030',
+    'SUBMISSION HUNT':'#8a50b0','WAR OF ATTRITION':'#2b5fb3','UNPREDICTABLE':'#6a6a7a'};
+  shapeEl.style.color=colors[shape.verdict]||'#fff';
+  document.getElementById('fight-shape-sub').textContent=shape.sub;
 
-  // Radar
-  buildRadar(r, b);
+  // Style distance (max realistic ~10)
+  const distPct=Math.min(100,Math.round(styleDist/9*100));
+  setTimeout(()=>{
+    document.getElementById('sd-fill').style.width=distPct+'%';
+    document.getElementById('sd-value').textContent=styleDist.toFixed(2)+' units';
+  },100);
 
-  // ML prediction
-  document.getElementById('vs-ml-loading').textContent = 'loading...';
-  document.getElementById('vs-prob-red-name').textContent = r.name.split(' ').pop();
-  document.getElementById('vs-prob-blue-name').textContent = b.name.split(' ').pop();
-
-  try {
-    const res = await fetch(API_BASE + '/api/vs_predict', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ red: r.name, blue: b.name }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const rPct = Math.round(data.red_win_prob * 100);
-      const bPct = Math.round(data.blue_win_prob * 100);
-      document.getElementById('vs-prob-red-pct').textContent = rPct + '%';
-      document.getElementById('vs-prob-blue-pct').textContent = bPct + '%';
-      document.getElementById('vs-prob-bar-red').style.width = rPct + '%';
-      document.getElementById('vs-prob-bar-blue').style.width = bPct + '%';
-      document.getElementById('vs-ml-loading').textContent = '';
-      // Cross-wc warning
-      document.getElementById('vs-crosswc-warn').style.display = data.cross_wc ? 'block' : 'none';
-      // SHAP
-      renderShap(data.top_features);
-    } else {
-      document.getElementById('vs-ml-loading').textContent = 'unavailable';
-    }
-  } catch (e) {
-    document.getElementById('vs-ml-loading').textContent = 'unavailable';
-  }
+  // Stat comparison
+  const scRows=document.getElementById('sc-rows'); scRows.innerHTML='';
+  const stats=[
+    {label:'Strikes/Rnd',rVal:r.sig_per_r,bVal:b.sig_per_r,max:40},
+    {label:'TD/Rnd',rVal:r.td_per_r,bVal:b.td_per_r,max:4},
+    {label:'Ctrl Secs',rVal:r.ctrl_per_r,bVal:b.ctrl_per_r,max:200},
+    {label:'KO Rate',rVal:r.ko_rate*100,bVal:b.ko_rate*100,max:100},
+    {label:'Sub Rate',rVal:r.sub_rate*100,bVal:b.sub_rate*100,max:100},
+    {label:'Gas Tank',rVal:r.gas_tank*100,bVal:b.gas_tank*100,max:200},
+  ];
+  stats.forEach((s,i)=>{
+    const rW=Math.round(s.rVal/s.max*100), bW=Math.round(s.bVal/s.max*100);
+    const rWins=s.rVal>s.bVal, bWins=s.bVal>s.rVal;
+    const fmt=v=>s.label.includes('Rate')?Math.round(v)+'%':s.label==='Gas Tank'?(v/100).toFixed(2):v.toFixed(1);
+    const row=document.createElement('div');
+    row.className='sc-row animate-in';
+    row.style.animationDelay=(i*0.05)+'s';
+    row.innerHTML=`
+      <div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:3px">
+          <span class="sc-val-red ${rWins?'winner':''}" style="${rWins?'color:#c23030':''}">${fmt(s.rVal)}</span>
+        </div>
+        <div class="sc-bar-wrap"><div class="sc-bar-red" style="width:${rW}%"></div></div>
+      </div>
+      <div class="sc-label">${s.label}</div>
+      <div>
+        <div style="margin-bottom:3px">
+          <span class="sc-val-blue ${bWins?'winner':''}" style="${bWins?'color:#2b5fb3':''}">${fmt(s.bVal)}</span>
+        </div>
+        <div class="sc-bar-wrap"><div class="sc-bar-blue" style="width:${bW}%"></div></div>
+      </div>`;
+    scRows.appendChild(row);
+  });
 
   // Finish probabilities
-  setTimeout(() => {
-    document.getElementById('fo-ko').style.width = probs.ko + '%';
-    document.getElementById('fo-sub').style.width = probs.sub + '%';
-    document.getElementById('fo-dec').style.width = probs.dec + '%';
-    document.getElementById('fo-ko-val').textContent = probs.ko + '%';
-    document.getElementById('fo-sub-val').textContent = probs.sub + '%';
-    document.getElementById('fo-dec-val').textContent = probs.dec + '%';
-  }, 200);
+  setTimeout(()=>{
+    document.getElementById('fo-ko').style.width=probs.ko+'%';
+    document.getElementById('fo-sub').style.width=probs.sub+'%';
+    document.getElementById('fo-dec').style.width=probs.dec+'%';
+    document.getElementById('fo-ko-val').textContent=probs.ko+'%';
+    document.getElementById('fo-sub-val').textContent=probs.sub+'%';
+    document.getElementById('fo-dec-val').textContent=probs.dec+'%';
+  },200);
+
+  // Chaos factor
+  setTimeout(()=>{
+    document.getElementById('cf-fill').style.width=chaos.value+'%';
+    document.getElementById('cf-fill').style.background=chaos.color;
+    document.getElementById('cf-val').textContent=chaos.value;
+    document.getElementById('cf-val').style.color=chaos.value>=60?'#c23030':chaos.value>=40?'#c07030':'#888';
+    document.getElementById('cf-desc').textContent=chaos.desc;
+  },300);
 
   // Similar matchups
-  const similar = getSimilarMatchups(r, b);
-  const smList = document.getElementById('sm-list');
-  smList.innerHTML = '';
-  if (similar.length === 0) {
-    smList.innerHTML = '<div style="font-size:11px;color:#333;font-family:DM Mono,monospace">No close historical parallels found.</div>';
+  const smList=document.getElementById('sm-list'); smList.innerHTML='';
+  if(similar.length===0){
+    smList.innerHTML='<div style="font-size:11px;color:#333;font-family:DM Mono,monospace">No close historical parallels found.</div>';
   } else {
-    similar.forEach(s => {
-      const fa = nameToFighter[s.a], fb = nameToFighter[s.bName];
-      // Use tier_score or n_fights as proxy for who won — not perfect but better than nothing
-      // fighters.json has tier field: champion > ex_champion > ranked > ''
-      const tierRank = t => t === 'champion' ? 4 : t === 'ex_champion' ? 3 : t === 'ranked' ? 2 : 1;
-      const aScore = fa ? tierRank(fa.tier || '') : 1;
-      const bScore = fb ? tierRank(fb.tier || '') : 1;
-      const winnerName = aScore >= bScore ? s.a : s.bName;
-      const div = document.createElement('div');
-      div.className = 'sm-fight animate-in';
-      div.innerHTML = `
-        <div class="sm-names">
-          <span style="color:#c23030">${s.a}</span>
-          <span class="sm-vs">vs</span>
-          <span style="color:#2b5fb3">${s.bName}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
-          <span class="sm-dist">style similarity: ${Math.round((1 - s.dist / 9) * 100)}% match</span>
-          <span class="sm-winner">▲ ${winnerName.split(' ').pop()}</span>
-        </div>`;
-      div.onclick = () => {
-        if (fa && fb) { vsRed = fa; vsBlue = fb; setPickerUI('red', fa); setPickerUI('blue', fb); updateVsPlot(); runVsAnalysis(); }
+    similar.forEach(s=>{
+      const div=document.createElement('div');
+      div.className='sm-fight animate-in';
+      div.innerHTML=`
+        <div class="sm-names"><span style="color:#c23030">${s.a}</span><span class="sm-vs">vs</span><span style="color:#2b5fb3">${s.bName}</span></div>
+        <div class="sm-dist">style similarity: ${Math.round((1-s.dist/9)*100)}% match</div>`;
+      div.onclick=()=>{
+        const fa=nameToFighter[s.a], fb=nameToFighter[s.bName];
+        if(fa&&fb){ vsRed=fa; vsBlue=fb; setPickerUI('red',fa); setPickerUI('blue',fb); updateVsPlot(); runVsAnalysis(); }
       };
       smList.appendChild(div);
     });
   }
+
+  // Verdict
+  document.getElementById('verdict-badge').innerHTML=
+    `<div style="font-size:9px;color:#4a4858;letter-spacing:0.14em;font-family:'DM Mono',monospace;margin-bottom:6px;text-transform:uppercase">Analysis</div>`+
+    `<div style="font-size:11px;color:#9994a0;line-height:1.7">${verdict}</div>`;
 }
 
 function setPickerUI(side,f){
@@ -1831,7 +1784,7 @@ function loadRandomMatchup(){
   vsRed=r; vsBlue=b;
   setPickerUI('red',r); setPickerUI('blue',b);
   setMode('vs');
-  runVsAnalysis();
+  updateVsPlot(); runVsAnalysis();
 }
 
 // ── Mode toggle ──
