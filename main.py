@@ -224,18 +224,22 @@ def vs_predict(inp: VsInput):
     if _vs_model is None:
         raise HTTPException(status_code=503, detail="VS model not loaded")
 
-    X, r_row, b_row = _build_vs_vector(inp.red, inp.blue)
-    if X is None:
-        raise HTTPException(status_code=404,
-            detail=f"Fighter not found in builder features")
+    X1, r_row, b_row = _build_vs_vector(inp.red, inp.blue)
+    X2, _, _         = _build_vs_vector(inp.blue, inp.red)
 
-    prob = float(_vs_model.predict_proba(X)[0][1])
+    if X1 is None or X2 is None:
+        raise HTTPException(status_code=404, detail="Fighter not found in builder features")
+
+    prob1 = float(_vs_model.predict_proba(X1)[0][1])
+    prob2 = float(_vs_model.predict_proba(X2)[0][1])
+    # 對稱化：兩個視角取平均，消除 red/blue 順序偏差
+    prob  = (prob1 + (1 - prob2)) / 2
 
     # SHAP top 5 features
     try:
         import shap
         explainer = shap.TreeExplainer(_vs_model)
-        shap_vals = explainer.shap_values(X)
+        shap_vals = explainer.shap_values(X1)
         sv = shap_vals[0]
         feat_shap = sorted(zip(_vs_cols, sv), key=lambda x: abs(x[1]), reverse=True)[:5]
         top_features = [{"feature": f, "shap": round(float(v), 4)} for f, v in feat_shap]
