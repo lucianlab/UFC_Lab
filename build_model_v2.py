@@ -78,6 +78,7 @@ bout_stats = df.groupby(['bout','fighter']).agg(
     opponent      = ('opponent', 'first'),
     won           = ('won', 'first'),
     method        = ('method', 'first'),
+    finish_round  = ('finish_round', 'first'),
     age_at_fight  = ('age_at_fight', 'first'),
     n_rounds      = ('round_i', 'max'),
     # 打擊
@@ -246,15 +247,16 @@ def get_prefight_stats(fighter_name, fight_date, all_bouts):
 print("\n=== 4. 建立訓練資料集（最慢的步驟）===")
 
 # 每場比賽取兩個選手
-bouts_unique = (bout_stats[['bout','date','fighter','opponent','won']]
+bouts_unique = (bout_stats[['bout','date','fighter','opponent','won','finish_round','method']]
                 .drop_duplicates()
                 .sort_values('date')
                 .reset_index(drop=True))
 
-# 為了避免重複，每場只取一個視角（fighter < opponent 字母排序）
-bouts_dedup = bouts_unique[bouts_unique['fighter'] < bouts_unique['opponent']].copy()
+# 兩個方向都保留（A vs B 和 B vs A），讓模型學到對稱關係
+# 這樣不管誰是 red/blue，預測結果都一致
+bouts_dedup = bouts_unique.copy()
 bouts_dedup = bouts_dedup[bouts_dedup['date'] >= '2013-01-01']
-print(f"  訓練樣本數（去重後）: {len(bouts_dedup)}")
+print(f"  訓練樣本數（雙向）: {len(bouts_dedup)}")
 
 records = []
 fighter_names = []
@@ -289,8 +291,28 @@ for idx, row in bouts_dedup.iterrows():
         continue
     label = int(label_raw)
 
+    # 結束方式和回合：永遠從贏方那行取（確保跟 won label 一致）
+    winner_row = bouts_unique[
+        (bouts_unique['bout'] == bout) &
+        (bouts_unique['won'] == 1)
+    ]
+    if len(winner_row) == 0:
+        finish_round = np.nan
+        method_label = 0
+    else:
+        finish_round_raw = winner_row.iloc[0].get('finish_round', np.nan)
+        finish_round = int(finish_round_raw) if pd.notna(finish_round_raw) else np.nan
+        method_raw = str(winner_row.iloc[0].get('method', ''))
+        if 'KO' in method_raw or 'TKO' in method_raw:
+            method_label = 1
+        elif 'Submission' in method_raw:
+            method_label = 2
+        else:
+            method_label = 0
+
     # 差值特徵
-    rec = {'label': label, 'date': date, 'bout': bout}
+    rec = {'label': label, 'label_round': finish_round,
+           'label_method': method_label, 'date': date, 'bout': bout}
 
     # 基本差值
     for key in ['win_rate','ko_rate','sub_rate','finish_rate',
@@ -349,10 +371,12 @@ print(f"  勝負比例: {train_df['label'].mean():.3f} (應接近 0.5)")
 print("\n=== 6. 特徵準備 ===")
 
 FEATURE_COLS = [c for c in train_df.columns
-                if c not in ['label','date','bout']]
+                if c not in ['label','label_round','label_method','date','bout']]
 
 X = train_df[FEATURE_COLS].copy()
-y = train_df['label'].astype(int)
+y_win    = train_df['label'].astype(int)
+y_round  = train_df['label_round']
+y_method = train_df['label_method'].astype(int)
 
 # NaN 填補：用中位數
 for col in X.columns:
@@ -363,67 +387,103 @@ print(f"  特徵數: {len(FEATURE_COLS)}")
 print(f"  NaN 剩餘: {X.isna().sum().sum()}")
 
 # ══════════════════════════════════════════════════════
-# 7. 訓練 + Cross-validation（時間序列切割）
+# 7. 訓練函數
 # ══════════════════════════════════════════════════════
-print("\n=== 7. 訓練模型 ===")
+def train_model(X_s, y_s, task='binary', n_classes=None):
+    """通用訓練函數，支援 binary / multiclass / regression"""
+    from sklearn.model_selection import TimeSeriesSplit
+    from sklearn.metrics import roc_auc_score, accuracy_score
 
-# 按時間排序（TimeSeriesSplit 需要）
+    tscv = TimeSeriesSplit(n_splits=5)
+    scores = []
+
+    if task == 'binary':
+        eval_metric = 'logloss'
+        objective   = 'binary:logistic'
+        num_class   = None
+    elif task == 'multiclass':
+        eval_metric = 'mlogloss'
+        objective   = 'multi:softprob'
+        num_class   = n_classes
+    else:
+        eval_metric = 'rmse'
+        objective   = 'reg:squarederror'
+        num_class   = None
+
+    for fold, (tr_idx, val_idx) in enumerate(tscv.split(X_s)):
+        X_tr, X_val = X_s.iloc[tr_idx], X_s.iloc[val_idx]
+        y_tr, y_val = y_s.iloc[tr_idx], y_s.iloc[val_idx]
+
+        params = dict(n_estimators=400, max_depth=5, learning_rate=0.05,
+                      subsample=0.8, colsample_bytree=0.8, min_child_weight=3,
+                      gamma=0.1, reg_alpha=0.1, reg_lambda=1.0,
+                      use_label_encoder=False, eval_metric=eval_metric,
+                      random_state=42, objective=objective)
+        if num_class:
+            params['num_class'] = num_class
+
+        m = XGBClassifier(**params) if task != 'regression' else __import__('xgboost').XGBRegressor(**params)
+        m.fit(X_tr, y_tr)
+
+        if task == 'binary':
+            prob = m.predict_proba(X_val)[:,1]
+            score = roc_auc_score(y_val, prob)
+            print(f"    Fold {fold+1}: AUC={score:.4f}")
+        elif task == 'multiclass':
+            pred = m.predict(X_val)
+            score = accuracy_score(y_val, pred)
+            print(f"    Fold {fold+1}: ACC={score:.4f}")
+        else:
+            from sklearn.metrics import mean_absolute_error
+            pred = m.predict(X_val)
+            score = mean_absolute_error(y_val, pred)
+            print(f"    Fold {fold+1}: MAE={score:.4f}")
+        scores.append(score)
+
+    print(f"    平均: {np.mean(scores):.4f} ± {np.std(scores):.4f}")
+
+    # 全資料重訓
+    params2 = dict(n_estimators=400, max_depth=5, learning_rate=0.05,
+                   subsample=0.8, colsample_bytree=0.8, min_child_weight=3,
+                   gamma=0.1, reg_alpha=0.1, reg_lambda=1.0,
+                   use_label_encoder=False, eval_metric=eval_metric,
+                   random_state=42, objective=objective)
+    if num_class:
+        params2['num_class'] = num_class
+
+    final = XGBClassifier(**params2) if task != 'regression' else __import__('xgboost').XGBRegressor(**params2)
+    final.fit(X_s, y_s)
+    final.get_booster().feature_names = FEATURE_COLS
+    return final, np.mean(scores)
+
+# 按時間排序
 time_order = train_df['date'].argsort().values
-X_sorted = X.iloc[time_order].reset_index(drop=True)
-y_sorted = y.iloc[time_order].reset_index(drop=True)
+X_sorted      = X.iloc[time_order].reset_index(drop=True)
+y_win_sorted  = y_win.iloc[time_order].reset_index(drop=True)
+y_meth_sorted = y_method.iloc[time_order].reset_index(drop=True)
+y_round_all   = y_round.iloc[time_order].reset_index(drop=True)
 
-model = XGBClassifier(
-    n_estimators      = 400,
-    max_depth         = 5,
-    learning_rate     = 0.05,
-    subsample         = 0.8,
-    colsample_bytree  = 0.8,
-    min_child_weight  = 3,
-    gamma             = 0.1,
-    reg_alpha         = 0.1,
-    reg_lambda        = 1.0,
-    use_label_encoder = False,
-    eval_metric       = 'logloss',
-    random_state      = 42,
-    feature_names_in_ = None,
-)
+# 回合預測：只用有效回合數（1-5）的樣本，label 轉 0-indexed (0-4)
+round_mask     = y_round_all.notna() & y_round_all.between(1, 5)
+X_round        = X_sorted[round_mask].reset_index(drop=True)
+y_round_sorted = (y_round_all[round_mask].astype(int) - 1).reset_index(drop=True)  # 0-4
 
-# TimeSeriesSplit CV
-tscv = TimeSeriesSplit(n_splits=5)
-auc_scores = []
-acc_scores = []
+print(f"  Round 訓練樣本: {len(y_round_sorted)}, 分布: {y_round_sorted.value_counts().sort_index().to_dict()}")
 
-for fold, (train_idx, val_idx) in enumerate(tscv.split(X_sorted)):
-    X_tr, X_val = X_sorted.iloc[train_idx], X_sorted.iloc[val_idx]
-    y_tr, y_val = y_sorted.iloc[train_idx], y_sorted.iloc[val_idx]
+print("\n=== 7a. 訓練勝負模型 ===")
+model_win, auc_win = train_model(X_sorted, y_win_sorted, task='binary')
 
-    m = XGBClassifier(
-        n_estimators=400, max_depth=5, learning_rate=0.05,
-        subsample=0.8, colsample_bytree=0.8, min_child_weight=3,
-        gamma=0.1, reg_alpha=0.1, reg_lambda=1.0,
-        use_label_encoder=False, eval_metric='logloss', random_state=42
-    )
-    m.fit(X_tr, y_tr)
-    prob = m.predict_proba(X_val)[:,1]
-    auc  = roc_auc_score(y_val, prob)
-    acc  = (m.predict(X_val) == y_val).mean()
-    auc_scores.append(auc)
-    acc_scores.append(acc)
-    print(f"  Fold {fold+1}: AUC={auc:.4f}  ACC={acc:.4f}")
+print("\n=== 7b. 訓練結束方式模型 (0=Dec, 1=KO, 2=Sub) ===")
+model_method, acc_method = train_model(X_sorted, y_meth_sorted, task='multiclass', n_classes=3)
 
-print(f"\n  平均 AUC: {np.mean(auc_scores):.4f} ± {np.std(auc_scores):.4f}")
-print(f"  平均 ACC: {np.mean(acc_scores):.4f} ± {np.std(acc_scores):.4f}")
-
-# 全資料重新訓練最終模型
-print("\n  全資料重訓最終模型...")
-model.fit(X_sorted, y_sorted)
-model.get_booster().feature_names = FEATURE_COLS
+print("\n=== 7c. 訓練結束回合模型 (1-5) ===")
+model_round, acc_round = train_model(X_round, y_round_sorted, task='multiclass', n_classes=5)
 
 # ══════════════════════════════════════════════════════
-# 8. Feature Importance
+# 8. Feature Importance（勝負模型）
 # ══════════════════════════════════════════════════════
-print("\n=== 8. Feature Importance (Top 20) ===")
-fi = dict(zip(FEATURE_COLS, model.feature_importances_))
+print("\n=== 8. Feature Importance - 勝負模型 (Top 20) ===")
+fi = dict(zip(FEATURE_COLS, model_win.feature_importances_))
 fi_sorted = sorted(fi.items(), key=lambda x: -x[1])
 for name, score in fi_sorted[:20]:
     bar = '█' * int(score * 500)
@@ -435,11 +495,18 @@ for name, score in fi_sorted[:20]:
 print(f"\n=== 9. 存檔 ===")
 os.makedirs(os.path.dirname(OUT_MODEL), exist_ok=True)
 
-model.save_model(OUT_MODEL)
+OUT_MODEL_METHOD = os.path.join(BASE, 'data', 'model_method_v2.json')
+OUT_MODEL_ROUND  = os.path.join(BASE, 'data', 'model_round_v2.json')
+
+model_win.save_model(OUT_MODEL)
+model_method.save_model(OUT_MODEL_METHOD)
+model_round.save_model(OUT_MODEL_ROUND)
+
 with open(OUT_COLS, 'w') as f:
     json.dump(FEATURE_COLS, f, indent=2)
 
-print(f"  → {OUT_MODEL}")
+print(f"  → {OUT_MODEL}  (AUC {auc_win:.4f})")
+print(f"  → {OUT_MODEL_METHOD}  (ACC {acc_method:.4f})")
+print(f"  → {OUT_MODEL_ROUND}  (ACC {acc_round:.4f})")
 print(f"  → {OUT_COLS}")
 print(f"\n完成。特徵數: {len(FEATURE_COLS)}, 訓練樣本: {len(X_sorted)}")
-print(f"平均 AUC: {np.mean(auc_scores):.4f}")
