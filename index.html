@@ -250,7 +250,7 @@ body {
   font-family: 'DM Mono', monospace;
   font-size: 9px;
   color: var(--text-md);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   letter-spacing: 0.05em;
 }
 #fighter-wc.is-champ { color: var(--champagne); }
@@ -368,7 +368,7 @@ body {
 #hint {
   font-family: 'DM Mono', monospace;
   font-size: 9px;
-  color: var(--text-xlo);
+  color: var(--text-md);
   text-align: center;
   padding: 12px 0;
   line-height: 1.7;
@@ -379,7 +379,7 @@ body {
 
 #no-selection {
   font-size: 11px;
-  color: var(--text-xlo);
+  color: var(--text-md);
   margin-top: 12px;
   line-height: 1.8;
   font-family: 'Barlow', sans-serif;
@@ -1210,19 +1210,19 @@ function selectFighter(name){
   const f=nameToFighter[name]; if(!f)return;
   document.getElementById('fighter-card').style.display='block';
   document.getElementById('no-selection').style.display='none';
-  document.getElementById('fighter-name').textContent=f.name;
-  const tierBadge=f.tier==='champion'?' 🥇':f.tier==='ex_champion'?' 🏆':f.tier==='ranked'?' ★':'';
+  const nameEl=document.getElementById('fighter-name');
+  nameEl.textContent=f.name;
+  nameEl.style.color = (f.tier==='champion'||f.tier==='ex_champion') ? 'var(--champagne)' : 'var(--text-hi)';
+  const tierBadge=f.tier==='ranked'?' ★':'';
   const wcDisplay=(f.all_wc&&f.all_wc.length>1)?f.all_wc.join(' / '):(f.wc||'Unknown');
   const wcEl=document.getElementById('fighter-wc');
-  wcEl.textContent=`${wcDisplay} · ${f.n_fights} fights${tierBadge}`;
+  const wld=(f.wins!=null)?`${f.wins}-${f.losses??0}-${f.draws??0}`:`${f.n_fights} fights`;
+  wcEl.textContent=`${wcDisplay} · ${wld}${tierBadge}`;
   const isChamp=(f.tier==='champion'||f.tier==='ex_champion');
   wcEl.classList.toggle('is-champ',isChamp);
+  // Hide fighter-status (info now conveyed by name colour)
   const stEl=document.getElementById('fighter-status');
-  if(stEl){
-    const stTxt=f.tier==='champion'?'CHAMPION':f.tier==='ex_champion'?'FORMER CHAMPION':'';
-    stEl.textContent=stTxt;
-    stEl.style.display=stTxt?'block':'none';
-  }
+  if(stEl) stEl.style.display='none';
   function setBar(sid,bid,val,display,max,thr){
     const sv=document.getElementById(sid), bv=document.getElementById(bid);
     sv.textContent=display; bv.style.width=pct(val,max);
@@ -1423,7 +1423,8 @@ function selectVsFighter(side, name){
   const picker=document.getElementById(`picker-${side}`);
   picker.classList.add('filled',`filled-${side}`);
   document.getElementById(`picker-${side}-name`).textContent=f.name;
-  document.getElementById(`picker-${side}-wc`).textContent=`${f.wc||''} · ${f.n_fights} fights`;
+  const wld2=(f.wins!=null)?`${f.wins}-${f.losses??0}-${f.draws??0}`:`${f.n_fights} fights`;
+  document.getElementById(`picker-${side}-wc`).textContent=`${f.wc||''} · ${wld2}`;
   // Close search
   document.getElementById(`vs-search-${side}`).classList.remove('open');
   activePickerSide=null;
@@ -1875,7 +1876,8 @@ function setPickerUI(side,f){
   const picker=document.getElementById(`picker-${side}`);
   picker.classList.add('filled',`filled-${side}`);
   document.getElementById(`picker-${side}-name`).textContent=f.name;
-  document.getElementById(`picker-${side}-wc`).textContent=`${f.wc||''} · ${f.n_fights} fights`;
+  const wld2=(f.wins!=null)?`${f.wins}-${f.losses??0}-${f.draws??0}`:`${f.n_fights} fights`;
+  document.getElementById(`picker-${side}-wc`).textContent=`${f.wc||''} · ${wld2}`;
 }
 
 // ── Random matchup ──
