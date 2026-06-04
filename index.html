@@ -502,9 +502,10 @@ body {
 /* SHAP row: bottom full width */
 #vs-shap-row {
   grid-column: 1/-1; grid-row: 2;
-  padding: 10px 16px 12px;
+  padding: 12px 20px 14px;
   border-top: 1px solid var(--border);
   overflow: hidden;
+  background: var(--surface);
 }
 
 /* Fight Shape */
@@ -541,7 +542,8 @@ body {
 .vs-section-label { font-family:'DM Mono',monospace; font-size:7.5px; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.18em; margin-bottom:7px; }
 
 /* Cross-wc warning */
-#vs-crosswc-warn { display:none; padding:5px 8px; border-radius:2px; background:rgba(180,120,0,0.08); border:1px solid rgba(180,120,0,0.25); font-size:8.5px; font-family:'DM Mono',monospace; color:#a07830; letter-spacing:0.04em; margin-bottom:8px; }
+#vs-crosswc-warn { visibility:hidden; padding:5px 8px; border-radius:2px; background:rgba(180,120,0,0.08); border:1px solid rgba(180,120,0,0.25); font-size:8.5px; font-family:'DM Mono',monospace; color:#a07830; letter-spacing:0.04em; margin-bottom:8px; }
+#vs-crosswc-warn.show { visibility:visible; }
 
 /* Random btn */
 #vs-random-btn, #vs-random-btn-bottom {
@@ -1049,13 +1051,13 @@ body {
 
         <!-- SHAP: bottom full width -->
         <div id="vs-shap-row">
-          <div class="vs-section-label" style="margin-bottom:6px">
-            Why This Prediction?
-            <span style="color:var(--text-xlo);font-size:7.5px;text-transform:none;letter-spacing:0;margin-left:6px;font-weight:normal">
-              XGBoost trained on 6,180 UFC bouts (2013–2026) · AUC 0.63 · Features: career stats, recent form (last 3 fights), style-clash interactions (striker vs grappler KO threat × opponent defence), strength-of-schedule, age & prime window · Height/reach are absolute, not p4p-adjusted · Model predicts each direction then averages to remove red/blue bias
-            </span>
+          <div style="margin-bottom:8px">
+            <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-md);text-transform:uppercase;letter-spacing:0.18em;margin-bottom:5px">Key Prediction Factors</div>
+            <div style="font-size:10px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6;max-width:900px">
+              XGBoost trained on 6,180 UFC bouts (2013–2026) · AUC 0.63 · Features: career stats, recent form (last 3 fights), style-clash interactions (striker vs grappler KO threat × opponent defence), strength-of-schedule, age & prime window · Height/reach are absolute, not p4p-adjusted · Each prediction is run in both directions and averaged to remove red/blue corner bias.
+            </div>
           </div>
-          <div id="vs-shap-list" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px 16px"></div>
+          <div id="vs-shap-list" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px 20px"></div>
         </div>
 
       </div><!-- end #vs-matchup -->
@@ -1715,27 +1717,54 @@ async function runVsAnalysis() {
   if (!vsRed || !vsBlue) return;
   const r = vsRed, b = vsBlue;
 
-  // Show matchup panel
   document.getElementById('vs-empty').style.display = 'none';
   document.getElementById('vs-matchup').classList.add('visible');
 
-  // Fight shape
-  const styleDist = dist3d(r, b);
-  const probs = computeFinishProbs(r, b);
-  const shape = getFightShape(r, b, probs, styleDist);
-  const shapeEl = document.getElementById('fight-shape-verdict');
-  shapeEl.textContent = shape.verdict;
-  const colors = {
-    'EXPLOSIVE FIREFIGHT': '#c23030', 'STRIKING BATTLE': '#b07030',
-    'SUBMISSION HUNT': '#8a50b0', 'WAR OF ATTRITION': '#2b5fb3', 'UNPREDICTABLE': '#6a6a7a'
-  };
-  shapeEl.style.color = colors[shape.verdict] || '#fff';
-  document.getElementById('fight-shape-sub').textContent = shape.sub;
-
-  // Radar
+  // ── Immediate: radar + style distance + similar fights ──
   buildRadar(r, b);
 
-  // ML prediction
+  const styleDist = Math.sqrt((r.x-b.x)**2+(r.y-b.y)**2+(r.z-b.z)**2);
+  setTimeout(() => {
+    const sdFill = document.getElementById('sd-fill');
+    if (sdFill) sdFill.style.width = Math.min(100, Math.round(styleDist / 9 * 100)) + '%';
+    const sdVal = document.getElementById('sd-val');
+    if (sdVal) sdVal.textContent = styleDist.toFixed(1);
+  }, 150);
+
+  const similar = getSimilarMatchups(r, b);
+  const smList  = document.getElementById('sm-list');
+  smList.innerHTML = '';
+  if (similar.length === 0) {
+    smList.innerHTML = '<div style="font-size:10px;color:var(--text-lo);font-family:DM Mono,monospace">No close parallels found.</div>';
+  } else {
+    const tierRank = t => t==='champion'?4:t==='ex_champion'?3:t==='ranked'?2:1;
+    similar.forEach(s => {
+      const fa = nameToFighter[s.a], fb = nameToFighter[s.bName];
+      const aS = fa ? tierRank(fa.tier||'') : 1, bS = fb ? tierRank(fb.tier||'') : 1;
+      const winner = aS >= bS ? s.a : s.bName;
+      const wf = nameToFighter[winner];
+      let finishStr = '';
+      if (wf) {
+        if ((wf.ko_rate||0) > 0.35) finishStr = ' · KO';
+        else if ((wf.sub_rate||0) > 0.25) finishStr = ' · Sub';
+        else finishStr = ' · Dec';
+      }
+      const div = document.createElement('div');
+      div.className = 'sm-fight animate-in';
+      div.innerHTML = `
+        <div class="sm-names"><span style="color:#c23030">${s.a}</span><span class="sm-vs">vs</span><span style="color:#2b5fb3">${s.bName}</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
+          <span class="sm-dist">style similarity: ${Math.round((1-s.dist/9)*100)}% match</span>
+          <span class="sm-winner">${winner.split(' ').pop()}${finishStr}</span>
+        </div>`;
+      div.onclick = () => {
+        if (fa && fb) { vsRed=fa; vsBlue=fb; setPickerUI('red',fa); setPickerUI('blue',fb); runVsAnalysis(); }
+      };
+      smList.appendChild(div);
+    });
+  }
+
+  // ── Async: ML prediction ──
   document.getElementById('vs-ml-loading').textContent = 'loading...';
   document.getElementById('vs-prob-red-name').textContent = r.name.split(' ').pop();
   document.getElementById('vs-prob-blue-name').textContent = b.name.split(' ').pop();
@@ -1746,67 +1775,103 @@ async function runVsAnalysis() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ red: r.name, blue: b.name }),
     });
+
     if (res.ok) {
       const data = await res.json();
+      document.getElementById('vs-ml-loading').textContent = '';
+
+      // Cross-wc warning
+      const warnEl = document.getElementById('vs-crosswc-warn');
+      if (data.cross_wc) warnEl.classList.add('show'); else warnEl.classList.remove('show');
+
+      // Win probability
       const rPct = Math.round(data.red_win_prob * 100);
       const bPct = Math.round(data.blue_win_prob * 100);
-      document.getElementById('vs-prob-red-pct').textContent = rPct + '%';
+      document.getElementById('vs-prob-red-pct').textContent  = rPct + '%';
       document.getElementById('vs-prob-blue-pct').textContent = bPct + '%';
-      document.getElementById('vs-prob-bar-red').style.width = rPct + '%';
+      document.getElementById('vs-prob-bar-red').style.width  = rPct + '%';
       document.getElementById('vs-prob-bar-blue').style.width = bPct + '%';
-      document.getElementById('vs-ml-loading').textContent = '';
-      // Cross-wc warning
-      document.getElementById('vs-crosswc-warn').style.display = data.cross_wc ? 'block' : 'none';
+
+      // Finish probability (ML)
+      const mp = data.method_probs;
+      const koPct  = Math.round(mp.ko * 100);
+      const subPct = Math.round(mp.sub * 100);
+      const decPct = Math.round(mp.decision * 100);
+      setTimeout(() => {
+        document.getElementById('fo-ko').style.width  = koPct  + '%';
+        document.getElementById('fo-sub').style.width = subPct + '%';
+        document.getElementById('fo-dec').style.width = decPct + '%';
+        document.getElementById('fo-ko-val').textContent  = koPct  + '%';
+        document.getElementById('fo-sub-val').textContent = subPct + '%';
+        document.getElementById('fo-dec-val').textContent = decPct + '%';
+      }, 150);
+
+      // Round badge
+      const roundNames = ['','R1','R2','R3','R4','R5'];
+      const roundBadge = document.getElementById('vs-round-badge');
+      if (roundBadge) roundBadge.textContent = (data.method !== 'Decision') ? 'most likely ' + (roundNames[data.pred_round]||'') : '';
+
+      // Fight shape (ML-driven)
+      const shapeMap = {
+        'KO/TKO':     { verdict:'EXPLOSIVE FIREFIGHT', color:'#c23030' },
+        'Submission': { verdict:'SUBMISSION HUNT',      color:'#8a50b0' },
+        'Decision':   { verdict:'WAR OF ATTRITION',     color:'#2b5fb3' },
+      };
+      const shape = shapeMap[data.method] || { verdict:'CALCULATED BATTLE', color:'#5a7a9a' };
+      const shapeEl = document.getElementById('fight-shape-verdict');
+      shapeEl.textContent = shape.verdict;
+      shapeEl.style.color = shape.color;
+
+      // Fight shape sub-text
+      const subLines = [];
+      if (data.cross_wc) subLines.push('Cross-weight class hypothetical.');
+      if ((r.x||0) > 1.5 && (b.x||0) < -1.5) subLines.push(r.name.split(' ').pop() + ' the striker vs ' + b.name.split(' ').pop() + ' the grappler.');
+      else if ((r.x||0) < -1.5 && (b.x||0) > 1.5) subLines.push(r.name.split(' ').pop() + ' the grappler vs ' + b.name.split(' ').pop() + ' the striker.');
+      else if ((r.x||0) > 1.2 && (b.x||0) > 1.2) subLines.push('Two strikers collide.');
+      else if ((r.x||0) < -1.2 && (b.x||0) < -1.2) subLines.push('A grappling chess match.');
+      document.getElementById('fight-shape-sub').textContent = subLines.join(' ');
+
+      // Narrative
+      const narrativeEl = document.getElementById('vs-narrative');
+      if (narrativeEl) narrativeEl.textContent = buildNarrative(r, b, data.red_win_prob, data.method, data.pred_round, shape.verdict);
+
+      // Confidence
+      const confPct = Math.round(data.confidence * 100);
+      const confBar = document.getElementById('vs-conf-bar');
+      if (confBar) {
+        confBar.style.width = confPct + '%';
+        confBar.style.background = data.confidence_label==='HIGH' ? '#c9a96e' : data.confidence_label==='MEDIUM' ? '#5a7a9a' : '#444460';
+      }
+      const confLabelEl = document.getElementById('vs-conf-label');
+      if (confLabelEl) {
+        confLabelEl.textContent = data.confidence_label;
+        confLabelEl.style.color = data.confidence_label==='HIGH' ? 'var(--champagne-2)' : data.confidence_label==='MEDIUM' ? '#5a9abf' : '#555468';
+      }
+      const winEdge    = Math.round(Math.abs(data.red_win_prob - 0.5) * 200);
+      const methodEdge = Math.round(Math.max(mp.ko, mp.sub, mp.decision) * 100);
+      const confBreak  = document.getElementById('vs-conf-breakdown');
+      if (confBreak) confBreak.innerHTML =
+        `<span style="color:var(--text-lo)">Win signal:</span> ${winEdge}% certainty (50% = coin-flip, 100% = certain)<br>` +
+        `<span style="color:var(--text-lo)">Method signal:</span> ${methodEdge}% confidence in ${data.method}<br>` +
+        `<span style="color:var(--text-lo)">Round signal:</span> peak probability on R${data.pred_round}<br>` +
+        `<span style="color:var(--text-lo);font-size:9px">Weighted 50/30/20 across three models</span>`;
+
       // SHAP
       renderShap(data.top_features);
+
     } else {
       document.getElementById('vs-ml-loading').textContent = 'unavailable';
+      // Static fallback
+      const shapeFB = styleDist > 4 ? { verdict:'UNPREDICTABLE', color:'#6a6a7a' } : { verdict:'CALCULATED BATTLE', color:'#5a7a9a' };
+      document.getElementById('fight-shape-verdict').textContent = shapeFB.verdict;
+      document.getElementById('fight-shape-verdict').style.color = shapeFB.color;
     }
   } catch (e) {
     document.getElementById('vs-ml-loading').textContent = 'unavailable';
   }
+}
 
-  // Finish probabilities
-  setTimeout(() => {
-    document.getElementById('fo-ko').style.width = probs.ko + '%';
-    document.getElementById('fo-sub').style.width = probs.sub + '%';
-    document.getElementById('fo-dec').style.width = probs.dec + '%';
-    document.getElementById('fo-ko-val').textContent = probs.ko + '%';
-    document.getElementById('fo-sub-val').textContent = probs.sub + '%';
-    document.getElementById('fo-dec-val').textContent = probs.dec + '%';
-  }, 200);
-
-  // Similar matchups
-  const similar = getSimilarMatchups(r, b);
-  const smList = document.getElementById('sm-list');
-  smList.innerHTML = '';
-  if (similar.length === 0) {
-    smList.innerHTML = '<div style="font-size:11px;color:#333;font-family:DM Mono,monospace">No close historical parallels found.</div>';
-  } else {
-    similar.forEach(s => {
-      const fa = nameToFighter[s.a], fb = nameToFighter[s.bName];
-      // Use tier_score or n_fights as proxy for who won — not perfect but better than nothing
-      // fighters.json has tier field: champion > ex_champion > ranked > ''
-      const tierRank = t => t === 'champion' ? 4 : t === 'ex_champion' ? 3 : t === 'ranked' ? 2 : 1;
-      const aScore = fa ? tierRank(fa.tier || '') : 1;
-      const bScore = fb ? tierRank(fb.tier || '') : 1;
-      const winnerName = aScore >= bScore ? s.a : s.bName;
-      const div = document.createElement('div');
-      div.className = 'sm-fight animate-in';
-      div.innerHTML = `
-        <div class="sm-names">
-          <span style="color:#c23030">${s.a}</span>
-          <span class="sm-vs">vs</span>
-          <span style="color:#2b5fb3">${s.bName}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
-          <span class="sm-dist">style similarity: ${Math.round((1 - s.dist / 9) * 100)}% match</span>
-          <span class="sm-winner">▲ ${winnerName.split(' ').pop()}</span>
-        </div>`;
-      div.onclick = () => {
-        if (fa && fb) { vsRed = fa; vsBlue = fb; setPickerUI('red', fa); setPickerUI('blue', fb); runVsAnalysis(); }
-      };
-      smList.appendChild(div);
+function setPickerUI(div);
     });
   }
 }
