@@ -2577,10 +2577,11 @@ async function dnaInit(){
   const wrap   = document.getElementById('dna-chart-wrap');
 
   function resize(){
-    const w = wrap.clientWidth;
-    const h = wrap.clientHeight;
+    // Use exact displayed size so canvas coords match mouse coords
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.round(rect.width);
+    const h = Math.round(rect.height);
     if(w === 0 || h === 0) return;
-    // Use CSS pixels — no DPR scaling
     canvas.width  = w;
     canvas.height = h;
     dnaDraw(canvas);
