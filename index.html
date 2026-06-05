@@ -2576,22 +2576,14 @@ async function dnaInit(){
   const canvas = document.getElementById('dna-canvas');
   const wrap   = document.getElementById('dna-chart-wrap');
 
-  const dpr = window.devicePixelRatio || 1;
-
   function resize(){
     const w = wrap.clientWidth;
     const h = wrap.clientHeight;
     if(w === 0 || h === 0) return;
-    // Set physical pixels
-    canvas.width  = w * dpr;
-    canvas.height = h * dpr;
-    // Keep CSS size unchanged
-    canvas.style.width  = w + 'px';
-    canvas.style.height = h + 'px';
-    // Scale context to CSS pixels
-    const ctx = canvas.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    dnaDraw(canvas, w, h);
+    // Use CSS pixels — no DPR scaling
+    canvas.width  = w;
+    canvas.height = h;
+    dnaDraw(canvas);
   }
 
   // Wait two frames so the active class has time to render and layout
@@ -2607,11 +2599,8 @@ async function dnaInit(){
 
   canvas.addEventListener('mousemove', evt=>{
     const rect = canvas.getBoundingClientRect();
-    // canvas internal coords may differ from CSS display size
-    const scaleX = canvas.width  / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const mx = (evt.clientX - rect.left) * scaleX;
-    const my = (evt.clientY - rect.top)  * scaleY;
+    const mx = evt.clientX - rect.left;
+    const my = evt.clientY - rect.top;
 
     // Hit-test champions first
     let hit = null;
@@ -2679,13 +2668,10 @@ function dnaGetPad(canvas){
   return { l: 48, r: 52, t: 18, b: 36 };
 }
 
-function dnaDraw(canvas, W, H){
-  // W and H are CSS pixel dimensions (DPR-independent)
-  if(!W || !H){
-    W = canvas.clientWidth  || canvas.width;
-    H = canvas.clientHeight || canvas.height;
-  }
-  const ctx    = canvas.getContext('2d');
+function dnaDraw(canvas){
+  const W   = canvas.width;
+  const H   = canvas.height;
+  const ctx = canvas.getContext('2d');
   const yearly = _dnaYearly;
   const champs = _dnaChamps;
   if(!yearly.length) return;
@@ -2710,7 +2696,7 @@ function dnaDraw(canvas, W, H){
   }
   function barH(pct){ return (pct / BAR_MAX) * (chartH * 0.45); }
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, W, H);
 
   // ── Grid lines ──
   ctx.strokeStyle = 'rgba(255,255,255,0.04)';
