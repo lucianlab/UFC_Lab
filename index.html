@@ -137,16 +137,13 @@ body {
 }
 
 .mode-btn.active {
-  color: var(--text-hi);
-  background: var(--surface-3);
+  color: var(--champagne);
+  background: rgba(201,169,110,0.07);
+  border-color: var(--champagne-dim);
   border-color: var(--border-2);
 }
 
-.mode-btn#btn-vs.active {
-  color: var(--text-hi);
-  background: linear-gradient(135deg, var(--crimson-dim), var(--cobalt-dim));
-  border-color: var(--border-2);
-}
+/* btn-vs uses base active style */
 
 .mode-btn:hover:not(.active) {
   color: var(--text-md);
@@ -358,7 +355,7 @@ body {
 #legend-all {
   font-family: 'DM Mono', monospace;
   font-size: 9px;
-  color: var(--text-xlo);
+  color: var(--text-lo);
   cursor: pointer;
   letter-spacing: 0.12em;
   margin-bottom: 8px;
@@ -413,7 +410,7 @@ body {
 .vs-picker:hover { border-color: var(--border-2); background: var(--surface-3); }
 .vs-picker.filled-red  { border-color: var(--crimson);  background: linear-gradient(135deg, rgba(140,31,31,0.12), var(--surface-2)); }
 .vs-picker.filled-blue { border-color: var(--cobalt-2); background: linear-gradient(135deg, rgba(26,58,110,0.18), var(--surface-2)); }
-.vs-picker-label { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-xlo); text-transform:uppercase; letter-spacing:0.18em; margin-bottom:4px; }
+.vs-picker-label { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.18em; margin-bottom:4px; }
 .vs-picker.filled-red  .vs-picker-label { color:rgba(194,48,48,0.5); }
 .vs-picker.filled-blue .vs-picker-label { color:rgba(43,95,179,0.5); }
 .vs-picker-name { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:700; color:var(--text-lo); letter-spacing:0.04em; text-transform:uppercase; line-height:1.1; transition:color 0.18s; }
@@ -421,7 +418,7 @@ body {
 .vs-picker-wc { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); margin-top:2px; }
 .vs-picker.filled-red  .vs-picker-wc { color:rgba(194,48,48,0.5); }
 .vs-picker.filled-blue .vs-picker-wc { color:rgba(43,95,179,0.5); }
-.vs-divider { text-align:center; font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:500; color:var(--text-xlo); }
+.vs-divider { text-align:center; font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:500; color:var(--text-lo); }
 
 /* Search dropdown */
 .vs-search-wrap { position:absolute; top:100%; left:0; right:0; z-index:300; display:none; margin-top:2px; }
@@ -450,7 +447,7 @@ body {
   justify-content: center; gap: 12px; padding: 40px;
 }
 #vs-empty .vs-empty-icon { font-size: 32px; opacity: 0.08; }
-#vs-empty p { font-family:'DM Mono',monospace; font-size:10px; color:var(--text-xlo); text-align:center; line-height:1.8; letter-spacing:0.04em; }
+#vs-empty p { font-family:'DM Mono',monospace; font-size:10px; color:var(--text-lo); text-align:center; line-height:1.8; letter-spacing:0.04em; }
 
 /* Matchup — display:contents to participate in parent grid */
 #vs-matchup { display:none; grid-column:1/-1; grid-row:1/-1; }
@@ -537,7 +534,7 @@ body {
 .sm-fight { background:var(--surface-2); border:1px solid var(--border); border-radius:2px; padding:6px 9px; margin-bottom:4px; cursor:pointer; transition:border-color 0.15s,background 0.15s; }
 .sm-fight:hover { border-color:var(--border-2); background:var(--surface-3); }
 .sm-names { color:var(--text-md); display:flex; gap:5px; align-items:center; font-family:'Barlow',sans-serif; font-size:10px; }
-.sm-vs { color:var(--text-xlo); font-family:'DM Mono',monospace; font-size:7.5px; }
+.sm-vs { color:var(--text-lo); font-family:'DM Mono',monospace; font-size:7.5px; }
 .sm-dist { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); }
 .sm-winner { font-family:'DM Mono',monospace; font-size:8px; color:var(--champagne-2); }
 
@@ -572,7 +569,7 @@ body {
 .vs-picker-label {
   font-family: 'DM Mono', monospace;
   font-size: 8px;
-  color: var(--text-xlo);
+  color: var(--text-lo);
   text-transform: uppercase;
   letter-spacing: 0.18em;
   margin-bottom: 5px;
@@ -607,7 +604,7 @@ body {
   font-family: 'Cormorant Garamond', serif;
   font-size: 20px;
   font-weight: 500;
-  color: var(--text-xlo);
+  color: var(--text-lo);
   letter-spacing: 0.1em;
 }
 
@@ -688,7 +685,7 @@ body {
   font-weight:500; letter-spacing:0.12em; text-transform:uppercase;
   cursor:pointer; background:transparent; border:none; color:var(--text-lo); transition:all 0.15s;
 }
-.b-mode-btn.active{ background:var(--surface-3); color:var(--text-hi); }
+.b-mode-btn.active{ background:rgba(201,169,110,0.07); color:var(--champagne); border-color:var(--champagne-dim); }
 
 #b-diff{ display:none; gap:4px; }
 #b-diff.show{ display:flex; }
@@ -817,7 +814,7 @@ body {
   gap:10px; padding:28px 18px; text-align:center;
 }
 #b-empty .b-empty-icon{ font-size:24px; opacity:0.06; }
-#b-empty p{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-xlo); line-height:1.9; letter-spacing:0.04em; }
+#b-empty p{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-lo); line-height:1.9; letter-spacing:0.04em; }
 
 #b-results{ display:none; flex-direction:column; padding:12px 12px 6px; gap:0; }
 #b-results.show{ display:flex; }
@@ -985,11 +982,7 @@ body {
 }
 
 /* DNA active nav btn */
-.mode-btn#btn-dna.active {
-  color: var(--champagne);
-  background: rgba(201,169,110,0.07);
-  border-color: var(--champagne-dim);
-}
+/* btn-dna uses base active style */
 
 
 /* DNA insight bar */
@@ -1312,7 +1305,7 @@ body {
     <!-- Axis labels -->
     <div id="dna-axis-labels">
       <span class="dna-axis-label">← Grappling era</span>
-      <span class="dna-axis-label" style="color:var(--text-hi);letter-spacing:0.15em">YEAR</span>
+      <span class="dna-axis-label" style="color:var(--text-lo);letter-spacing:0.12em">year</span>
       <span class="dna-axis-label">Striking era →</span>
     </div>
 
@@ -2531,7 +2524,7 @@ async function bLoadLeaderboard(){
     el.classList.add('show');
     el.innerHTML='<div class="b-lb-title">Compete Leaderboard</div>';
     if(!data.length){
-      el.innerHTML+=`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-xlo);padding:8px 0">No entries yet.</div>`;
+      el.innerHTML+=`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-lo);padding:8px 0">No entries yet.</div>`;
       return;
     }
     data.slice(0,10).forEach((e,i)=>{
