@@ -899,9 +899,15 @@ body {
 /* Legend row */
 #dna-legend {
   display: flex;
-  align-items: center;
-  gap: 20px;
+  flex-direction: column;
+  gap: 5px;
   flex-shrink: 0;
+  align-items: flex-end;
+}
+.dna-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 .dna-legend-item {
   display: flex;
@@ -985,6 +991,28 @@ body {
   border-color: var(--champagne-dim);
 }
 
+
+/* DNA insight bar */
+#dna-insight {
+  padding: 8px 28px 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--text-lo);
+  line-height: 1.6;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+.dna-insight-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--champagne);
+  margin-right: 10px;
+  opacity: 0.7;
+}
+
 </style>
 
 </head>
@@ -999,8 +1027,8 @@ body {
   <div id="mode-toggle">
     <button class="mode-btn active" id="btn-universe" onclick="setMode('universe')">Universe</button>
     <button class="mode-btn" id="btn-vs" onclick="setMode('vs')">VS Mode</button>
-    <button class="mode-btn" id="btn-builder" onclick="setMode('builder')">Build Your Fighter</button>
-    <button class="mode-btn" id="btn-dna" onclick="setMode('dna')">DNA</button>
+    <button class="mode-btn" id="btn-builder" onclick="setMode('builder')">Blueprint</button>
+    <button class="mode-btn" id="btn-dna" onclick="setMode('dna')">META</button>
   </div>
 
   <div id="search-wrap">
@@ -1245,28 +1273,34 @@ body {
     <div id="dna-topbar">
       <div id="dna-title-block">
         <div id="dna-title">Meta-Game Evolution</div>
-        <div id="dna-subtitle">Striking vs Grappling · UFC 2007–2025 · Win rate differential + style distribution + champion anchors</div>
+        <div id="dna-subtitle">Striking vs Grappling · UFC 2007–2025 · Win rate / style distribution / champion anchors</div>
       </div>
       <div id="dna-legend">
-        <div class="dna-legend-item">
-          <div class="dna-legend-swatch" style="background:rgba(44,100,180,0.25);border:1px solid rgba(44,100,180,0.4)"></div>
-          Grappling-dominant fighters (%)
+        <div class="dna-legend-row">
+          <div class="dna-legend-item">
+            <div class="dna-legend-swatch" style="background:rgba(43,95,179,0.38);border:1px solid rgba(43,95,179,0.55)"></div>
+            Grappling-dominant fighters (%)
+          </div>
+          <div class="dna-legend-item">
+            <div class="dna-legend-swatch" style="background:rgba(140,31,31,0.38);border:1px solid rgba(140,31,31,0.55)"></div>
+            Striking-dominant fighters (%)
+          </div>
         </div>
-        <div class="dna-legend-item">
-          <div class="dna-legend-swatch" style="background:rgba(140,31,31,0.25);border:1px solid rgba(140,31,31,0.4)"></div>
-          Striking-dominant fighters (%)
+        <div class="dna-legend-row">
+          <div class="dna-legend-item">
+            <div class="dna-legend-line" style="background:#4a7fd4"></div>
+            Grappling win rate
+          </div>
+          <div class="dna-legend-item">
+            <div class="dna-legend-line" style="background:#c23030"></div>
+            Striking win rate
+          </div>
         </div>
-        <div class="dna-legend-item">
-          <div class="dna-legend-line" style="background:var(--champagne)"></div>
-          Grappling win rate
-        </div>
-        <div class="dna-legend-item">
-          <div class="dna-legend-line" style="background:var(--crimson-2)"></div>
-          Striking win rate
-        </div>
-        <div class="dna-legend-item">
-          <div class="dna-legend-dot" style="background:#FFD700;border:1px solid rgba(255,215,0,0.5)"></div>
-          Champion (size = title fights won)
+        <div class="dna-legend-row">
+          <div class="dna-legend-item">
+            <div class="dna-legend-dot" style="background:#FFD700;border:1px solid rgba(255,215,0,0.5)"></div>
+            Champion
+          </div>
         </div>
       </div>
     </div>
@@ -1281,6 +1315,12 @@ body {
       <span class="dna-axis-label">← Grappling era</span>
       <span class="dna-axis-label" style="color:var(--text-xlo)">Year</span>
       <span class="dna-axis-label">Striking era →</span>
+    </div>
+
+    <!-- Insight -->
+    <div id="dna-insight">
+      <span class="dna-insight-label">KEY INSIGHT</span>
+      Grappling-dominant fighters consistently win more — yet nearly every champion leans striking. The scoring system rewards performance, not efficiency.
     </div>
 
   </div><!-- end #dna-mode -->
@@ -2117,13 +2157,13 @@ function setMode(mode){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.remove('active'); bEl.classList.add('active'); dnaEl.classList.remove('active');
     searchWrap.style.display='none';
-    document.getElementById('header-sub').textContent='Build Your Fighter';
+    document.getElementById('header-sub').textContent='Blueprint — Fighter Archetypes';
     bInit();
   } else if(mode==='dna'){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.add('active');
     searchWrap.style.display='none';
-    document.getElementById('header-sub').textContent='Meta-Game Evolution · Striking vs Grappling';
+    document.getElementById('header-sub').textContent='META · Striking vs Grappling';
     dnaInit();
   }
 }
@@ -2536,13 +2576,22 @@ async function dnaInit(){
   const canvas = document.getElementById('dna-canvas');
   const wrap   = document.getElementById('dna-chart-wrap');
 
+  const dpr = window.devicePixelRatio || 1;
+
   function resize(){
     const w = wrap.clientWidth;
     const h = wrap.clientHeight;
     if(w === 0 || h === 0) return;
-    canvas.width  = w;
-    canvas.height = h;
-    dnaDraw(canvas);
+    // Set physical pixels
+    canvas.width  = w * dpr;
+    canvas.height = h * dpr;
+    // Keep CSS size unchanged
+    canvas.style.width  = w + 'px';
+    canvas.style.height = h + 'px';
+    // Scale context to CSS pixels
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    dnaDraw(canvas, w, h);
   }
 
   // Wait two frames so the active class has time to render and layout
@@ -2627,10 +2676,13 @@ function dnaGetPad(canvas){
   return { l: 48, r: 52, t: 18, b: 36 };
 }
 
-function dnaDraw(canvas){
+function dnaDraw(canvas, W, H){
+  // W and H are CSS pixel dimensions (DPR-independent)
+  if(!W || !H){
+    W = canvas.clientWidth  || canvas.width;
+    H = canvas.clientHeight || canvas.height;
+  }
   const ctx    = canvas.getContext('2d');
-  const W      = canvas.width;
-  const H      = canvas.height;
   const yearly = _dnaYearly;
   const champs = _dnaChamps;
   if(!yearly.length) return;
@@ -2655,7 +2707,7 @@ function dnaDraw(canvas){
   }
   function barH(pct){ return (pct / BAR_MAX) * (chartH * 0.45); }
 
-  ctx.clearRect(0, 0, W, H);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // ── Grid lines ──
   ctx.strokeStyle = 'rgba(255,255,255,0.04)';
@@ -2688,16 +2740,16 @@ function dnaDraw(canvas){
 
     // Striking bar (above mid)
     const sh = barH(d.pct_striking || 0);
-    ctx.fillStyle   = 'rgba(140,31,31,0.20)';
-    ctx.strokeStyle = 'rgba(140,31,31,0.38)';
+    ctx.fillStyle   = 'rgba(140,31,31,0.38)';
+    ctx.strokeStyle = 'rgba(140,31,31,0.60)';
     ctx.lineWidth   = 0.5;
     ctx.fillRect(bx, yMid - sh, bw, sh);
     ctx.strokeRect(bx, yMid - sh, bw, sh);
 
     // Grappling bar (below mid)
     const gh = barH(d.pct_grappling || 0);
-    ctx.fillStyle   = 'rgba(43,95,179,0.20)';
-    ctx.strokeStyle = 'rgba(43,95,179,0.38)';
+    ctx.fillStyle   = 'rgba(43,95,179,0.38)';
+    ctx.strokeStyle = 'rgba(43,95,179,0.60)';
     ctx.fillRect(bx, yMid, bw, gh);
     ctx.strokeRect(bx, yMid, bw, gh);
   });
@@ -2743,7 +2795,7 @@ function dnaDraw(canvas){
   const grpPts = yearly.map((d,i)=>
     d.grp_winrate != null ? {x: xPos(i), y: yWR(d.grp_winrate)} : null
   );
-  drawLine(grpPts.filter(Boolean), '#c9a96e', 2);
+  drawLine(grpPts.filter(Boolean), '#4a7fd4', 2);
 
   // Striking win rate line (crimson)
   const strPts = yearly.map((d,i)=>
@@ -2783,7 +2835,7 @@ function dnaDraw(canvas){
       const px  = cx + offsetX;
       const wy  = 42 + (c.meta_score_pct / 100) * 40;
       const py  = yWR(wy);
-      const r   = Math.max(4, Math.min(16, c.radius * 0.82));
+      const r   = Math.max(3, Math.min(22, 5.5 * Math.sqrt(c.title_fights_won || 1) + 3));
 
       // Glow
       const grad = ctx.createRadialGradient(px, py, 0, px, py, r * 1.8);
