@@ -2034,10 +2034,10 @@ async function runVsAnalysis() {
       // Fight shape (ML-driven)
       const shapeMap = {
         'KO/TKO':     { verdict:'EXPLOSIVE FIREFIGHT', color:'#c23030' },
-        'Submission': { verdict:'SUBMISSION HUNT',      color:'#8a50b0' },
+        'Submission': { verdict:'SUBMISSION HUNT',      color:'#4a7fd4' },
         'Decision':   { verdict:'WAR OF ATTRITION',     color:'#2b5fb3' },
       };
-      const shape = shapeMap[data.method] || { verdict:'CALCULATED BATTLE', color:'#5a7a9a' };
+      const shape = shapeMap[data.method] || { verdict:'CALCULATED BATTLE', color:'#9994a0' };
       const shapeEl = document.getElementById('fight-shape-verdict');
       shapeEl.textContent = shape.verdict;
       shapeEl.style.color = shape.color;
@@ -2060,7 +2060,7 @@ async function runVsAnalysis() {
       const confBar = document.getElementById('vs-conf-bar');
       if (confBar) {
         confBar.style.width = confPct + '%';
-        confBar.style.background = data.confidence_label==='HIGH' ? '#c9a96e' : data.confidence_label==='MEDIUM' ? '#5a7a9a' : '#444460';
+        confBar.style.background = data.confidence_label==='HIGH' ? 'linear-gradient(90deg,#c23030,#4a7fd4)' : data.confidence_label==='MEDIUM' ? '#5a7a9a' : '#444460';
       }
       const confLabelEl = document.getElementById('vs-conf-label');
       if (confLabelEl) {
@@ -2082,7 +2082,7 @@ async function runVsAnalysis() {
     } else {
       document.getElementById('vs-ml-loading').textContent = 'unavailable';
       // Static fallback
-      const shapeFB = styleDist > 4 ? { verdict:'UNPREDICTABLE', color:'#6a6a7a' } : { verdict:'CALCULATED BATTLE', color:'#5a7a9a' };
+      const shapeFB = styleDist > 4 ? { verdict:'UNPREDICTABLE', color:'#6a6a7a' } : { verdict:'CALCULATED BATTLE', color:'#9994a0' };
       document.getElementById('fight-shape-verdict').textContent = shapeFB.verdict;
       document.getElementById('fight-shape-verdict').style.color = shapeFB.color;
     }
