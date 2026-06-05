@@ -536,7 +536,7 @@ body {
 .sm-names { color:var(--text-md); display:flex; gap:5px; align-items:center; font-family:'Barlow',sans-serif; font-size:10px; }
 .sm-vs { color:var(--text-lo); font-family:'DM Mono',monospace; font-size:7.5px; }
 .sm-dist { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); }
-.sm-winner { font-family:'DM Mono',monospace; font-size:8px; color:var(--champagne-2); }
+.sm-winner { font-family:'DM Mono',monospace; font-size:8px; color:var(--champagne); }
 
 /* VS section label */
 .vs-section-label { font-family:'DM Mono',monospace; font-size:7.5px; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.18em; margin-bottom:7px; }
@@ -552,7 +552,7 @@ body {
   font-family:'DM Mono',monospace; font-size:8.5px; cursor:pointer;
   text-align:center; letter-spacing:0.12em; text-transform:uppercase; transition:all 0.18s;
 }
-#vs-random-btn:hover, #vs-random-btn-bottom:hover { border-color:var(--champagne-dim); color:var(--champagne-2); }
+#vs-random-btn:hover, #vs-random-btn-bottom:hover { border-color:var(--champagne-dim); color:var(--champagne); }
 
 /* ─── 3-button mode toggle ─── */
 .mode-btn:not(:first-child):not(:last-child){ border-right:none; border-radius:0; }
@@ -781,7 +781,7 @@ body {
   display:flex; justify-content:space-between; align-items:center;
 }
 .b-attr-val{
-  font-size:10px; font-weight:500; color:var(--champagne-2);
+  font-size:10px; font-weight:500; color:var(--champagne);
   transition:color 0.15s;
 }
 
@@ -828,7 +828,7 @@ body {
 }
 .b-section-label::after{ content:''; flex:1; height:1px; background:var(--border); }
 .b-section-label:first-child{ padding-top:0; }
-.b-section-label.your-label{ color:var(--champagne-2); }
+.b-section-label.your-label{ color:var(--champagne); }
 .b-section-label.your-label::after{ background:rgba(201,169,110,0.2); }
 
 /* Result cards */
@@ -836,7 +836,7 @@ body {
   background:var(--surface-2); border:1px solid var(--border);
   border-radius:2px; padding:10px; margin-bottom:6px;
 }
-.b-result-card.your-card{ border-left:3px solid var(--champagne-2); padding-left:8px; }
+.b-result-card.your-card{ border-left:3px solid var(--champagne); padding-left:8px; }
 .b-result-card:last-child{ margin-bottom:0; }
 
 /* Result card elements */
@@ -1038,7 +1038,7 @@ body {
       <div class="panel-title">Selected Fighter</div>
       <div id="fighter-name"></div>
       <div id="fighter-wc"></div>
-      <div id="fighter-status" style="font-size:10px;color:var(--champagne-2);margin-bottom:10px;letter-spacing:0.04em;font-family:'DM Mono',monospace;"></div>
+      <div id="fighter-status" style="font-size:10px;color:var(--champagne);margin-bottom:10px;letter-spacing:0.04em;font-family:'DM Mono',monospace;"></div>
       <div class="panel-title">Style Profile</div>
       <div class="stat-row"><span class="stat-label">Sig. Strikes / Round</span><span class="stat-val" id="s-sig"></span></div>
       <div class="stat-bar-wrap"><div class="stat-bar" id="b-sig"></div></div>
@@ -1114,7 +1114,7 @@ body {
           <div class="vs-section-label">Style Comparison</div>
           <div id="vs-crosswc-warn">⚠ Cross-weight class — absolute height & reach (not p4p adjusted)</div>
           <canvas id="vs-radar"></canvas>
-          <div id="vs-random-btn-bottom" onclick="loadRandomMatchup()" style="margin-top:8px;padding:6px 10px;border:1px solid var(--border);border-radius:2px;font-family:'DM Mono',monospace;font-size:8px;color:var(--text-lo);text-align:center;cursor:pointer;letter-spacing:0.12em;text-transform:uppercase;transition:all 0.18s" onmouseenter="this.style.color='var(--champagne-2)';this.style.borderColor='var(--champagne-dim)'" onmouseleave="this.style.color='var(--text-lo)';this.style.borderColor='var(--border)'">⚡ New Matchup</div>
+          <div id="vs-random-btn-bottom" onclick="loadRandomMatchup()" style="margin-top:8px;padding:6px 10px;border:1px solid var(--border);border-radius:2px;font-family:'DM Mono',monospace;font-size:8px;color:var(--text-lo);text-align:center;cursor:pointer;letter-spacing:0.12em;text-transform:uppercase;transition:all 0.18s" onmouseenter="this.style.color='var(--champagne)';this.style.borderColor='var(--champagne-dim)'" onmouseleave="this.style.color='var(--text-lo)';this.style.borderColor='var(--border)'">⚡ New Matchup</div>
         </div>
 
         <!-- RIGHT: 2×2 grid -->
@@ -1155,7 +1155,7 @@ body {
               <span id="vs-prob-blue-name" style="font-size:8.5px;color:rgba(43,95,179,0.55);font-family:'DM Mono',monospace">—</span>
             </div>
             <!-- Finish Probability inside win-col -->
-            <div class="fo-title">Finish Probability <span id="vs-round-badge" style="float:right;font-size:8px;color:var(--champagne-2);font-family:'DM Mono',monospace;letter-spacing:0;text-transform:none"></span></div>
+            <div class="fo-title">Finish Probability <span id="vs-round-badge" style="float:right;font-size:8px;color:var(--champagne);font-family:'DM Mono',monospace;letter-spacing:0;text-transform:none"></span></div>
             <div class="fo-row">
               <span class="fo-label">KO / TKO</span>
               <div class="fo-track"><div class="fo-fill ko" id="fo-ko" style="width:0%"></div></div>
@@ -1179,7 +1179,7 @@ body {
               <span id="vs-conf-label" style="float:right;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase"></span>
             </div>
             <div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden;margin-bottom:8px">
-              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:var(--champagne-2)"></div>
+              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:var(--champagne)"></div>
             </div>
             <div style="font-size:7.5px;color:var(--text-lo);font-family:'DM Mono',monospace;letter-spacing:0.06em;margin-bottom:5px;text-transform:uppercase">How confidence is computed</div>
             <div id="vs-conf-breakdown" style="font-size:10px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6"></div>
@@ -1576,8 +1576,8 @@ function updateVsPlot(){
       type:'scatter3d', mode:'markers+text',
       x:[vsBlue.x], y:[vsBlue.y], z:[vsBlue.z],
       text:[vsBlue.name], textposition:'top center',
-      textfont:{color:'#2b5fb3',size:10,family:'Barlow Condensed'},
-      marker:{size:9,color:'#1a3a6e',opacity:1,line:{color:'#2b5fb3',width:1.5}},
+      textfont:{color:'#9994a0',size:10,family:'Barlow Condensed'},
+      marker:{size:9,color:'#1a3a6e',opacity:1,line:{color:'#9994a0',width:1.5}},
       hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
     });
   }
@@ -2035,7 +2035,7 @@ async function runVsAnalysis() {
       const shapeMap = {
         'KO/TKO':     { verdict:'EXPLOSIVE FIREFIGHT', color:'#c23030' },
         'Submission': { verdict:'SUBMISSION HUNT',      color:'#4a7fd4' },
-        'Decision':   { verdict:'WAR OF ATTRITION',     color:'#2b5fb3' },
+        'Decision':   { verdict:'WAR OF ATTRITION',     color:'#9994a0' },
       };
       const shape = shapeMap[data.method] || { verdict:'CALCULATED BATTLE', color:'#9994a0' };
       const shapeEl = document.getElementById('fight-shape-verdict');
@@ -2065,7 +2065,7 @@ async function runVsAnalysis() {
       const confLabelEl = document.getElementById('vs-conf-label');
       if (confLabelEl) {
         confLabelEl.textContent = data.confidence_label;
-        confLabelEl.style.color = data.confidence_label==='HIGH' ? 'var(--champagne-2)' : data.confidence_label==='MEDIUM' ? '#5a9abf' : '#555468';
+        confLabelEl.style.color = data.confidence_label==='HIGH' ? 'var(--champagne)' : data.confidence_label==='MEDIUM' ? '#5a9abf' : '#555468';
       }
       const winEdge    = Math.round(Math.abs(data.red_win_prob - 0.5) * 200);
       const methodEdge = Math.round(Math.max(mp.ko, mp.sub, mp.decision) * 100);
@@ -2193,8 +2193,8 @@ const B_TIER_STYLE = {
   S:   {color:'#FFD700', bg:'rgba(255,215,0,0.08)',    border:'rgba(255,215,0,0.3)',    gold:true},
   'A+':{color:'#c9a96e', bg:'rgba(201,169,110,0.08)',  border:'rgba(201,169,110,0.3)',  gold:true},
   A:   {color:'#c9a96e', bg:'rgba(201,169,110,0.07)',  border:'rgba(201,169,110,0.25)', gold:true},
-  'B+':{color:'var(--champagne-2)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
-  B:   {color:'var(--champagne-2)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
+  'B+':{color:'var(--champagne)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
+  B:   {color:'var(--champagne)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
   'C+':{color:'#a0a0b0',           bg:'transparent',      border:'var(--border-2)',        gold:false},
   C:   {color:'#a0a0b0',           bg:'transparent',      border:'var(--border)',          gold:false},
   'D+':{color:'#a0a0b0',           bg:'transparent',      border:'var(--border)',          gold:false},
@@ -2237,10 +2237,10 @@ function bBuildGrid(){
     {t:'S',  color:'#FFD700',           desc:'Gods of the sport. The one. The only.'},
     {t:'A+', color:'#c9a96e',           desc:'Legends of their era. Untouchable at their peak.'},
     {t:'A',  color:'#c9a96e',           desc:'Dynasty builders. Reigned supreme.'},
-    {t:'B+', color:'var(--champagne-2)',desc:'Champions who defended. Proved gold is earned, not given.'},
+    {t:'B+', color:'var(--champagne)',desc:'Champions who defended. Proved gold is earned, not given.'},
   ];
   const TIER_RIGHT = [
-    {t:'B',  color:'var(--champagne-2)',desc:'Once a champion, always a champion.'},
+    {t:'B',  color:'var(--champagne)',desc:'Once a champion, always a champion.'},
     {t:'C+', color:'#a0a0b0',           desc:'Greatness needs no gold to be proven.'},
     {t:'C-D',color:'#a0a0b0',           desc:'Historically ranked Top 5 / 10 / 15.'},
     {t:'E',  color:'#a0a0b0',           desc:'World-class. The UFC is the sharkest tank on earth.'},
@@ -2336,7 +2336,7 @@ function bUpdateBox(featId){
   const valEl=document.getElementById('val-'+featId);
   if(valEl){
     valEl.textContent=val;
-    valEl.style.color = elite ? 'var(--crimson-2)' : 'var(--champagne-2)';
+    valEl.style.color = elite ? 'var(--crimson-2)' : 'var(--champagne)';
   }
   const box=document.getElementById('attr-'+featId);
   if(box) box.style.borderColor = elite ? 'rgba(194,48,48,0.35)' : 'var(--border)';
