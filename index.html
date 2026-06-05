@@ -2508,311 +2508,312 @@ async function bLoadLeaderboard(){
 }
 
 // ══════════════════════════════════════════════════════
-//  DNA MODE
+//  DNA MODE — pure Canvas, no Chart.js dependency
 // ══════════════════════════════════════════════════════
 
-let _dnaInited = false;
-let _dnaChart  = null;
+let _dnaInited   = false;
+let _dnaYearly   = [];
+let _dnaChamps   = [];
+let _dnaChampPts = [];  // computed pixel-space points for hit-test
 
 async function dnaInit(){
   if(_dnaInited) return;
   _dnaInited = true;
 
-  // ── Fetch three datasets in parallel ──
-  let yearly=[], champions=[];
   try {
     const [ry, rc] = await Promise.all([
       fetch(API_BASE+'/api/dna/yearly').then(r=>r.json()),
       fetch(API_BASE+'/api/dna/champions').then(r=>r.json()),
     ]);
-    yearly     = ry;
-    champions  = rc;
+    _dnaYearly  = ry.sort((a,b)=>a.year-b.year);
+    _dnaChamps  = rc;
   } catch(e){
     console.error('DNA data load failed:', e);
     return;
   }
 
-  // ── Sort yearly by year ──
-  yearly.sort((a,b)=>a.year-b.year);
-  const years    = yearly.map(d=>d.year);
-  const nYears   = years.length;
-
-  // Bar chart data: grappling below X axis (negative), striking above
-  const grpPct   = yearly.map(d=> -(d.pct_grappling||0));   // negative → below
-  const strPct   = yearly.map(d=>   (d.pct_striking||0));   // positive → above
-
-  // Win rate lines
-  const grpWR    = yearly.map(d=> d.grp_winrate!=null ? d.grp_winrate : null);
-  const strWR    = yearly.map(d=> d.str_winrate!=null ? d.str_winrate : null);
-
-  // ── Map champions to chart points ──
-  // x = year index (float, interpolated), y = meta_score_pct remapped to win-rate scale
-  // meta_score_pct: 0=pure grappling, 100=pure striking → remap to y axis range
-  // Win rate axis roughly 40–85; champion y = lerp(42, 80, meta/100)
-  function champY(meta){ return 42 + (meta/100) * 38; }
-
-  // Build champion scatter points
-  // Group by year to avoid collision — if multiple champs same year, offset slightly
-  const champMap = {};
-  champions.forEach(c=>{
-    if(c.title_year < years[0] || c.title_year > years[nYears-1]) return;
-    const yr = c.title_year;
-    if(!champMap[yr]) champMap[yr]=[];
-    champMap[yr].push(c);
-  });
-
-  const champPoints = [];
-  Object.entries(champMap).forEach(([yr, list])=>{
-    list.forEach((c, idx)=>{
-      champPoints.push({
-        x: parseInt(yr) + (idx - (list.length-1)/2) * 0.15,
-        y: champY(c.meta_score_pct),
-        r: Math.max(4, Math.min(18, c.radius * 0.85)),
-        label: c.champion,
-        wc:    c.wc||'',
-        meta:  c.meta_score_pct,
-        titleW: c.title_fights_won,
-        nReigns: c.n_reigns,
-      });
-    });
-  });
-
-  // ── Build Chart.js chart ──
   const canvas = document.getElementById('dna-canvas');
-  const ctx    = canvas.getContext('2d');
+  const wrap   = document.getElementById('dna-chart-wrap');
 
-  if(_dnaChart){ _dnaChart.destroy(); _dnaChart=null; }
+  function resize(){
+    canvas.width  = wrap.clientWidth;
+    canvas.height = wrap.clientHeight;
+    dnaDraw(canvas);
+  }
 
-  // Color helpers
-  const C_GRP_BAR  = 'rgba(43,95,179,0.18)';
-  const C_GRP_EDGE = 'rgba(43,95,179,0.35)';
-  const C_STR_BAR  = 'rgba(140,31,31,0.18)';
-  const C_STR_EDGE = 'rgba(140,31,31,0.35)';
-  const C_GRP_LINE = '#c9a96e';   // champagne — grappling win rate
-  const C_STR_LINE = '#c23030';   // crimson   — striking win rate
-  const C_ZERO     = 'rgba(255,255,255,0.06)';
-  const C_GRID     = 'rgba(255,255,255,0.04)';
+  resize();
+  window.addEventListener('resize', resize);
 
-  _dnaChart = new Chart(ctx, {
-    data: {
-      labels: years,
-      datasets: [
-        // ── Bar: grappling % (below zero) ──
-        {
-          type: 'bar',
-          label: 'Grappling fighters %',
-          data: grpPct,
-          backgroundColor: C_GRP_BAR,
-          borderColor: C_GRP_EDGE,
-          borderWidth: 1,
-          borderRadius: 1,
-          yAxisID: 'yBar',
-          order: 4,
-          barPercentage: 0.9,
-          categoryPercentage: 1.0,
-        },
-        // ── Bar: striking % (above zero) ──
-        {
-          type: 'bar',
-          label: 'Striking fighters %',
-          data: strPct,
-          backgroundColor: C_STR_BAR,
-          borderColor: C_STR_EDGE,
-          borderWidth: 1,
-          borderRadius: 1,
-          yAxisID: 'yBar',
-          order: 4,
-          barPercentage: 0.9,
-          categoryPercentage: 1.0,
-        },
-        // ── Line: grappling win rate ──
-        {
-          type: 'line',
-          label: 'Grappling win rate',
-          data: grpWR,
-          borderColor: C_GRP_LINE,
-          backgroundColor: 'transparent',
-          borderWidth: 2,
-          pointRadius: 3,
-          pointBackgroundColor: C_GRP_LINE,
-          pointBorderColor: 'var(--obsidian)',
-          pointBorderWidth: 1.5,
-          tension: 0.35,
-          spanGaps: true,
-          yAxisID: 'yLine',
-          order: 2,
-        },
-        // ── Line: striking win rate ──
-        {
-          type: 'line',
-          label: 'Striking win rate',
-          data: strWR,
-          borderColor: C_STR_LINE,
-          backgroundColor: 'transparent',
-          borderWidth: 2,
-          pointRadius: 3,
-          pointBackgroundColor: C_STR_LINE,
-          pointBorderColor: 'var(--obsidian)',
-          pointBorderWidth: 1.5,
-          tension: 0.35,
-          spanGaps: true,
-          yAxisID: 'yLine',
-          order: 2,
-        },
-        // ── Scatter: champions ──
-        {
-          type: 'bubble',
-          label: 'Champions',
-          data: champPoints.map(p=>({x:p.x, y:p.y, r:p.r, _meta:p})),
-          backgroundColor: 'rgba(255,215,0,0.18)',
-          borderColor: 'rgba(255,215,0,0.7)',
-          borderWidth: 1.5,
-          yAxisID: 'yLine',
-          order: 1,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: { duration: 600, easing: 'easeOutQuart' },
-      interaction: { mode: 'nearest', intersect: true },
-      plugins: {
-        legend: { display: false },
-        tooltip: { enabled: false },  // custom tooltip
-      },
-      scales: {
-        x: {
-          type: 'linear',
-          min: years[0] - 0.5,
-          max: years[nYears-1] + 0.5,
-          ticks: {
-            stepSize: 1,
-            callback: v => Number.isInteger(v) ? v : '',
-            color: '#4a4858',
-            font: { family: "'DM Mono', monospace", size: 9 },
-          },
-          grid: { color: C_GRID, drawBorder: false },
-          border: { color: C_ZERO },
-        },
-        // Bar axis — grappling negative, striking positive, range -100 to +100
-        yBar: {
-          position: 'left',
-          min: -100,
-          max: 100,
-          display: false,
-          grid: { display: false },
-        },
-        // Line axis — win rate, range 35 to 90
-        yLine: {
-          position: 'right',
-          min: 35,
-          max: 90,
-          ticks: {
-            stepSize: 10,
-            callback: v => v+'%',
-            color: '#4a4858',
-            font: { family: "'DM Mono', monospace", size: 9 },
-          },
-          grid: {
-            color: C_GRID,
-            drawBorder: false,
-          },
-          border: { color: C_ZERO },
-        },
-      },
-    },
-  });
-
-  // ── Zero line annotation (manual) ──
-  // Draw a subtle horizontal line at yBar=0 via afterDraw plugin
-  const zeroPx = ()=>{
-    const yScale = _dnaChart.scales['yBar'];
-    return yScale ? yScale.getPixelForValue(0) : null;
-  };
-
-  // ── Custom tooltip on mousemove ──
+  // Tooltip
   const ttEl   = document.getElementById('dna-tooltip');
   const ttName = document.getElementById('dna-tt-name');
   const ttBody = document.getElementById('dna-tt-body');
 
   canvas.addEventListener('mousemove', evt=>{
     const rect = canvas.getBoundingClientRect();
-    const mx   = evt.clientX - rect.left;
-    const my   = evt.clientY - rect.top;
+    const mx = evt.clientX - rect.left;
+    const my = evt.clientY - rect.top;
 
-    // Check champion bubble hit first
+    // Hit-test champions first
     let hit = null;
-    const bubbleDs = _dnaChart.data.datasets[4];  // index 4 = champions bubble
-    if(bubbleDs){
-      for(const pt of bubbleDs.data){
-        const meta = pt._meta;
-        if(!meta) continue;
-        const xScale = _dnaChart.scales['x'];
-        const yScale = _dnaChart.scales['yLine'];
-        if(!xScale||!yScale) continue;
-        const px = xScale.getPixelForValue(pt.x);
-        const py = yScale.getPixelForValue(pt.y);
-        const d  = Math.sqrt((mx-px)**2 + (my-py)**2);
-        if(d <= pt.r + 4){
-          hit = { type:'champ', meta, px, py };
-          break;
-        }
-      }
+    for(const pt of _dnaChampPts){
+      const d = Math.sqrt((mx-pt.px)**2 + (my-pt.py)**2);
+      if(d <= pt.r + 4){ hit = {type:'champ', pt}; break; }
     }
 
-    if(!hit){
-      // Check line points
-      const xScale = _dnaChart.scales['x'];
-      if(xScale){
-        const xVal  = xScale.getValueForPixel(mx);
-        const nearY = years.find(y=> Math.abs(y-xVal)<0.5);
-        if(nearY!=null){
-          const yi = years.indexOf(nearY);
-          if(yi>=0){
-            const d = yearly[yi];
-            hit = { type:'year', d, nearY };
-          }
-        }
+    // Hit-test year column
+    if(!hit && _dnaYearly.length){
+      const pad = dnaGetPad(canvas);
+      const chartW = canvas.width  - pad.l - pad.r;
+      const n = _dnaYearly.length;
+      const colW = chartW / n;
+      const xi = Math.floor((mx - pad.l) / colW);
+      if(xi >= 0 && xi < n){
+        hit = {type:'year', d: _dnaYearly[xi]};
       }
     }
 
     if(hit){
-      ttEl.style.display='block';
+      ttEl.style.display = 'block';
       let left = evt.clientX + 14;
       let top  = evt.clientY - 10;
-      if(left + 200 > window.innerWidth) left = evt.clientX - 214;
+      if(left + 220 > window.innerWidth) left = evt.clientX - 234;
+      if(top + 120  > window.innerHeight) top = evt.clientY - 130;
       ttEl.style.left = left+'px';
       ttEl.style.top  = top+'px';
 
-      if(hit.type==='champ'){
-        const m = hit.meta;
-        const styleLabel = m.meta > 65 ? 'Striking' : m.meta < 35 ? 'Grappling' : 'Balanced';
-        ttName.textContent = m.label;
+      if(hit.type === 'champ'){
+        const p = hit.pt;
+        const styleLabel = p.meta > 65 ? 'Striking' : p.meta < 35 ? 'Grappling' : 'Balanced';
+        ttName.textContent = p.label;
         ttBody.innerHTML =
-          `<span class="tt-dim">Weight Class</span> ${m.wc||'—'}<br>`+
-          `<span class="tt-dim">Style</span> ${styleLabel} (${m.meta.toFixed(0)}/100)<br>`+
-          `<span class="tt-dim">Title Fights Won</span> ${m.titleW}<br>`+
-          `<span class="tt-dim">Reigns</span> ${m.nReigns}`;
+          `<span class="tt-dim">Weight Class</span> ${p.wc||'—'}<br>`+
+          `<span class="tt-dim">Style</span> ${styleLabel} (${p.meta.toFixed(0)}/100)<br>`+
+          `<span class="tt-dim">Title Fights Won</span> ${p.titleW}<br>`+
+          `<span class="tt-dim">Reigns</span> ${p.nReigns}`;
       } else {
         const d = hit.d;
-        const diff = d.winrate_diff!=null ? (d.winrate_diff>0?'+':'')+d.winrate_diff.toFixed(1)+'%' : '—';
-        const diffColor = d.winrate_diff!=null ? (d.winrate_diff>0 ? '#c23030' : '#c9a96e') : '#4a4858';
-        ttName.textContent = hit.nearY;
+        const diff = d.winrate_diff != null
+          ? (d.winrate_diff > 0 ? '+' : '') + d.winrate_diff.toFixed(1) + '%'
+          : '—';
+        const diffColor = d.winrate_diff != null
+          ? (d.winrate_diff > 0 ? '#c23030' : '#c9a96e')
+          : '#4a4858';
+        ttName.textContent = d.year + (d.is_partial ? ' *' : '');
         ttBody.innerHTML =
           `<span class="tt-dim">Striking fighters</span> ${d.pct_striking}%<br>`+
           `<span class="tt-dim">Grappling fighters</span> ${d.pct_grappling}%<br>`+
-          `<span class="tt-dim">Striking win rate</span> ${d.str_winrate!=null?d.str_winrate+'%':'—'}<br>`+
-          `<span class="tt-dim">Grappling win rate</span> ${d.grp_winrate!=null?d.grp_winrate+'%':'—'}<br>`+
+          `<span class="tt-dim">Striking win rate</span> ${d.str_winrate != null ? d.str_winrate+'%' : '—'}<br>`+
+          `<span class="tt-dim">Grappling win rate</span> ${d.grp_winrate != null ? d.grp_winrate+'%' : '—'}<br>`+
           `<span class="tt-dim">Differential</span> <span style="color:${diffColor}">${diff}</span>`+
           (d.is_partial ? '<br><span class="tt-dim" style="color:#4a4858">※ partial year</span>' : '');
       }
     } else {
-      ttEl.style.display='none';
+      ttEl.style.display = 'none';
     }
   });
 
   canvas.addEventListener('mouseleave', ()=>{ ttEl.style.display='none'; });
+}
+
+function dnaGetPad(canvas){
+  return { l: 48, r: 52, t: 18, b: 36 };
+}
+
+function dnaDraw(canvas){
+  const ctx    = canvas.getContext('2d');
+  const W      = canvas.width;
+  const H      = canvas.height;
+  const yearly = _dnaYearly;
+  const champs = _dnaChamps;
+  if(!yearly.length) return;
+
+  const pad    = dnaGetPad(canvas);
+  const chartW = W - pad.l - pad.r;
+  const chartH = H - pad.t - pad.b;
+  const n      = yearly.length;
+  const colW   = chartW / n;
+
+  // Y scales
+  const WR_MIN = 35, WR_MAX = 90;    // win rate axis
+  const BAR_MAX = 100;                // bar pct axis (0–100)
+
+  function xPos(i){ return pad.l + (i + 0.5) * colW; }
+  function yWR(v){  return pad.t + chartH - ((v - WR_MIN) / (WR_MAX - WR_MIN)) * chartH; }
+  function yBar(pct, above){
+    // bar origin = mid of chart
+    const origin = pad.t + chartH * 0.5;
+    const h = (pct / BAR_MAX) * (chartH * 0.45);
+    return above ? origin - h : origin;
+  }
+  function barH(pct){ return (pct / BAR_MAX) * (chartH * 0.45); }
+
+  ctx.clearRect(0, 0, W, H);
+
+  // ── Grid lines ──
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth   = 1;
+  [40, 50, 60, 70, 80].forEach(v=>{
+    const y = yWR(v);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+  });
+
+  // ── Y axis labels (win rate, right side) ──
+  ctx.fillStyle    = '#4a4858';
+  ctx.font         = '9px "DM Mono", monospace';
+  ctx.textAlign    = 'left';
+  ctx.textBaseline = 'middle';
+  [40, 50, 60, 70, 80].forEach(v=>{
+    ctx.fillText(v+'%', W - pad.r + 6, yWR(v));
+  });
+
+  // ── Center line (50%) ──
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth   = 1;
+  const yMid = pad.t + chartH * 0.5;
+  ctx.beginPath(); ctx.moveTo(pad.l, yMid); ctx.lineTo(W - pad.r, yMid); ctx.stroke();
+
+  // ── Bars ──
+  yearly.forEach((d, i)=>{
+    const x = pad.l + i * colW;
+    const bw = colW * 0.85;
+    const bx = x + (colW - bw) / 2;
+
+    // Striking bar (above mid)
+    const sh = barH(d.pct_striking || 0);
+    ctx.fillStyle   = 'rgba(140,31,31,0.20)';
+    ctx.strokeStyle = 'rgba(140,31,31,0.38)';
+    ctx.lineWidth   = 0.5;
+    ctx.fillRect(bx, yMid - sh, bw, sh);
+    ctx.strokeRect(bx, yMid - sh, bw, sh);
+
+    // Grappling bar (below mid)
+    const gh = barH(d.pct_grappling || 0);
+    ctx.fillStyle   = 'rgba(43,95,179,0.20)';
+    ctx.strokeStyle = 'rgba(43,95,179,0.38)';
+    ctx.fillRect(bx, yMid, bw, gh);
+    ctx.strokeRect(bx, yMid, bw, gh);
+  });
+
+  // ── Smooth line helper (Catmull-Rom) ──
+  function drawLine(points, color, lw){
+    const pts = points.filter(p=>p!==null);
+    if(pts.length < 2) return;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth   = lw;
+    ctx.lineJoin    = 'round';
+    ctx.lineCap     = 'round';
+    ctx.beginPath();
+    // Simple tension spline
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for(let i = 0; i < pts.length - 1; i++){
+      const p0 = pts[Math.max(i-1, 0)];
+      const p1 = pts[i];
+      const p2 = pts[i+1];
+      const p3 = pts[Math.min(i+2, pts.length-1)];
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+      ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+    }
+    ctx.stroke();
+    ctx.restore();
+    // Dots
+    pts.forEach(p=>{
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
+      ctx.fillStyle   = color;
+      ctx.strokeStyle = '#09090d';
+      ctx.lineWidth   = 1.5;
+      ctx.fill();
+      ctx.stroke();
+    });
+  }
+
+  // Grappling win rate line (champagne)
+  const grpPts = yearly.map((d,i)=>
+    d.grp_winrate != null ? {x: xPos(i), y: yWR(d.grp_winrate)} : null
+  );
+  drawLine(grpPts.filter(Boolean), '#c9a96e', 2);
+
+  // Striking win rate line (crimson)
+  const strPts = yearly.map((d,i)=>
+    d.str_winrate != null ? {x: xPos(i), y: yWR(d.str_winrate)} : null
+  );
+  drawLine(strPts.filter(Boolean), '#c23030', 2);
+
+  // ── X axis labels ──
+  ctx.fillStyle    = '#4a4858';
+  ctx.font         = '9px "DM Mono", monospace';
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'top';
+  yearly.forEach((d,i)=>{
+    if(d.year % 2 === 1) return; // every 2 years
+    ctx.fillText(d.year, xPos(i), H - pad.b + 6);
+  });
+
+  // ── Champion bubbles ──
+  _dnaChampPts = [];
+
+  // Group by year to offset overlapping
+  const byYear = {};
+  champs.forEach(c=>{
+    const yi = yearly.findIndex(d=>d.year === c.title_year);
+    if(yi < 0) return;
+    if(!byYear[yi]) byYear[yi] = [];
+    byYear[yi].push(c);
+  });
+
+  Object.entries(byYear).forEach(([yiStr, list])=>{
+    const yi  = parseInt(yiStr);
+    const cx  = xPos(yi);
+    // y position: meta_score_pct 0=bottom(grappling), 100=top(striking)
+    // Map to win-rate scale: meta 0 → 42%, meta 100 → 82%
+    list.forEach((c, idx)=>{
+      const offsetX = (idx - (list.length-1)/2) * 14;
+      const px  = cx + offsetX;
+      const wy  = 42 + (c.meta_score_pct / 100) * 40;
+      const py  = yWR(wy);
+      const r   = Math.max(4, Math.min(16, c.radius * 0.82));
+
+      // Glow
+      const grad = ctx.createRadialGradient(px, py, 0, px, py, r * 1.8);
+      grad.addColorStop(0, 'rgba(255,215,0,0.15)');
+      grad.addColorStop(1, 'rgba(255,215,0,0)');
+      ctx.beginPath();
+      ctx.arc(px, py, r * 1.8, 0, Math.PI*2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Bubble
+      ctx.beginPath();
+      ctx.arc(px, py, r, 0, Math.PI*2);
+      ctx.fillStyle   = 'rgba(255,215,0,0.14)';
+      ctx.strokeStyle = 'rgba(255,215,0,0.65)';
+      ctx.lineWidth   = 1.5;
+      ctx.fill();
+      ctx.stroke();
+
+      _dnaChampPts.push({
+        px, py, r,
+        label:  c.champion,
+        wc:     c.wc||'',
+        meta:   c.meta_score_pct,
+        titleW: c.title_fights_won,
+        nReigns:c.n_reigns,
+      });
+    });
+  });
+
+  // ── Left Y axis border ──
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth   = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t);
+  ctx.lineTo(pad.l, pad.t + chartH);
+  ctx.stroke();
 }
 
   window.setMode=setMode;
