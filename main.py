@@ -191,18 +191,38 @@ def _build_vs_vector(red_name, blue_name):
             rs = str(fa_val(fa_r, 'stance') or '')
             bs = str(fa_val(fa_b, 'stance') or '')
             vec[col] = float(rs == bs)
-        elif col == 'f1_td_threat_vs_f2_def':
-            vec[col] = safe_float(r.get('pct_td_frequency'), 5.0) * safe_float(b.get('pct_td_defense'), 5.0)
-        elif col == 'f2_td_threat_vs_f1_def':
-            vec[col] = safe_float(b.get('pct_td_frequency'), 5.0) * safe_float(r.get('pct_td_defense'), 5.0)
-        elif col == 'f1_str_threat_vs_f2_def':
-            vec[col] = safe_float(r.get('pct_striking_volume'), 5.0) * safe_float(b.get('pct_striking_defense'), 5.0)
-        elif col == 'f2_str_threat_vs_f1_def':
-            vec[col] = safe_float(b.get('pct_striking_volume'), 5.0) * safe_float(r.get('pct_striking_defense'), 5.0)
-        elif col == 'f1_sub_vs_f2_ctrl':
-            vec[col] = safe_float(r.get('pct_submission'), 5.0) * safe_float(b.get('pct_control'), 5.0)
-        elif col == 'f1_ko_vs_f2_absorb':
-            vec[col] = safe_float(r.get('pct_striking_power'), 5.0) * safe_float(b.get('pct_striking_defense'), 5.0)
+        elif col == 'f1_str_penetration':
+            r_str = safe_float(r.get('sig_per_r'), 5.0)
+            b_sdef = safe_float(b.get('str_def'), 0.5)
+            vec[col] = r_str * (1 - b_sdef)
+        elif col == 'f2_str_penetration':
+            b_str = safe_float(b.get('sig_per_r'), 5.0)
+            r_sdef = safe_float(r.get('str_def'), 0.5)
+            vec[col] = b_str * (1 - r_sdef)
+        elif col == 'f1_td_penetration':
+            r_td  = safe_float(r.get('td_per_r'), 1.0)
+            b_tdef = safe_float(b.get('td_def'), 0.5)
+            vec[col] = r_td * (1 - b_tdef)
+        elif col == 'f2_td_penetration':
+            b_td  = safe_float(b.get('td_per_r'), 1.0)
+            r_tdef = safe_float(r.get('td_def'), 0.5)
+            vec[col] = b_td * (1 - r_tdef)
+        elif col == 'f1_str_vs_f2_td':
+            r_str  = safe_float(r.get('sig_per_r'), 5.0)
+            b_sdef = safe_float(b.get('str_def'), 0.5)
+            b_td   = safe_float(b.get('td_per_r'), 1.0)
+            r_tdef = safe_float(r.get('td_def'), 0.5)
+            f1_sp  = r_str * (1 - b_sdef)
+            f2_tp  = b_td  * (1 - r_tdef)
+            vec[col] = f1_sp / (f2_tp + 0.01)
+        elif col == 'f2_str_vs_f1_td':
+            b_str  = safe_float(b.get('sig_per_r'), 5.0)
+            r_sdef = safe_float(r.get('str_def'), 0.5)
+            r_td   = safe_float(r.get('td_per_r'), 1.0)
+            b_tdef = safe_float(b.get('td_def'), 0.5)
+            f2_sp  = b_str * (1 - r_sdef)
+            f1_tp  = r_td  * (1 - b_tdef)
+            vec[col] = f2_sp / (f1_tp + 0.01)
         else:
             vec[col] = 0.0
 

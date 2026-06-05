@@ -332,13 +332,21 @@ for idx, row in bouts_dedup.iterrows():
     rec['delta_in_prime']   = s1['in_prime']   - s2['in_prime']
     rec['delta_past_prime'] = s1['past_prime']  - s2['past_prime']
 
-    # 風格克制乘積項（關鍵：不是差值而是交互作用）
-    rec['f1_td_threat_vs_f2_def']  = s1['td_per_r']  * s2['td_def']   # f1 摔技威脅 vs f2 防摔
-    rec['f2_td_threat_vs_f1_def']  = s2['td_per_r']  * s1['td_def']   # 反向
-    rec['f1_str_threat_vs_f2_def'] = s1['sig_per_r'] * s2['str_def']  # f1 打擊量 vs f2 防打擊
-    rec['f2_str_threat_vs_f1_def'] = s2['sig_per_r'] * s1['str_def']  # 反向
-    rec['f1_sub_vs_f2_ctrl']       = s1['sub_per_r'] * s2['ctrl_per_r']  # f1 鎖技 vs f2 控制
-    rec['f1_ko_vs_f2_absorb']      = s1['ko_rate']   * s2['ctrl_received_per_r']  # KO力 vs 被打中率
+    # 風格克制交互項（穿透率 + 剋制比）
+    # 訓練資料裡 str_def / td_def 是 0-1 比例（非百分比）
+    f1_str_pen = s1['sig_per_r'] * (1 - s2['str_def'])   # f1 站立穿透
+    f2_str_pen = s2['sig_per_r'] * (1 - s1['str_def'])   # f2 站立穿透
+    f1_td_pen  = s1['td_per_r']  * (1 - s2['td_def'])    # f1 摔跤穿透
+    f2_td_pen  = s2['td_per_r']  * (1 - s1['td_def'])    # f2 摔跤穿透
+
+    rec['f1_str_penetration']  = f1_str_pen
+    rec['f2_str_penetration']  = f2_str_pen
+    rec['f1_td_penetration']   = f1_td_pen
+    rec['f2_td_penetration']   = f2_td_pen
+
+    # 風格剋制比：f1站打能否壓制f2摔跤，以及反向
+    rec['f1_str_vs_f2_td']     = f1_str_pen / (f2_td_pen + 0.01)
+    rec['f2_str_vs_f1_td']     = f2_str_pen / (f1_td_pen + 0.01)
 
     records.append(rec)
     fighter_names.append(f1_name)

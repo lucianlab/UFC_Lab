@@ -294,6 +294,8 @@ for _, r in data.iterrows():
         "ctrl_per_r": num(r['ctrl_per_r'], 1),
         "gas_tank": num(r['gas_tank'], 3) if pd.notna(r['gas_tank']) else 1.0,
         "tier": r['tier'],
+        "str_def": num(r['str_def'], 3),
+        "td_def": num(r['td_def'], 3),
     })
 with open(OUT_JSON, 'w', encoding='utf-8') as f:
     json.dump(records, f, ensure_ascii=False)

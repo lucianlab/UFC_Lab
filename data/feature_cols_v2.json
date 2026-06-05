@@ -27,10 +27,10 @@
   "delta_age",
   "delta_in_prime",
   "delta_past_prime",
-  "f1_td_threat_vs_f2_def",
-  "f2_td_threat_vs_f1_def",
-  "f1_str_threat_vs_f2_def",
-  "f2_str_threat_vs_f1_def",
-  "f1_sub_vs_f2_ctrl",
-  "f1_ko_vs_f2_absorb"
+  "f1_str_penetration",
+  "f2_str_penetration",
+  "f1_td_penetration",
+  "f2_td_penetration",
+  "f1_str_vs_f2_td",
+  "f2_str_vs_f1_td"
 ]
