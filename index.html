@@ -1006,11 +1006,10 @@ body {
 .dna-insight-label {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 8px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
+  font-weight: 700;
+  letter-spacing: 0.20em;
   color: var(--champagne);
   margin-right: 10px;
-  opacity: 0.7;
 }
 
 </style>
@@ -1313,7 +1312,7 @@ body {
     <!-- Axis labels -->
     <div id="dna-axis-labels">
       <span class="dna-axis-label">← Grappling era</span>
-      <span class="dna-axis-label" style="color:var(--text-xlo)">Year</span>
+      <span class="dna-axis-label" style="color:var(--text-hi);letter-spacing:0.15em">YEAR</span>
       <span class="dna-axis-label">Striking era →</span>
     </div>
 
@@ -2576,15 +2575,17 @@ async function dnaInit(){
   const canvas = document.getElementById('dna-canvas');
   const wrap   = document.getElementById('dna-chart-wrap');
 
+  const dpr = window.devicePixelRatio || 1;
+  let _cssW = 0, _cssH = 0;
+
   function resize(){
-    // Use exact displayed size so canvas coords match mouse coords
     const rect = canvas.getBoundingClientRect();
-    const w = Math.round(rect.width);
-    const h = Math.round(rect.height);
-    if(w === 0 || h === 0) return;
-    canvas.width  = w;
-    canvas.height = h;
-    dnaDraw(canvas);
+    _cssW = Math.round(rect.width);
+    _cssH = Math.round(rect.height);
+    if(_cssW === 0 || _cssH === 0) return;
+    canvas.width  = _cssW * dpr;
+    canvas.height = _cssH * dpr;
+    dnaDraw(canvas, _cssW, _cssH, dpr);
   }
 
   // Wait two frames so the active class has time to render and layout
@@ -2669,10 +2670,12 @@ function dnaGetPad(canvas){
   return { l: 48, r: 52, t: 18, b: 36 };
 }
 
-function dnaDraw(canvas){
-  const W   = canvas.width;
-  const H   = canvas.height;
+function dnaDraw(canvas, W, H, dpr){
+  dpr = dpr || window.devicePixelRatio || 1;
+  W = W || Math.round(canvas.width  / dpr);
+  H = H || Math.round(canvas.height / dpr);
   const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const yearly = _dnaYearly;
   const champs = _dnaChamps;
   if(!yearly.length) return;
