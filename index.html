@@ -997,12 +997,11 @@ body {
   padding: 8px 28px 10px;
   font-family: 'DM Mono', monospace;
   font-size: 9px;
-  color: var(--champagne);
+  color: var(--text-lo);
   line-height: 1.6;
   border-top: 1px solid var(--border);
   flex-shrink: 0;
   letter-spacing: 0.04em;
-  opacity: 0.85;
 }
 .dna-insight-label {
   font-family: 'Barlow Condensed', sans-serif;
@@ -1279,26 +1278,28 @@ body {
       <div id="dna-legend">
         <div class="dna-legend-row">
           <div class="dna-legend-item">
+            <div class="dna-legend-swatch" style="background:rgba(43,95,179,0.38);border:1px solid rgba(43,95,179,0.55)"></div>
+            Grappling-dominant fighters (%)
+          </div>
+          <div class="dna-legend-item">
             <div class="dna-legend-swatch" style="background:rgba(140,31,31,0.38);border:1px solid rgba(140,31,31,0.55)"></div>
             Striking-dominant fighters (%)
+          </div>
+        </div>
+        <div class="dna-legend-row">
+          <div class="dna-legend-item">
+            <div class="dna-legend-line" style="background:#4a7fd4"></div>
+            Grappling win rate
           </div>
           <div class="dna-legend-item">
             <div class="dna-legend-line" style="background:#c23030"></div>
             Striking win rate
           </div>
-          <div class="dna-legend-item">
-            <div class="dna-legend-dot" style="background:#FFD700;border:1px solid rgba(255,215,0,0.5)"></div>
-            Champion
-          </div>
         </div>
         <div class="dna-legend-row">
           <div class="dna-legend-item">
-            <div class="dna-legend-swatch" style="background:rgba(43,95,179,0.38);border:1px solid rgba(43,95,179,0.55)"></div>
-            Grappling-dominant fighters (%)
-          </div>
-          <div class="dna-legend-item">
-            <div class="dna-legend-line" style="background:#4a7fd4"></div>
-            Grappling win rate
+            <div class="dna-legend-dot" style="background:#FFD700;border:1px solid rgba(255,215,0,0.5)"></div>
+            Champion
           </div>
         </div>
       </div>
@@ -1312,7 +1313,7 @@ body {
     <!-- Axis labels -->
     <div id="dna-axis-labels">
       <span class="dna-axis-label">← Grappling era</span>
-      <span class="dna-axis-label" style="color:var(--text-md)">Year</span>
+      <span class="dna-axis-label" style="color:var(--text-xlo)">Year</span>
       <span class="dna-axis-label">Striking era →</span>
     </div>
 
@@ -2575,19 +2576,18 @@ async function dnaInit(){
   const canvas = document.getElementById('dna-canvas');
   const wrap   = document.getElementById('dna-chart-wrap');
 
-  const dpr = window.devicePixelRatio || 1;
 
   function resize(){
     const w = wrap.clientWidth;
     const h = wrap.clientHeight;
     if(w === 0 || h === 0) return;
-    // Physical pixels for canvas buffer
-    canvas.width  = w * dpr;
-    canvas.height = h * dpr;
-    // CSS size stays the same
-    canvas.style.width  = w + 'px';
-    canvas.style.height = h + 'px';
-    dnaDraw(canvas, w, h, dpr);
+    // Use CSS pixels directly — no DPR scaling
+    // This ensures canvas internal coordinates === CSS coordinates === mouse coordinates
+    canvas.width  = w;
+    canvas.height = h;
+    canvas.style.width  = '';
+    canvas.style.height = '';
+    dnaDraw(canvas);
   }
 
   // Wait two frames so the active class has time to render and layout
@@ -2672,16 +2672,10 @@ function dnaGetPad(canvas){
   return { l: 48, r: 52, t: 18, b: 36 };
 }
 
-function dnaDraw(canvas, W, H, dpr){
-  dpr = dpr || window.devicePixelRatio || 1;
-  // W and H are CSS pixel dimensions (DPR-independent)
-  if(!W || !H){
-    W = canvas.clientWidth  || Math.round(canvas.width  / dpr);
-    H = canvas.clientHeight || Math.round(canvas.height / dpr);
-  }
+function dnaDraw(canvas){
+  const W   = canvas.width;
+  const H   = canvas.height;
   const ctx = canvas.getContext('2d');
-  // Reset transform then scale to DPR — called fresh every draw
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const yearly = _dnaYearly;
   const champs = _dnaChamps;
   if(!yearly.length) return;
@@ -2706,7 +2700,7 @@ function dnaDraw(canvas, W, H, dpr){
   }
   function barH(pct){ return (pct / BAR_MAX) * (chartH * 0.45); }
 
-  ctx.clearRect(0, 0, W, H);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // ── Grid lines ──
   ctx.strokeStyle = 'rgba(255,255,255,0.04)';
