@@ -940,7 +940,7 @@ body {
   padding: 16px 28px 12px;
   min-height: 0;
 }
-#dna-canvas { width: 100% !important; height: 100% !important; }
+#dna-canvas { display: block; }
 
 /* Tooltip */
 #dna-tooltip {
@@ -2576,18 +2576,22 @@ async function dnaInit(){
   const canvas = document.getElementById('dna-canvas');
   const wrap   = document.getElementById('dna-chart-wrap');
 
+  const dpr = window.devicePixelRatio || 1;
 
   function resize(){
     const w = wrap.clientWidth;
     const h = wrap.clientHeight;
     if(w === 0 || h === 0) return;
-    // Use CSS pixels directly — no DPR scaling
-    // This ensures canvas internal coordinates === CSS coordinates === mouse coordinates
-    canvas.width  = w;
-    canvas.height = h;
-    canvas.style.width  = '';
-    canvas.style.height = '';
-    dnaDraw(canvas);
+    // Set physical pixels
+    canvas.width  = w * dpr;
+    canvas.height = h * dpr;
+    // Keep CSS size unchanged
+    canvas.style.width  = w + 'px';
+    canvas.style.height = h + 'px';
+    // Scale context to CSS pixels
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    dnaDraw(canvas, w, h);
   }
 
   // Wait two frames so the active class has time to render and layout
@@ -2603,8 +2607,11 @@ async function dnaInit(){
 
   canvas.addEventListener('mousemove', evt=>{
     const rect = canvas.getBoundingClientRect();
-    const mx = evt.clientX - rect.left;
-    const my = evt.clientY - rect.top;
+    // Scale from CSS display coords to canvas internal coords
+    const scaleX = canvas.width  / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const mx = (evt.clientX - rect.left) * scaleX;
+    const my = (evt.clientY - rect.top)  * scaleY;
 
     // Hit-test champions first
     let hit = null;
@@ -2672,10 +2679,13 @@ function dnaGetPad(canvas){
   return { l: 48, r: 52, t: 18, b: 36 };
 }
 
-function dnaDraw(canvas){
-  const W   = canvas.width;
-  const H   = canvas.height;
-  const ctx = canvas.getContext('2d');
+function dnaDraw(canvas, W, H){
+  // W and H are CSS pixel dimensions (DPR-independent)
+  if(!W || !H){
+    W = canvas.clientWidth  || canvas.width;
+    H = canvas.clientHeight || canvas.height;
+  }
+  const ctx    = canvas.getContext('2d');
   const yearly = _dnaYearly;
   const champs = _dnaChamps;
   if(!yearly.length) return;
