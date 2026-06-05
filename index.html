@@ -2536,13 +2536,19 @@ async function dnaInit(){
   const wrap   = document.getElementById('dna-chart-wrap');
 
   function resize(){
-    canvas.width  = wrap.clientWidth;
-    canvas.height = wrap.clientHeight;
+    const w = wrap.clientWidth;
+    const h = wrap.clientHeight;
+    if(w === 0 || h === 0) return;
+    canvas.width  = w;
+    canvas.height = h;
     dnaDraw(canvas);
   }
 
-  resize();
-  window.addEventListener('resize', resize);
+  // Wait two frames so the active class has time to render and layout
+  requestAnimationFrame(()=> requestAnimationFrame(()=> {
+    resize();
+    window.addEventListener('resize', resize);
+  }));
 
   // Tooltip
   const ttEl   = document.getElementById('dna-tooltip');
