@@ -332,21 +332,19 @@ for idx, row in bouts_dedup.iterrows():
     rec['delta_in_prime']   = s1['in_prime']   - s2['in_prime']
     rec['delta_past_prime'] = s1['past_prime']  - s2['past_prime']
 
-    # 風格克制交互項（穿透率 + 剋制比）
+    # 風格克制交互項 — 全部用 delta，確保 f1/f2 互換時語意一致
     # 訓練資料裡 str_def / td_def 是 0-1 比例（非百分比）
     f1_str_pen = s1['sig_per_r'] * (1 - s2['str_def'])   # f1 站立穿透
     f2_str_pen = s2['sig_per_r'] * (1 - s1['str_def'])   # f2 站立穿透
     f1_td_pen  = s1['td_per_r']  * (1 - s2['td_def'])    # f1 摔跤穿透
     f2_td_pen  = s2['td_per_r']  * (1 - s1['td_def'])    # f2 摔跤穿透
 
-    rec['f1_str_penetration']  = f1_str_pen
-    rec['f2_str_penetration']  = f2_str_pen
-    rec['f1_td_penetration']   = f1_td_pen
-    rec['f2_td_penetration']   = f2_td_pen
-
-    # 風格剋制比：f1站打能否壓制f2摔跤，以及反向
-    rec['f1_str_vs_f2_td']     = f1_str_pen / (f2_td_pen + 0.01)
-    rec['f2_str_vs_f1_td']     = f2_str_pen / (f1_td_pen + 0.01)
+    # delta 正值 = f1 佔優，負值 = f2 佔優，與 label 方向一致
+    rec['delta_str_penetration'] = f1_str_pen - f2_str_pen
+    rec['delta_td_penetration']  = f1_td_pen  - f2_td_pen
+    # 剋制比差值：f1站打壓制f2摔跤 vs f2站打壓制f1摔跤
+    rec['delta_str_vs_td'] = (f1_str_pen / (f2_td_pen + 0.01)) - \
+                              (f2_str_pen / (f1_td_pen + 0.01))
 
     records.append(rec)
     fighter_names.append(f1_name)

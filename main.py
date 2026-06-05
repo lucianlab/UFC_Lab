@@ -191,38 +191,39 @@ def _build_vs_vector(red_name, blue_name):
             rs = str(fa_val(fa_r, 'stance') or '')
             bs = str(fa_val(fa_b, 'stance') or '')
             vec[col] = float(rs == bs)
-        elif col == 'f1_str_penetration':
+        elif col == 'delta_str_penetration':
+            # red 站立穿透 - blue 站立穿透（delta 正值 = red 佔優）
             r_str = safe_float(r.get('sig_per_r'), 5.0)
             b_sdef = safe_float(b.get('str_def'), 0.5)
-            vec[col] = r_str * (1 - b_sdef)
-        elif col == 'f2_str_penetration':
             b_str = safe_float(b.get('sig_per_r'), 5.0)
             r_sdef = safe_float(r.get('str_def'), 0.5)
-            vec[col] = b_str * (1 - r_sdef)
-        elif col == 'f1_td_penetration':
+            f1_sp = r_str * (1 - b_sdef)
+            f2_sp = b_str * (1 - r_sdef)
+            vec[col] = f1_sp - f2_sp
+        elif col == 'delta_td_penetration':
+            # red 摔跤穿透 - blue 摔跤穿透
             r_td  = safe_float(r.get('td_per_r'), 1.0)
             b_tdef = safe_float(b.get('td_def'), 0.5)
-            vec[col] = r_td * (1 - b_tdef)
-        elif col == 'f2_td_penetration':
             b_td  = safe_float(b.get('td_per_r'), 1.0)
             r_tdef = safe_float(r.get('td_def'), 0.5)
-            vec[col] = b_td * (1 - r_tdef)
-        elif col == 'f1_str_vs_f2_td':
+            f1_tp = r_td * (1 - b_tdef)
+            f2_tp = b_td * (1 - r_tdef)
+            vec[col] = f1_tp - f2_tp
+        elif col == 'delta_str_vs_td':
+            # (red站打/blue摔跤穿透) - (blue站打/red摔跤穿透)
             r_str  = safe_float(r.get('sig_per_r'), 5.0)
             b_sdef = safe_float(b.get('str_def'), 0.5)
             b_td   = safe_float(b.get('td_per_r'), 1.0)
             r_tdef = safe_float(r.get('td_def'), 0.5)
-            f1_sp  = r_str * (1 - b_sdef)
-            f2_tp  = b_td  * (1 - r_tdef)
-            vec[col] = f1_sp / (f2_tp + 0.01)
-        elif col == 'f2_str_vs_f1_td':
             b_str  = safe_float(b.get('sig_per_r'), 5.0)
             r_sdef = safe_float(r.get('str_def'), 0.5)
             r_td   = safe_float(r.get('td_per_r'), 1.0)
             b_tdef = safe_float(b.get('td_def'), 0.5)
-            f2_sp  = b_str * (1 - r_sdef)
-            f1_tp  = r_td  * (1 - b_tdef)
-            vec[col] = f2_sp / (f1_tp + 0.01)
+            f1_sp = r_str * (1 - b_sdef)
+            f2_tp = b_td  * (1 - r_tdef)
+            f2_sp = b_str * (1 - r_sdef)
+            f1_tp = r_td  * (1 - b_tdef)
+            vec[col] = (f1_sp / (f2_tp + 0.01)) - (f2_sp / (f1_tp + 0.01))
         else:
             vec[col] = 0.0
 

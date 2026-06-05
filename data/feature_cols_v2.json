@@ -27,10 +27,7 @@
   "delta_age",
   "delta_in_prime",
   "delta_past_prime",
-  "f1_str_penetration",
-  "f2_str_penetration",
-  "f1_td_penetration",
-  "f2_td_penetration",
-  "f1_str_vs_f2_td",
-  "f2_str_vs_f1_td"
+  "delta_str_penetration",
+  "delta_td_penetration",
+  "delta_str_vs_td"
 ]
