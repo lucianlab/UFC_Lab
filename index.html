@@ -140,6 +140,7 @@ body {
   color: var(--champagne);
   background: rgba(201,169,110,0.07);
   border-color: var(--champagne-dim);
+  border-color: var(--border-2);
 }
 
 /* btn-vs uses base active style */
@@ -1058,10 +1059,10 @@ body {
     <div id="legend"><div class="panel-title">Weight Classes</div></div>
     <div id="tier-legend" style="margin-bottom:10px">
       <div class="panel-title">Status</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:#6a6a7a"><div style="width:8px;height:8px;border-radius:50%;background:#FFD700;flex-shrink:0"></div>Current Champion</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:#666"><div style="width:8px;height:8px;border-radius:50%;background:#C0A060;flex-shrink:0"></div>Former Champion</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:#555"><div style="width:8px;height:8px;border-radius:50%;background:#7F8FA6;flex-shrink:0"></div>Ranked Top 15</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:#333"><div style="width:8px;height:8px;border-radius:50%;background:#2a2a3a;flex-shrink:0"></div>Unranked</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-md)"><div style="width:8px;height:8px;border-radius:50%;background:#FFD700;flex-shrink:0"></div>Current Champion</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#C0A060;flex-shrink:0"></div>Former Champion</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#7F8FA6;flex-shrink:0"></div>Ranked Top 15</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#2a2a3a;flex-shrink:0"></div>Unranked</div>
     </div>
     <div id="hint">X: Grappler ↔ Striker<br>Y: Decision ↔ Finisher<br>Z: High-Output ↔ Patient</div>
   </div>
@@ -1139,7 +1140,7 @@ body {
           <!-- TR1-L: Win Probability + Finish -->
           <div id="vs-win-col">
             <div class="vs-section-label">Win Probability
-              <span id="vs-ml-loading" style="font-size:7.5px;color:#333;font-family:'DM Mono',monospace;text-transform:none;letter-spacing:0"></span>
+              <span id="vs-ml-loading" style="font-size:7.5px;color:var(--text-lo);font-family:'DM Mono',monospace;text-transform:none;letter-spacing:0"></span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
               <span id="vs-prob-red-pct"  style="font-size:30px;font-weight:700;color:#c23030;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
@@ -1178,7 +1179,7 @@ body {
               <span id="vs-conf-label" style="float:right;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase"></span>
             </div>
             <div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden;margin-bottom:8px">
-              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:#3a3848"></div>
+              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:var(--champagne)"></div>
             </div>
             <div style="font-size:7.5px;color:var(--text-lo);font-family:'DM Mono',monospace;letter-spacing:0.06em;margin-bottom:5px;text-transform:uppercase">How confidence is computed</div>
             <div id="vs-conf-breakdown" style="font-size:10px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6"></div>
@@ -1488,7 +1489,7 @@ WC_ORDER.forEach(wc=>{
   if(!byWC[wc])return;
   const item=document.createElement('div');
   item.className='legend-item'; item.dataset.wc=wc;
-  item.innerHTML=`<div class="legend-dot" style="background:${WC_COLORS[wc]}"></div>${wc} <span style="color:#333;margin-left:auto">${byWC[wc].length}</span>`;
+  item.innerHTML=`<div class="legend-dot" style="background:${WC_COLORS[wc]}"></div>${wc} <span style="color:var(--text-lo);margin-left:auto">${byWC[wc].length}</span>`;
   item.addEventListener('click',()=>applyFilter(activeWC===wc?null:wc));
   legendEl.appendChild(item);
 });
@@ -1872,7 +1873,7 @@ function toggleFeatExplain() {
 function renderShap(topFeatures) {
   const el = document.getElementById('vs-shap-list');
   if (!topFeatures || topFeatures.length === 0) {
-    el.innerHTML = '<div style="font-size:9px;color:#333;font-family:DM Mono,monospace;grid-column:1/-1">SHAP unavailable</div>';
+    el.innerHTML = '<div style="font-size:9px;color:var(--text-lo);font-family:DM Mono,monospace;grid-column:1/-1">SHAP unavailable</div>';
     return;
   }
   // Human-readable labels
@@ -2059,12 +2060,12 @@ async function runVsAnalysis() {
       const confBar = document.getElementById('vs-conf-bar');
       if (confBar) {
         confBar.style.width = confPct + '%';
-        confBar.style.background = data.confidence_label==='HIGH' ? 'linear-gradient(90deg,#c23030,#4a7fd4)' : data.confidence_label==='MODERATE' ? 'linear-gradient(90deg,#c23030 30%,#4a7fd4)' : '#3a3848';
+        confBar.style.background = data.confidence_label==='HIGH' ? 'linear-gradient(90deg,#c23030,#4a7fd4)' : data.confidence_label==='MEDIUM' ? '#5a7a9a' : '#444460';
       }
       const confLabelEl = document.getElementById('vs-conf-label');
       if (confLabelEl) {
         confLabelEl.textContent = data.confidence_label;
-        confLabelEl.style.color = data.confidence_label==='HIGH' ? '#c23030' : data.confidence_label==='MODERATE' ? 'var(--text-md)' : 'var(--text-lo)';
+        confLabelEl.style.color = data.confidence_label==='HIGH' ? 'var(--champagne)' : data.confidence_label==='MEDIUM' ? '#5a9abf' : '#555468';
       }
       const winEdge    = Math.round(Math.abs(data.red_win_prob - 0.5) * 200);
       const methodEdge = Math.round(Math.max(mp.ko, mp.sub, mp.decision) * 100);
@@ -2081,7 +2082,7 @@ async function runVsAnalysis() {
     } else {
       document.getElementById('vs-ml-loading').textContent = 'unavailable';
       // Static fallback
-      const shapeFB = styleDist > 4 ? { verdict:'UNPREDICTABLE', color:'#6a6a7a' } : { verdict:'CALCULATED BATTLE', color:'#9994a0' };
+      const shapeFB = styleDist > 4 ? { verdict:'UNPREDICTABLE', color:'var(--text-md)' } : { verdict:'CALCULATED BATTLE', color:'#9994a0' };
       document.getElementById('fight-shape-verdict').textContent = shapeFB.verdict;
       document.getElementById('fight-shape-verdict').style.color = shapeFB.color;
     }
@@ -2648,7 +2649,7 @@ async function dnaInit(){
           `<span class="tt-dim">Striking win rate</span> ${d.str_winrate != null ? d.str_winrate+'%' : '—'}<br>`+
           `<span class="tt-dim">Grappling win rate</span> ${d.grp_winrate != null ? d.grp_winrate+'%' : '—'}<br>`+
           `<span class="tt-dim">Differential</span> <span style="color:${diffColor}">${diff}</span>`+
-          (d.is_partial ? '<br><span class="tt-dim" style="color:#4a4858">※ partial year</span>' : '');
+          (d.is_partial ? '<br><span class="tt-dim" style="color:var(--text-lo)">※ partial year</span>' : '');
       }
     } else {
       ttEl.style.display = 'none';
