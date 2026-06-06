@@ -1155,7 +1155,7 @@ body {
               <span id="vs-prob-blue-name" style="font-size:8.5px;color:rgba(43,95,179,0.55);font-family:'DM Mono',monospace">—</span>
             </div>
             <!-- Finish Probability inside win-col -->
-            <div class="fo-title">Finish Probability <span id="vs-round-badge" style="float:right;font-size:8px;color:var(--champagne);font-family:'DM Mono',monospace;letter-spacing:0;text-transform:none"></span></div>
+            <div class="fo-title">Finish Probability <span id="vs-round-badge" style="float:right;font-size:8px;color:var(--text-md);font-family:'DM Mono',monospace;letter-spacing:0;text-transform:none"></span></div>
             <div class="fo-row">
               <span class="fo-label">KO / TKO</span>
               <div class="fo-track"><div class="fo-fill ko" id="fo-ko" style="width:0%"></div></div>
@@ -1179,7 +1179,7 @@ body {
               <span id="vs-conf-label" style="float:right;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase"></span>
             </div>
             <div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden;margin-bottom:8px">
-              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:var(--champagne)"></div>
+              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:linear-gradient(90deg,#1a1824,#c9a96e)"></div>
             </div>
             <div style="font-size:7.5px;color:var(--text-lo);font-family:'DM Mono',monospace;letter-spacing:0.06em;margin-bottom:5px;text-transform:uppercase">How confidence is computed</div>
             <div id="vs-conf-breakdown" style="font-size:10px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6"></div>
@@ -1975,7 +1975,7 @@ async function runVsAnalysis() {
         <div class="sm-names"><span style="color:#c23030">${s.a}</span><span class="sm-vs">vs</span><span style="color:#2b5fb3">${s.bName}</span></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
           <span class="sm-dist">style similarity: ${Math.round((1-s.dist/9)*100)}% match</span>
-          <span class="sm-winner">${winner.split(' ').pop()}${finishStr}</span>
+          <span class="sm-winner" style="color:${winner===s.a ? '#c23030' : '#2b5fb3'}">${winner.split(' ').pop()}${finishStr}</span>
         </div>`;
       div.onclick = () => {
         if (fa && fb) { vsRed=fa; vsBlue=fb; setPickerUI('red',fa); setPickerUI('blue',fb); runVsAnalysis(); }
@@ -2062,10 +2062,14 @@ async function runVsAnalysis() {
         confBar.style.width = confPct + '%';
         confBar.style.background = data.confidence_label==='HIGH' ? 'linear-gradient(90deg,#c23030,#4a7fd4)' : data.confidence_label==='MODERATE' ? '#5a7a9a' : '#444460';
       }
-      const confLabelEl = document.getElementById('vs-conf-label');
+            const confLabelEl = document.getElementById('vs-conf-label');
       if (confLabelEl) {
         confLabelEl.textContent = data.confidence_label;
-        confLabelEl.style.color = data.confidence_label==='HIGH' ? 'var(--champagne)' : data.confidence_label==='MODERATE' ? '#5a9abf' : '#555468';
+        const cf = Math.min(1, Math.max(0, data.confidence || 0));
+        const cr = Math.round(26  + (201-26)  * cf);
+        const cg = Math.round(24  + (169-24)  * cf);
+        const cb = Math.round(36  + (110-36)  * cf);
+        confLabelEl.style.color = `rgb(${cr},${cg},${cb})`;
       }
       const winEdge    = Math.round(Math.abs(data.red_win_prob - 0.5) * 200);
       const methodEdge = Math.round(Math.max(mp.ko, mp.sub, mp.decision) * 100);
