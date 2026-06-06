@@ -2060,7 +2060,7 @@ async function runVsAnalysis() {
       const confBar = document.getElementById('vs-conf-bar');
       if (confBar) {
         confBar.style.width = confPct + '%';
-        confBar.style.background = data.confidence_label==='HIGH' ? 'linear-gradient(90deg,#c23030,#4a7fd4)' : data.confidence_label==='MODERATE' ? '#5a7a9a' : '#444460';
+        // gradient fixed in HTML; only width changes
       }
             const confLabelEl = document.getElementById('vs-conf-label');
       if (confLabelEl) {
