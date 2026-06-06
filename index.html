@@ -2060,12 +2060,12 @@ async function runVsAnalysis() {
       const confBar = document.getElementById('vs-conf-bar');
       if (confBar) {
         confBar.style.width = confPct + '%';
-        confBar.style.background = data.confidence_label==='HIGH' ? 'linear-gradient(90deg,#c23030,#4a7fd4)' : data.confidence_label==='MEDIUM' ? '#5a7a9a' : '#444460';
+        confBar.style.background = data.confidence_label==='HIGH' ? 'linear-gradient(90deg,#c23030,#4a7fd4)' : data.confidence_label==='MODERATE' ? '#5a7a9a' : '#444460';
       }
       const confLabelEl = document.getElementById('vs-conf-label');
       if (confLabelEl) {
         confLabelEl.textContent = data.confidence_label;
-        confLabelEl.style.color = data.confidence_label==='HIGH' ? 'var(--champagne)' : data.confidence_label==='MEDIUM' ? '#5a9abf' : '#555468';
+        confLabelEl.style.color = data.confidence_label==='HIGH' ? 'var(--champagne)' : data.confidence_label==='MODERATE' ? '#5a9abf' : '#555468';
       }
       const winEdge    = Math.round(Math.abs(data.red_win_prob - 0.5) * 200);
       const methodEdge = Math.round(Math.max(mp.ko, mp.sub, mp.decision) * 100);
