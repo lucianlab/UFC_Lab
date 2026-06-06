@@ -140,7 +140,6 @@ body {
   color: var(--champagne);
   background: rgba(201,169,110,0.07);
   border-color: var(--champagne-dim);
-  border-color: var(--border-2);
 }
 
 /* btn-vs uses base active style */
@@ -1179,7 +1178,7 @@ body {
               <span id="vs-conf-label" style="float:right;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase"></span>
             </div>
             <div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden;margin-bottom:8px">
-              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:var(--champagne)"></div>
+              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:#3a3848"></div>
             </div>
             <div style="font-size:7.5px;color:var(--text-lo);font-family:'DM Mono',monospace;letter-spacing:0.06em;margin-bottom:5px;text-transform:uppercase">How confidence is computed</div>
             <div id="vs-conf-breakdown" style="font-size:10px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6"></div>
@@ -2060,12 +2059,12 @@ async function runVsAnalysis() {
       const confBar = document.getElementById('vs-conf-bar');
       if (confBar) {
         confBar.style.width = confPct + '%';
-        confBar.style.background = data.confidence_label==='HIGH' ? 'linear-gradient(90deg,#c23030,#4a7fd4)' : data.confidence_label==='MEDIUM' ? '#5a7a9a' : '#444460';
+        confBar.style.background = data.confidence_label==='HIGH' ? 'linear-gradient(90deg,#c23030,#4a7fd4)' : data.confidence_label==='MODERATE' ? 'linear-gradient(90deg,#c23030 30%,#4a7fd4)' : '#3a3848';
       }
       const confLabelEl = document.getElementById('vs-conf-label');
       if (confLabelEl) {
         confLabelEl.textContent = data.confidence_label;
-        confLabelEl.style.color = data.confidence_label==='HIGH' ? 'var(--champagne)' : data.confidence_label==='MEDIUM' ? '#5a9abf' : '#555468';
+        confLabelEl.style.color = data.confidence_label==='HIGH' ? '#c23030' : data.confidence_label==='MODERATE' ? 'var(--text-md)' : 'var(--text-lo)';
       }
       const winEdge    = Math.round(Math.abs(data.red_win_prob - 0.5) * 200);
       const methodEdge = Math.round(Math.max(mp.ko, mp.sub, mp.decision) * 100);
