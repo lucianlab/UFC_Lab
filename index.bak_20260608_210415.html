@@ -1483,7 +1483,8 @@ const legendEl=document.getElementById('legend');
 const WC_ORDER=['Heavyweight','Light Heavyweight','Middleweight','Welterweight','Lightweight',
   'Featherweight','Bantamweight','Flyweight','Strawweight',
   "Women's Featherweight","Women's Bantamweight","Women's Flyweight","Women's Strawweight"];
-
+const wcTraceIdx={};
+Object.entries(byWC).forEach(([wc],i)=>{ wcTraceIdx[wc]=i; });
 let activeWC=null, activeTier=null;
 
 function applyFilter(wc){
