@@ -1546,6 +1546,9 @@ body {
         <div class="helix-ctrl-btn" id="helix-btn-reset" onclick="helixResetZoom()">Reset</div>
       </div>
       <svg id="helix-svg"></svg>
+      <div id="helix-hint" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-family:DM Mono,monospace;font-size:9px;color:#3a3748;letter-spacing:0.12em;text-align:center;pointer-events:none;white-space:nowrap">
+        SPACE to reset &nbsp;·&nbsp; click node to explore
+      </div>
     </div>
     <div id="helix-panel">
       <div id="helix-panel-head">
@@ -1909,9 +1912,17 @@ function updateTierIcons(){
 
 // ── Space key reset camera ──
 document.addEventListener('keydown', e=>{
-  if(e.code==='Space' && document.getElementById('plot').style.display!=='none'){
+  if(e.code==='Space'){
     e.preventDefault();
-    Plotly.relayout('plot', {'scene.camera': {eye:{x:1.8,y:0.8,z:1.0}}});
+    const helixActive=document.getElementById('helix-mode').classList.contains('active');
+    if(helixActive){
+      // HELIX：回到預設選手
+      document.getElementById('helix-search').value='';
+      helixFocusOn(HELIX_DEFAULT);
+    } else if(document.getElementById('plot').style.display!=='none'){
+      // Universe：重置相機
+      Plotly.relayout('plot', {'scene.camera': {eye:{x:1.8,y:0.8,z:1.0}}});
+    }
   }
 });
 
@@ -3296,6 +3307,9 @@ function dnaDraw(canvas, W, H, dpr){
 
 // HELIX MODE
 let _helixInited=false,_helixData=null,_helixShowAll=false,_helixSelected=null;
+const HELIX_DEFAULT='Charles Oliveira';
+let _helixFocusName=HELIX_DEFAULT;  // 當前中心選手
+let _helixAllNodes=null;            // 完整 node 列表（搜尋用）
 
 function helixNodeColor(d){
   if(d.tier==='champion')        return '#FFD700';
@@ -3316,25 +3330,27 @@ function helixNodeR(d){
 }
 
 async function helixInit(){
-  if(_helixInited&&_helixData){helixRender();return;}
+  if(_helixInited&&_helixAllNodes){ helixFocusOn(_helixFocusName); return; }
   if(_helixInited) return;
   _helixInited=true;
   try{
-    const res=await fetch(API_BASE+'/api/helix/top?n=300');
+    // 載入全量資料供搜尋用
+    const res=await fetch(API_BASE+'/api/helix/graph?ranked_only=false');
     if(!res.ok) throw new Error('HTTP '+res.status);
-    _helixData=await res.json();
+    const full=await res.json();
+    _helixAllNodes=full.nodes||[];
+    _helixData=full;
   }catch(e){
     console.error('HELIX load failed:',e);
     document.getElementById('helix-loading').innerHTML='<span style="color:#b83040">Failed to load graph</span>';
     return;
   }
   helixBuildSearch();
-  helixRender();
+  helixFocusOn(HELIX_DEFAULT);
 }
 
 function helixBuildSearch(){
-  if(!_helixData) return;
-  const nodes=_helixData.nodes||[];
+  const nodes=_helixAllNodes||[];
   const inp=document.getElementById('helix-search');
   const ac=document.getElementById('helix-ac');
   inp.addEventListener('input',()=>{
@@ -3346,13 +3362,154 @@ function helixBuildSearch(){
     matches.forEach(n=>{
       const div=document.createElement('div');
       div.className='helix-ac-item';
-      div.innerHTML='<span>'+n.id+'</span><span class="helix-ac-pr">PR #'+n.pr_rank+'</span>';
-      div.onclick=()=>{inp.value=n.id;ac.style.display='none';helixSelectFighter(n.id);};
+      const sp1=document.createElement('span'); sp1.textContent=n.id;
+      const sp2=document.createElement('span'); sp2.className='helix-ac-pr'; sp2.textContent='PR #'+n.pr_rank;
+      div.appendChild(sp1); div.appendChild(sp2);
+      div.onclick=()=>{inp.value=n.id;ac.style.display='none';helixFocusOn(n.id);};
       ac.appendChild(div);
     });
     ac.style.display='block';
   });
   document.addEventListener('click',e=>{if(!inp.contains(e.target))ac.style.display='none';});
+}
+
+
+// 以某選手為中心重新渲染 graph（局部鄰居）
+async function helixFocusOn(name){
+  _helixFocusName = name;
+  _helixSelected  = name;
+  const loading=document.getElementById('helix-loading');
+  loading.style.display='flex';
+
+  try{
+    const res=await fetch(API_BASE+'/api/helix/fighter/'+encodeURIComponent(name)+'?depth=2');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+
+    // 把局部 nodes/edges 存進 _helixData 供 helixRender 使用
+    _helixData={ nodes: data.nodes, edges: data.edges };
+
+    // 把 panel 顯示出來
+    helixShowPanel(name);
+
+    // 更新 hint 文字
+    const hint=document.getElementById('helix-hint');
+    if(hint) hint.style.display='none';
+
+  }catch(e){
+    console.error('helixFocusOn failed:',e);
+    loading.style.display='none';
+    return;
+  }
+
+  helixRenderFocus(name);
+}
+
+
+// 渲染以某選手為中心的局部 graph
+function helixRenderFocus(centerName){
+  const loading=document.getElementById('helix-loading');
+  if(!_helixData) return;
+
+  const nodes=(_helixData.nodes||[]).map(n=>({...n}));
+  const nodeMap=Object.fromEntries(nodes.map(n=>[n.id,n]));
+  const nodeIds=new Set(nodes.map(n=>n.id));
+  const edges=(_helixData.edges||[]).filter(e=>nodeIds.has(e.winner)&&nodeIds.has(e.loser));
+  const links=edges.map(e=>({
+    source:nodeMap[e.winner],target:nodeMap[e.loser],
+    weight:e.weight,count:e.count,
+    method:e.bouts&&e.bouts[0]?e.bouts[0].method:''
+  })).filter(l=>l.source&&l.target);
+
+  const wrap=document.getElementById('helix-graph-wrap');
+  const W=wrap.clientWidth||900, H=wrap.clientHeight||700;
+  const svgEl=d3.select('#helix-svg').attr('viewBox','0 0 '+W+' '+H).style('background','#09090d');
+  svgEl.selectAll('*').remove();
+
+  const defs=svgEl.append('defs');
+  defs.append('marker').attr('id','arrow-ko2').attr('viewBox','0 -4 8 8')
+    .attr('refX',16).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
+    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','rgba(184,48,64,0.7)');
+  defs.append('marker').attr('id','arrow-sub2').attr('viewBox','0 -4 8 8')
+    .attr('refX',16).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
+    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','rgba(42,80,144,0.7)');
+  defs.append('marker').attr('id','arrow-dec2').attr('viewBox','0 -4 8 8')
+    .attr('refX',16).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
+    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','rgba(100,100,120,0.5)');
+
+  const g=svgEl.append('g');
+  const zoom=d3.zoom().scaleExtent([0.15,8]).on('zoom',e=>g.attr('transform',e.transform));
+  svgEl.call(zoom);
+  window._helixZoom=zoom; window._helixSvgEl=svgEl;
+
+  // 中心節點固定在畫面中央，simulation 收斂更快
+  const centerNode=nodes.find(n=>n.id===centerName);
+  if(centerNode){ centerNode.fx=W/2; centerNode.fy=H/2; }
+
+  const sim=d3.forceSimulation(nodes)
+    .force('link',d3.forceLink(links).id(d=>d.id).distance(d=>70-d.weight*8).strength(0.6))
+    .force('charge',d3.forceManyBody().strength(d=>d.id===centerName?-300:-80-d.pr*0.5))
+    .force('center',d3.forceCenter(W/2,H/2))
+    .force('collision',d3.forceCollide().radius(d=>helixFocusNodeR(d,centerName)+4));
+
+  const link=g.append('g').selectAll('line').data(links).join('line')
+    .attr('stroke',d=>d.method.includes('KO')?'rgba(184,48,64,0.5)':d.method.includes('Sub')?'rgba(42,80,144,0.5)':'rgba(80,80,100,0.3)')
+    .attr('stroke-width',d=>Math.min(3,0.8+d.weight*0.4))
+    .attr('marker-end',d=>d.method.includes('KO')?'url(#arrow-ko2)':d.method.includes('Sub')?'url(#arrow-sub2)':'url(#arrow-dec2)');
+
+  const node=g.append('g').selectAll('circle').data(nodes).join('circle')
+    .attr('r',d=>helixFocusNodeR(d,centerName))
+    .attr('fill',d=>helixNodeColor(d))
+    .attr('stroke',d=>d.id===centerName?'#c9a96e':helixNodeStroke(d))
+    .attr('stroke-width',d=>d.id===centerName?2:1)
+    .attr('opacity',d=>d.id===centerName?1:d.tier==='unranked'?0.5:0.85)
+    .style('cursor','pointer')
+    .on('click',(event,d)=>{ event.stopPropagation(); helixFocusOn(d.id); })
+    .call(d3.drag()
+      .on('start',(e,d)=>{ if(!e.active)sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+      .on('drag', (e,d)=>{ d.fx=e.x; d.fy=e.y; })
+      .on('end',  (e,d)=>{ if(!e.active)sim.alphaTarget(0); if(d.id!==centerName){d.fx=null;d.fy=null;} }));
+
+  // Tooltip
+  let tt=document.getElementById('helix-tt');
+  if(!tt){tt=document.createElement('div');tt.id='helix-tt';
+    tt.style.cssText='position:fixed;pointer-events:none;background:rgba(14,14,20,0.95);border:1px solid #1f1f2c;border-radius:3px;padding:7px 10px;font-family:DM Mono,monospace;font-size:10px;color:#b8b4c0;display:none;z-index:9999;max-width:200px;line-height:1.6';
+    document.body.appendChild(tt);}
+  node.on('mouseover',(e,d)=>{
+    tt.style.display='block';
+    tt.innerHTML='<strong style="color:#e8e4dc;font-size:13px;text-transform:uppercase">'+d.id+'</strong><br>'+
+      'PR Rank <span style="color:#c9a96e">#'+d.pr_rank+'</span><br>'+
+      d.style+'<br>W/L graph: '+d.wins_graph+'/'+d.losses_graph+
+      (d.id===centerName?'<br><span style="color:#c9a96e">● center</span>':'<br><span style="color:#6e6a7c">click to focus</span>');
+  }).on('mousemove',e=>{tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-8)+'px';})
+    .on('mouseout',()=>tt.style.display='none');
+
+  // Labels — 全部顯示（局部 graph node 少）
+  g.append('g').selectAll('text').data(nodes).join('text')
+    .attr('font-family','Barlow Condensed,sans-serif')
+    .attr('font-size',d=>d.id===centerName?12:8)
+    .attr('fill',d=>d.id===centerName?'#c9a96e':d.tier==='unranked'?'#3a3748':'#6e6a7c')
+    .attr('font-weight',d=>d.id===centerName?700:400)
+    .attr('text-anchor','middle').attr('dy','2em').attr('pointer-events','none')
+    .text(d=>d.id.split(' ').pop());
+
+  sim.on('tick',()=>{
+    link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    node.attr('cx',d=>d.x).attr('cy',d=>d.y);
+    g.selectAll('text').attr('x',d=>d.x).attr('y',d=>d.y);
+  });
+
+  setTimeout(()=>{ loading.style.display='none'; },1500);
+
+  svgEl.on('click',()=>{
+    // 點空白不 deselect，只隱藏 tooltip
+    tt.style.display='none';
+  });
+}
+
+function helixFocusNodeR(d, centerName){
+  if(d.id===centerName) return 14;   // 中心節點明顯大
+  return 3+(d.pr/100)*9;
 }
 
 function helixRender(){
