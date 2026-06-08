@@ -626,7 +626,7 @@ def get_helix_graph(ranked_only: bool = True):
     node_ids = {n["id"] for n in nodes}
     edges = [
         e for e in edges
-        if e["source"] in node_ids and e["target"] in node_ids
+        if e["winner"] in node_ids and e["loser"] in node_ids
     ]
 
     return {
@@ -661,8 +661,8 @@ def get_helix_fighter(name: str, depth: int = 1):
     # 建立adjacency（雙向方便BFS）
     adj = {}
     for e in all_edges:
-        adj.setdefault(e["source"], []).append(e["target"])
-        adj.setdefault(e["target"], []).append(e["source"])
+        adj.setdefault(e["winner"], []).append(e["loser"])
+        adj.setdefault(e["loser"], []).append(e["winner"])
 
     for _ in range(min(depth, 2)):  # 最多 depth=2 避免爆量
         next_frontier = set()
@@ -677,15 +677,15 @@ def get_helix_fighter(name: str, depth: int = 1):
     result_nodes = [node_map[n] for n in visited if n in node_map]
     result_edges = [
         e for e in all_edges
-        if e["source"] in visited and e["target"] in visited
+        if e["winner"] in visited and e["loser"] in visited
     ]
 
     # beat chain：從 name 出發，只取出邊（他打贏的人）
     beat_chain = []
     for e in all_edges:
-        if e["source"] == name:
+        if e["winner"] == name:
             beat_chain.append({
-                "opponent": e["target"],
+                "opponent": e["loser"],
                 "bouts":    e["bouts"],
                 "count":    e["count"],
                 "weight":   e["weight"],
@@ -695,9 +695,9 @@ def get_helix_fighter(name: str, depth: int = 1):
     # loss chain：輸給誰
     loss_chain = []
     for e in all_edges:
-        if e["target"] == name:
+        if e["loser"] == name:
             loss_chain.append({
-                "opponent": e["source"],
+                "opponent": e["winner"],
                 "bouts":    e["bouts"],
                 "count":    e["count"],
             })
@@ -731,7 +731,7 @@ def get_helix_top(n: int = 50, wc: str = None):
 
     top_edges = [
         e for e in _HELIX["edges"]
-        if e["source"] in top_ids and e["target"] in top_ids
+        if e["winner"] in top_ids and e["loser"] in top_ids
     ]
 
     return {
