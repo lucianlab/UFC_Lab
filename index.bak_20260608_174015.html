@@ -732,9 +732,9 @@ body {
 
 /* Tier Reference — flex:1 fills remaining height to align with left col bottom */
 #b-tier-ref{
-  flex:1; padding:4px 0 0 0;
-  background:transparent; border:none;
-  overflow:hidden; min-height:0;
+  flex:1; padding:7px 9px;
+  background:var(--surface-2); border:1px solid var(--border);
+  border-radius:2px; overflow:hidden; min-height:0;
   display:flex; flex-direction:column;
 }
 .b-tier-ref-title{
@@ -744,19 +744,13 @@ body {
   border-bottom:1px solid var(--border); flex-shrink:0;
 }
 .b-tier-grid{
-  display:flex; flex-direction:column;
-  gap:0; flex:1; min-height:0;
+  display:grid; grid-template-columns:1fr 1fr; gap:0 10px;
+  flex:1; min-height:0;
 }
-.b-tier-col{ display:contents; }
-.b-tier-row{
-  flex:1; display:grid; grid-template-columns:28px 1fr;
-  align-items:center; gap:4px;
-  border-top:1px solid var(--border);
-  padding:0 4px;
-}
-.b-tier-row:first-child{ border-top:none; }
-.b-tier-lbl{ font-family:'DM Mono',monospace; font-size:7.5px; font-weight:600; color:var(--text-lo); }
-.b-tier-desc{ font-family:'Barlow',sans-serif; font-size:7.5px; color:var(--text-lo); line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.b-tier-col{ display:flex; flex-direction:column; justify-content:space-between; gap:3px; }
+.b-tier-row{ display:grid; grid-template-columns:26px 1fr; align-items:baseline; gap:3px; }
+.b-tier-lbl{ font-family:'DM Mono',monospace; font-size:7.5px; font-weight:500; }
+.b-tier-desc{ font-family:'Barlow',sans-serif; font-size:7.5px; color:var(--text-md); line-height:1.3; }
 
 /* Find My Fighter — full width bottom, height auto */
 #b-find-wrap{
@@ -2187,22 +2181,22 @@ function setMode(mode){
 // Left column: Boxing(KO,Acc) + Muay Thai(3) + Wrestling(3)
 // Right column: Boxing(Vol,Def) + JiuJitsu(3) + Physical(Reach) + Find button
 const B_LEFT = [
+  {id:'pct_striking_power',    label:'KO Power',    sec:'Boxing'},
+  {id:'pct_striking_accuracy', label:'Accuracy',    sec:null},
   {id:'pct_leg_kicks',         label:'Leg Kicks',   sec:'Muay Thai'},
   {id:'pct_clinch',            label:'Clinch',      sec:null},
   {id:'pct_body',              label:'Body',        sec:null},
   {id:'pct_td_frequency',      label:'TD Frequency',sec:'Wrestling'},
   {id:'pct_td_accuracy',       label:'TD Accuracy', sec:null},
   {id:'pct_td_defense',        label:'TD Defense',  sec:null},
+];
+const B_RIGHT = [
+  {id:'pct_striking_volume',   label:'Volume',      sec:'Boxing'},
+  {id:'pct_striking_defense',  label:'Defense',     sec:null},
   {id:'pct_submission',        label:'Submission',  sec:'Jiu-Jitsu'},
   {id:'pct_control',           label:'Control',     sec:null},
   {id:'pct_ground_pound',      label:'Grd & Pound', sec:null},
-];
-const B_RIGHT = [
-  {id:'pct_striking_power',    label:'KO Power',    sec:'Boxing'},
-  {id:'pct_striking_accuracy', label:'Accuracy',    sec:null},
-  {id:'pct_striking_volume',   label:'Volume',      sec:null},
-  {id:'pct_striking_defense',  label:'Defense',     sec:null},
-  {id:'pct_reach',             label:'Reach',       sec:null},
+  {id:'pct_reach',             label:'Reach',       sec:'Physical'},
 ];
 
 // Keep B_DEFS for bVals init
@@ -2254,16 +2248,16 @@ function bBuildGrid(){
   }
 
   const TIER_LEFT = [
-    {t:'S',   color:'var(--text-lo)', desc:'Gods of the sport. The one. The only.'},
-    {t:'A+',  color:'var(--text-lo)', desc:'Legends of their era. Untouchable at their peak.'},
-    {t:'A',   color:'var(--text-lo)', desc:'Dynasty builders. Reigned supreme.'},
-    {t:'B+',  color:'var(--text-lo)', desc:'Champions who defended. Proved gold is earned.'},
+    {t:'S',  color:'#FFD700',           desc:'Gods of the sport. The one. The only.'},
+    {t:'A+', color:'#c9a96e',           desc:'Legends of their era. Untouchable at their peak.'},
+    {t:'A',  color:'#c9a96e',           desc:'Dynasty builders. Reigned supreme.'},
+    {t:'B+', color:'var(--champagne)',desc:'Champions who defended. Proved gold is earned, not given.'},
   ];
   const TIER_RIGHT = [
-    {t:'B',   color:'var(--text-lo)', desc:'Once a champion, always a champion.'},
-    {t:'C+',  color:'var(--text-lo)', desc:'Greatness needs no gold to be proven.'},
-    {t:'C-D', color:'var(--text-lo)', desc:'Historically ranked Top 5 / 10 / 15.'},
-    {t:'E',   color:'var(--text-lo)', desc:'World-class. The UFC is the sharkest tank.'},
+    {t:'B',  color:'var(--champagne)',desc:'Once a champion, always a champion.'},
+    {t:'C+', color:'#a0a0b0',           desc:'Greatness needs no gold to be proven.'},
+    {t:'C-D',color:'#a0a0b0',           desc:'Historically ranked Top 5 / 10 / 15.'},
+    {t:'E',  color:'#a0a0b0',           desc:'World-class. The UFC is the sharkest tank on earth.'},
   ];
 
   function makeTierRef(){
@@ -2271,7 +2265,7 @@ function bBuildGrid(){
     panel.id = 'b-tier-ref';
     const title = document.createElement('div');
     title.className = 'b-col-section-title b-tier-ref-title';
-    title.textContent = 'Tier';
+    title.textContent = 'Tier Reference';
     panel.appendChild(title);
     const grid = document.createElement('div');
     grid.className = 'b-tier-grid';
@@ -2330,12 +2324,12 @@ function bFlashPip(featId, targetVal){
   // Briefly show target value then bounce back to current
   const cur = bVals[featId];
   const elite = targetVal >= 8;
-  const flashColor = elite ? 'var(--champagne)' : 'var(--text-lo)';
+  const flashColor = elite ? 'var(--crimson-2)' : 'var(--champagne)';
   for(let i=1;i<=10;i++){
     const pip=document.getElementById(`pip-${featId}-${i}`);
     if(!pip) continue;
-    pip.style.background = i<=targetVal ? flashColor : 'var(--surface-3)';
-    pip.style.boxShadow  = 'none';
+    pip.style.background = i<=targetVal ? flashColor : 'var(--border)';
+    pip.style.boxShadow  = (i<=targetVal&&elite) ? '0 0 4px rgba(184,48,64,0.5)' : 'none';
   }
   const valEl=document.getElementById('val-'+featId);
   if(valEl){ valEl.textContent=targetVal; valEl.style.color=flashColor; }
@@ -2345,20 +2339,21 @@ function bFlashPip(featId, targetVal){
 function bUpdateBox(featId){
   const val   = bVals[featId];
   const elite = val >= 8;
-  const fillColor = elite ? 'var(--champagne)' : 'var(--text-lo)';
+  const fillColor = elite ? 'var(--crimson-2)' : 'var(--champagne)';
+  const glowColor = elite ? 'rgba(184,48,64,0.45)' : 'rgba(201,169,110,0.3)';
   for(let i=1;i<=10;i++){
     const pip=document.getElementById(`pip-${featId}-${i}`);
     if(!pip) continue;
-    pip.style.background = i<=val ? fillColor : 'var(--surface-3)';
-    pip.style.boxShadow  = 'none';
+    pip.style.background = i<=val ? fillColor : 'var(--border)';
+    pip.style.boxShadow  = (i<=val&&elite) ? `0 0 3px ${glowColor}` : 'none';
   }
   const valEl=document.getElementById('val-'+featId);
   if(valEl){
     valEl.textContent=val;
-    valEl.style.color = elite ? 'var(--champagne)' : 'var(--text-lo)';
+    valEl.style.color = elite ? 'var(--crimson-2)' : 'var(--champagne)';
   }
   const box=document.getElementById('attr-'+featId);
-  if(box) box.style.borderColor = 'var(--border)';
+  if(box) box.style.borderColor = elite ? 'rgba(184,48,64,0.35)' : 'var(--border)';
 }
 
 function bRefreshAll(){ B_DEFS.forEach(d=>bUpdateBox(d.id)); bUpdateBudget(); }

@@ -732,9 +732,9 @@ body {
 
 /* Tier Reference — flex:1 fills remaining height to align with left col bottom */
 #b-tier-ref{
-  flex:1; padding:4px 0 0 0;
-  background:transparent; border:none;
-  overflow:hidden; min-height:0;
+  flex:1; padding:7px 9px;
+  background:var(--surface-2); border:1px solid var(--border);
+  border-radius:2px; overflow:hidden; min-height:0;
   display:flex; flex-direction:column;
 }
 .b-tier-ref-title{
@@ -2187,22 +2187,22 @@ function setMode(mode){
 // Left column: Boxing(KO,Acc) + Muay Thai(3) + Wrestling(3)
 // Right column: Boxing(Vol,Def) + JiuJitsu(3) + Physical(Reach) + Find button
 const B_LEFT = [
+  {id:'pct_striking_power',    label:'KO Power',    sec:'Boxing'},
+  {id:'pct_striking_accuracy', label:'Accuracy',    sec:null},
   {id:'pct_leg_kicks',         label:'Leg Kicks',   sec:'Muay Thai'},
   {id:'pct_clinch',            label:'Clinch',      sec:null},
   {id:'pct_body',              label:'Body',        sec:null},
   {id:'pct_td_frequency',      label:'TD Frequency',sec:'Wrestling'},
   {id:'pct_td_accuracy',       label:'TD Accuracy', sec:null},
   {id:'pct_td_defense',        label:'TD Defense',  sec:null},
+  {id:'pct_reach',             label:'Reach',       sec:'Physical'},
+];
+const B_RIGHT = [
+  {id:'pct_striking_volume',   label:'Volume',      sec:'Boxing'},
+  {id:'pct_striking_defense',  label:'Defense',     sec:null},
   {id:'pct_submission',        label:'Submission',  sec:'Jiu-Jitsu'},
   {id:'pct_control',           label:'Control',     sec:null},
   {id:'pct_ground_pound',      label:'Grd & Pound', sec:null},
-];
-const B_RIGHT = [
-  {id:'pct_striking_power',    label:'KO Power',    sec:'Boxing'},
-  {id:'pct_striking_accuracy', label:'Accuracy',    sec:null},
-  {id:'pct_striking_volume',   label:'Volume',      sec:null},
-  {id:'pct_striking_defense',  label:'Defense',     sec:null},
-  {id:'pct_reach',             label:'Reach',       sec:null},
 ];
 
 // Keep B_DEFS for bVals init
