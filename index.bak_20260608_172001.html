@@ -242,23 +242,7 @@ body {
   margin-bottom: 12px;
   letter-spacing: 0.05em;
 }
-#fighter-wc.is-champ { color: var(--text-md); }
-.champion-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: 'DM Mono', monospace;
-  font-size: 8px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--champagne);
-  margin-bottom: 10px;
-}
-.champion-badge::before {
-  content: '◆';
-  font-size: 7px;
-}
+#fighter-wc.is-champ { color: var(--champagne); }
 
 .stat-row {
   display: flex;
@@ -288,9 +272,9 @@ body {
 
 .stat-bar-wrap {
   width: 100%;
-  height: 2px;
-  background: var(--border-2);
-  border-radius: 1px;
+  height: 3px;
+  background: linear-gradient(90deg, #1a1a24 0%, #2a1f0a 45%, #c9a96e 100%);
+  border-radius: 2px;
   margin-top: 3px;
   margin-bottom: 10px;
   overflow: hidden;
@@ -299,11 +283,11 @@ body {
 
 .stat-bar {
   height: 100%;
-  border-radius: 1px;
-  background: var(--text-hi);
+  border-radius: 0;
+  background: var(--obsidian);
   transition: width 0.5s cubic-bezier(.4,0,.2,1);
   position: absolute;
-  left: 0;
+  right: 0;
   top: 0;
 }
 
@@ -374,7 +358,7 @@ body {
 #hint {
   font-family: 'DM Mono', monospace;
   font-size: 9px;
-  color: var(--text-lo);
+  color: var(--text-md);
   text-align: center;
   padding: 12px 0;
   line-height: 1.7;
@@ -385,7 +369,7 @@ body {
 
 #no-selection {
   font-size: 11px;
-  color: var(--text-lo);
+  color: var(--text-md);
   margin-top: 12px;
   line-height: 1.8;
   font-family: 'Barlow', sans-serif;
@@ -1043,7 +1027,6 @@ body {
       <div class="panel-title">Selected Fighter</div>
       <div id="fighter-name"></div>
       <div id="fighter-wc"></div>
-      <div id="champion-badge" class="champion-badge" style="display:none"></div>
       <div id="fighter-status" style="font-size:10px;color:var(--champagne);margin-bottom:10px;letter-spacing:0.04em;font-family:'DM Mono',monospace;"></div>
       <div class="panel-title">Style Profile</div>
       <div class="stat-row"><span class="stat-label">Sig. Strikes / Round</span><span class="stat-val" id="s-sig"></span></div>
@@ -1065,7 +1048,7 @@ body {
     <div id="legend"><div class="panel-title">Weight Classes</div></div>
     <div id="tier-legend" style="margin-bottom:10px">
       <div class="panel-title">Status</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#FFD700;flex-shrink:0"></div>Current Champion</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-md)"><div style="width:8px;height:8px;border-radius:50%;background:#FFD700;flex-shrink:0"></div>Current Champion</div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#C0A060;flex-shrink:0"></div>Former Champion</div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#7F8FA6;flex-shrink:0"></div>Ranked Top 15</div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#2a2a3a;flex-shrink:0"></div>Unranked</div>
@@ -1352,13 +1335,13 @@ async function boot(){
 const THRESHOLDS = {"sig_per_r":20.3,"td_per_r":0.74,"ctrl_per_r":85.78,"ko_rate":0.5,"sub_rate":0.33,"gas_tank":1.33};
 
 const WC_COLORS = {
-  'Strawweight':'#7b9ec4',"Women's Strawweight":'#7b9ec4',
-  'Flyweight':'#6a9fa8',"Women's Flyweight":'#6a9fa8',
-  'Bantamweight':'#5a9e8a',"Women's Bantamweight":'#5a9e8a',
-  'Featherweight':'#6a9e6a',"Women's Featherweight":'#6a9e6a',
-  'Lightweight':'#8fa855','Welterweight':'#b8a040',
-  'Middleweight':'#c4824a','Light Heavyweight':'#b85e45',
-  'Heavyweight':'#a03838','Unknown':'#666',
+  'Strawweight':'#ff69b4',"Women's Strawweight":'#ff69b4',
+  'Flyweight':'#ff8c00',"Women's Flyweight":'#ff8c00',
+  'Bantamweight':'#ffd700',"Women's Bantamweight":'#ffd700',
+  'Featherweight':'#adff2f',"Women's Featherweight":'#adff2f',
+  'Lightweight':'#00ced1','Welterweight':'#1e90ff',
+  'Middleweight':'#9370db','Light Heavyweight':'#ff4500',
+  'Heavyweight':'#dc143c','Unknown':'#888',
 };
 
 // ── UNIVERSE mode globals ──
@@ -1434,13 +1417,7 @@ function selectFighter(name){
   document.getElementById('no-selection').style.display='none';
   const nameEl=document.getElementById('fighter-name');
   nameEl.textContent=f.name;
-  nameEl.style.color = 'var(--text-hi)';
-  const badgeEl = document.getElementById('champion-badge');
-  if(badgeEl){
-    if(f.tier==='champion'){ badgeEl.textContent='CHAMPION'; badgeEl.style.display='inline-flex'; }
-    else if(f.tier==='ex_champion'){ badgeEl.textContent='FORMER CHAMPION'; badgeEl.style.display='inline-flex'; }
-    else { badgeEl.style.display='none'; }
-  }
+  nameEl.style.color = (f.tier==='champion'||f.tier==='ex_champion') ? 'var(--champagne)' : 'var(--text-hi)';
   const tierBadge=f.tier==='ranked'?' ★':'';
   const wcDisplay=(f.all_wc&&f.all_wc.length>1)?f.all_wc.join(' / '):(f.wc||'Unknown');
   const wcEl=document.getElementById('fighter-wc');
@@ -1454,8 +1431,9 @@ function selectFighter(name){
   function setBar(sid,bid,val,display,max,thr){
     const sv=document.getElementById(sid), bv=document.getElementById(bid);
     sv.textContent=display;
-    bv.style.width=pct(val,max);
-    sv.classList.remove('elite');
+    const p=Math.min(100,Math.max(0,(val/max)*100));
+    bv.style.width=(100-p)+'%';
+    sv.classList.toggle('elite',val>=thr);
     bv.classList.remove('elite');
   }
   setBar('s-sig','b-sig',f.sig_per_r,f.sig_per_r,40,THRESHOLDS.sig_per_r);
