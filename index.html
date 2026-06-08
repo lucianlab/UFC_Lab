@@ -3521,7 +3521,10 @@ function helixRenderFull(){
   const nodes   = _helixAllNodes.filter(n=>n.tier!=='unranked');
   const nodeIds = new Set(nodes.map(n=>n.id));
   const edges   = _helixAllEdges.filter(e=>nodeIds.has(e.winner)&&nodeIds.has(e.loser));
-  const nodesCopy = nodes.map(n=>({...n}));
+  // 過濾孤立節點（沒有任何 edge 的 node）
+  const connectedIds = new Set();
+  edges.forEach(e=>{ connectedIds.add(e.winner); connectedIds.add(e.loser); });
+  const nodesCopy = nodes.filter(n=>connectedIds.has(n.id)).map(n=>({...n}));
   const nodeMap = Object.fromEntries(nodesCopy.map(n=>[n.id,n]));
   const links   = edges.map(e=>({
     source:nodeMap[e.winner], target:nodeMap[e.loser],
@@ -3583,19 +3586,23 @@ function helixRenderFull(){
 
   // Zoom-to-fit after simulation settles
   sim.on('end',()=>{
-    const padding = 40;
-    const xs = nodesCopy.map(n=>n.x).filter(Boolean);
-    const ys = nodesCopy.map(n=>n.y).filter(Boolean);
-    if(!xs.length) return;
-    const x0=Math.min(...xs)-padding, x1=Math.max(...xs)+padding;
-    const y0=Math.min(...ys)-padding, y1=Math.max(...ys)+padding;
-    const scale = Math.min(0.95, Math.min(W/(x1-x0), H/(y1-y0)));
-    const tx = (W - scale*(x0+x1))/2;
-    const ty = (H - scale*(y0+y1))/2;
-    window._helixSvgEl.transition().duration(600)
-      .call(window._helixZoom.transform, d3.zoomIdentity.translate(tx,ty).scale(scale));
+    // sim 結束才隱藏 loading 並 zoom-to-fit
+    const padding = 60;
+    const xs = nodesCopy.map(n=>n.x).filter(v=>v!=null&&isFinite(v));
+    const ys = nodesCopy.map(n=>n.y).filter(v=>v!=null&&isFinite(v));
+    if(xs.length){
+      const x0=Math.min(...xs)-padding, x1=Math.max(...xs)+padding;
+      const y0=Math.min(...ys)-padding, y1=Math.max(...ys)+padding;
+      const scale = Math.min(0.92, Math.min(W/(x1-x0), H/(y1-y0)));
+      const tx = (W - scale*(x0+x1))/2;
+      const ty = (H - scale*(y0+y1))/2;
+      window._helixSvgEl.transition().duration(500)
+        .call(window._helixZoom.transform, d3.zoomIdentity.translate(tx,ty).scale(scale));
+    }
+    loading.style.display='none';
   });
-  setTimeout(()=>{ loading.style.display='none'; },2500);
+  // fallback：最多等 4 秒
+  setTimeout(()=>{ loading.style.display='none'; },4000);
   svgEl.on('click',()=>{ const tt=document.getElementById('helix-tt'); if(tt)tt.style.display='none'; });
 }
 
@@ -3706,7 +3713,7 @@ async function helixShowPanel(name){
       const comm = fn.community;
       const allN = window._helixAllNodes||[];
       const TIER_W = {'champion':4,'former_champion':3,'ever_ranked':2,'unranked':1};
-      const peers = allN.filter(n=>n.community===comm && n.id!==fn.id);
+      const peers = allN.filter(n=>n.community===comm);
       peers.sort((a,b)=>{
         const tw = (TIER_W[b.tier]||0)-(TIER_W[a.tier]||0);
         return tw!==0 ? tw : b.pr-a.pr;
