@@ -24,13 +24,13 @@
   --champagne-2: #a07c46;
   --champagne-dim:#4a3a22;
 
-  --crimson:     #7a1f28;
-  --crimson-2:   #b83040;
-  --crimson-dim: #2e1018;
+  --crimson:     #8c1f1f;
+  --crimson-2:   #c23030;
+  --crimson-dim: #3a1010;
 
-  --cobalt:      #1a3050;
-  --cobalt-2:    #2a5090;
-  --cobalt-dim:  #0d1828;
+  --cobalt:      #1a3a6e;
+  --cobalt-2:    #2b5fb3;
+  --cobalt-dim:  #0d1e3a;
 
   --text-hi:     #e8e4dc;
   --text-md:     #b8b4c0;
@@ -38,8 +38,8 @@
   --text-xlo:    #3a3748;
 
   /* legacy compat aliases used by JS innerHTML */
-  --red:         #b83040;
-  --blue:        #2a5090;
+  --red:         #c23030;
+  --blue:        #2b5fb3;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -283,23 +283,22 @@ body {
 
 .stat-bar-wrap {
   width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, #1a1a24 0%, #2a1f0a 45%, #c9a96e 100%);
-  border-radius: 2px;
+  height: 1px;
+  background: var(--border);
+  border-radius: 1px;
   margin-top: 3px;
   margin-bottom: 10px;
-  overflow: hidden;
-  position: relative;
 }
 
 .stat-bar {
-  height: 100%;
-  border-radius: 0;
-  background: var(--obsidian);
+  height: 1px;
+  border-radius: 1px;
+  background: var(--cobalt-2);
   transition: width 0.5s cubic-bezier(.4,0,.2,1);
-  position: absolute;
-  right: 0;
-  top: 0;
+}
+
+.stat-bar.elite {
+  background: var(--crimson-2);
 }
 
 #similar-list { list-style: none; margin-top: 4px; }
@@ -409,16 +408,16 @@ body {
   min-height: 56px;
 }
 .vs-picker:hover { border-color: var(--border-2); background: var(--surface-3); }
-.vs-picker.filled-red  { border-color: var(--crimson);  background: linear-gradient(135deg, rgba(122,31,40,0.12), var(--surface-2)); }
-.vs-picker.filled-blue { border-color: var(--cobalt-2); background: linear-gradient(135deg, rgba(26,48,80,0.18), var(--surface-2)); }
+.vs-picker.filled-red  { border-color: var(--crimson);  background: linear-gradient(135deg, rgba(140,31,31,0.12), var(--surface-2)); }
+.vs-picker.filled-blue { border-color: var(--cobalt-2); background: linear-gradient(135deg, rgba(26,58,110,0.18), var(--surface-2)); }
 .vs-picker-label { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.18em; margin-bottom:4px; }
-.vs-picker.filled-red  .vs-picker-label { color:rgba(184,48,64,0.5); }
-.vs-picker.filled-blue .vs-picker-label { color:rgba(42,80,144,0.5); }
+.vs-picker.filled-red  .vs-picker-label { color:rgba(194,48,48,0.5); }
+.vs-picker.filled-blue .vs-picker-label { color:rgba(43,95,179,0.5); }
 .vs-picker-name { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:700; color:var(--text-lo); letter-spacing:0.04em; text-transform:uppercase; line-height:1.1; transition:color 0.18s; }
 .vs-picker.filled .vs-picker-name { color:var(--text-hi); }
 .vs-picker-wc { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); margin-top:2px; }
-.vs-picker.filled-red  .vs-picker-wc { color:rgba(184,48,64,0.5); }
-.vs-picker.filled-blue .vs-picker-wc { color:rgba(42,80,144,0.5); }
+.vs-picker.filled-red  .vs-picker-wc { color:rgba(194,48,48,0.5); }
+.vs-picker.filled-blue .vs-picker-wc { color:rgba(43,95,179,0.5); }
 .vs-divider { text-align:center; font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:500; color:var(--text-lo); }
 
 /* Search dropdown */
@@ -526,8 +525,8 @@ body {
 .fo-track { flex:1; height:2px; background:var(--border); border-radius:1px; overflow:hidden; }
 .fo-fill { height:100%; border-radius:1px; transition:width 1s cubic-bezier(.4,0,.2,1); }
 .fo-fill.ko  { background:var(--crimson-2); }
-.fo-fill.sub { background:#2a5090; }
-.fo-fill.dec { background:var(--text-lo); }
+.fo-fill.sub { background:#4a7fd4; }
+.fo-fill.dec { background:#6b6880; }
 .fo-pct { font-family:'DM Mono',monospace; font-size:9.5px; color:var(--text-lo); width:30px; text-align:right; }
 
 /* Similar matchups */
@@ -560,11 +559,11 @@ body {
 
 .vs-picker.filled-red {
   border-color: var(--crimson);
-  background: linear-gradient(135deg, rgba(122,31,40,0.12), var(--surface-2));
+  background: linear-gradient(135deg, rgba(140,31,31,0.12), var(--surface-2));
 }
 .vs-picker.filled-blue {
   border-color: var(--cobalt-2);
-  background: linear-gradient(135deg, rgba(26,48,80,0.18), var(--surface-2));
+  background: linear-gradient(135deg, rgba(26,58,110,0.18), var(--surface-2));
 }
 
 .vs-picker-label {
@@ -575,8 +574,8 @@ body {
   letter-spacing: 0.18em;
   margin-bottom: 5px;
 }
-.vs-picker.filled-red .vs-picker-label { color: rgba(184,48,64,0.5); }
-.vs-picker.filled-blue .vs-picker-label { color: rgba(42,80,144,0.5); }
+.vs-picker.filled-red .vs-picker-label { color: rgba(194,48,48,0.5); }
+.vs-picker.filled-blue .vs-picker-label { color: rgba(43,95,179,0.5); }
 
 .vs-picker-name {
   font-family: 'Barlow Condensed', sans-serif;
@@ -597,8 +596,8 @@ body {
   margin-top: 3px;
   letter-spacing: 0.04em;
 }
-.vs-picker.filled-red .vs-picker-wc { color: rgba(184,48,64,0.5); }
-.vs-picker.filled-blue .vs-picker-wc { color: rgba(42,80,144,0.5); }
+.vs-picker.filled-red .vs-picker-wc { color: rgba(194,48,48,0.5); }
+.vs-picker.filled-blue .vs-picker-wc { color: rgba(43,95,179,0.5); }
 
 .vs-divider {
   text-align: center;
@@ -698,7 +697,7 @@ body {
 }
 .b-diff-btn.on.easy  { border-color:#2b5a30; color:#4caf50; background:rgba(76,175,80,0.07); }
 .b-diff-btn.on.medium{ border-color:var(--champagne-dim); color:var(--champagne); background:rgba(201,169,110,0.07); }
-.b-diff-btn.on.hard  { border-color:var(--crimson); color:var(--crimson-2); background:rgba(184,48,64,0.07); }
+.b-diff-btn.on.hard  { border-color:var(--crimson); color:var(--crimson-2); background:rgba(194,48,48,0.07); }
 
 #b-budget{ display:none; align-items:baseline; gap:5px; margin-left:auto; }
 #b-budget.show{ display:flex; }
@@ -1144,16 +1143,16 @@ body {
               <span id="vs-ml-loading" style="font-size:7.5px;color:var(--text-lo);font-family:'DM Mono',monospace;text-transform:none;letter-spacing:0"></span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
-              <span id="vs-prob-red-pct"  style="font-size:30px;font-weight:700;color:#b83040;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
-              <span id="vs-prob-blue-pct" style="font-size:30px;font-weight:700;color:#2a5090;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
+              <span id="vs-prob-red-pct"  style="font-size:30px;font-weight:700;color:#c23030;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
+              <span id="vs-prob-blue-pct" style="font-size:30px;font-weight:700;color:#2b5fb3;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
             </div>
             <div style="height:5px;background:var(--surface-3);border-radius:2px;overflow:hidden;position:relative;margin-bottom:3px">
-              <div id="vs-prob-bar-red"  style="position:absolute;left:0;top:0;height:100%;width:50%;background:#7a1f28;transition:width 0.6s ease"></div>
-              <div id="vs-prob-bar-blue" style="position:absolute;right:0;top:0;height:100%;width:50%;background:#1a3050;transition:width 0.6s ease"></div>
+              <div id="vs-prob-bar-red"  style="position:absolute;left:0;top:0;height:100%;width:50%;background:#8c1f1f;transition:width 0.6s ease"></div>
+              <div id="vs-prob-bar-blue" style="position:absolute;right:0;top:0;height:100%;width:50%;background:#1a3a6e;transition:width 0.6s ease"></div>
             </div>
             <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-              <span id="vs-prob-red-name"  style="font-size:8.5px;color:rgba(184,48,64,0.55);font-family:'DM Mono',monospace">—</span>
-              <span id="vs-prob-blue-name" style="font-size:8.5px;color:rgba(42,80,144,0.55);font-family:'DM Mono',monospace">—</span>
+              <span id="vs-prob-red-name"  style="font-size:8.5px;color:rgba(194,48,48,0.55);font-family:'DM Mono',monospace">—</span>
+              <span id="vs-prob-blue-name" style="font-size:8.5px;color:rgba(43,95,179,0.55);font-family:'DM Mono',monospace">—</span>
             </div>
             <!-- Finish Probability inside win-col -->
             <div class="fo-title">Finish Probability <span id="vs-round-badge" style="float:right;font-size:8px;color:var(--text-md);font-family:'DM Mono',monospace;letter-spacing:0;text-transform:none"></span></div>
@@ -1180,7 +1179,7 @@ body {
               <span id="vs-conf-label" style="float:right;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase"></span>
             </div>
             <div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden;margin-bottom:8px">
-              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:var(--text-lo)"></div>
+              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:linear-gradient(90deg,#1a1824,#c9a96e)"></div>
             </div>
             <div style="font-size:7.5px;color:var(--text-lo);font-family:'DM Mono',monospace;letter-spacing:0.06em;margin-bottom:5px;text-transform:uppercase">How confidence is computed</div>
             <div id="vs-conf-breakdown" style="font-size:10px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6"></div>
@@ -1271,21 +1270,21 @@ body {
       <div id="dna-legend">
         <div class="dna-legend-row">
           <div class="dna-legend-item">
-            <div class="dna-legend-swatch" style="background:rgba(42,80,144,0.38);border:1px solid rgba(42,80,144,0.55)"></div>
+            <div class="dna-legend-swatch" style="background:rgba(43,95,179,0.38);border:1px solid rgba(43,95,179,0.55)"></div>
             Grappling-dominant fighters (%)
           </div>
           <div class="dna-legend-item">
-            <div class="dna-legend-swatch" style="background:rgba(122,31,40,0.38);border:1px solid rgba(122,31,40,0.55)"></div>
+            <div class="dna-legend-swatch" style="background:rgba(140,31,31,0.38);border:1px solid rgba(140,31,31,0.55)"></div>
             Striking-dominant fighters (%)
           </div>
         </div>
         <div class="dna-legend-row">
           <div class="dna-legend-item">
-            <div class="dna-legend-line" style="background:#2a5090"></div>
+            <div class="dna-legend-line" style="background:#4a7fd4"></div>
             Grappling win rate
           </div>
           <div class="dna-legend-item">
-            <div class="dna-legend-line" style="background:#b83040"></div>
+            <div class="dna-legend-line" style="background:#c23030"></div>
             Striking win rate
           </div>
         </div>
@@ -1442,11 +1441,8 @@ function selectFighter(name){
   if(stEl) stEl.style.display='none';
   function setBar(sid,bid,val,display,max,thr){
     const sv=document.getElementById(sid), bv=document.getElementById(bid);
-    sv.textContent=display;
-    const p=Math.min(100,Math.max(0,(val/max)*100));
-    bv.style.width=(100-p)+'%';
-    sv.classList.toggle('elite',val>=thr);
-    bv.classList.remove('elite');
+    sv.textContent=display; bv.style.width=pct(val,max);
+    sv.classList.toggle('elite',val>=thr); bv.classList.toggle('elite',val>=thr);
   }
   setBar('s-sig','b-sig',f.sig_per_r,f.sig_per_r,40,THRESHOLDS.sig_per_r);
   setBar('s-td','b-td',f.td_per_r,f.td_per_r,4,THRESHOLDS.td_per_r);
@@ -1569,8 +1565,8 @@ function updateVsPlot(){
       type:'scatter3d', mode:'markers+text',
       x:[vsRed.x], y:[vsRed.y], z:[vsRed.z],
       text:[vsRed.name], textposition:'top center',
-      textfont:{color:'#b83040',size:10,family:'Barlow Condensed'},
-      marker:{size:9,color:'#7a1f28',opacity:1,line:{color:'#b83040',width:1.5},
+      textfont:{color:'#c23030',size:10,family:'Barlow Condensed'},
+      marker:{size:9,color:'#8c1f1f',opacity:1,line:{color:'#c23030',width:1.5},
               symbol:'circle'},
       hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
     });
@@ -1581,7 +1577,7 @@ function updateVsPlot(){
       x:[vsBlue.x], y:[vsBlue.y], z:[vsBlue.z],
       text:[vsBlue.name], textposition:'top center',
       textfont:{color:'#9994a0',size:10,family:'Barlow Condensed'},
-      marker:{size:9,color:'#1a3050',opacity:1,line:{color:'#9994a0',width:1.5}},
+      marker:{size:9,color:'#1a3a6e',opacity:1,line:{color:'#9994a0',width:1.5}},
       hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
     });
   }
@@ -1841,8 +1837,8 @@ function buildRadar(r, b) {
     data: {
       labels,
       datasets: [
-        { label: r.name.split(' ').pop(), data: rData, borderColor: '#b83040', backgroundColor: 'rgba(184,48,64,0.1)', borderWidth: 1.5, pointBackgroundColor: '#b83040', pointRadius: 2 },
-        { label: b.name.split(' ').pop(), data: bData, borderColor: '#2a5090', backgroundColor: 'rgba(42,80,144,0.1)', borderWidth: 1.5, pointBackgroundColor: '#2a5090', pointRadius: 2 },
+        { label: r.name.split(' ').pop(), data: rData, borderColor: '#c23030', backgroundColor: 'rgba(194,48,48,0.1)', borderWidth: 1.5, pointBackgroundColor: '#c23030', pointRadius: 2 },
+        { label: b.name.split(' ').pop(), data: bData, borderColor: '#2b5fb3', backgroundColor: 'rgba(43,95,179,0.1)', borderWidth: 1.5, pointBackgroundColor: '#2b5fb3', pointRadius: 2 },
       ],
     },
     options: {
@@ -1921,8 +1917,8 @@ function renderShap(topFeatures) {
   el.innerHTML = topFeatures.map(f => {
     const pct   = Math.round(Math.abs(f.shap) / maxAbs * 100);
     const isRed = f.shap > 0;
-    const color = isRed ? '#7a1f28' : '#1a3050';
-    const accentColor = isRed ? '#b83040' : '#2a5090';
+    const color = isRed ? '#8c1f1f' : '#1a3a6e';
+    const accentColor = isRed ? '#c23030' : '#2b5fb3';
     const dir   = isRed ? '▲ Red favored' : '▲ Blue favored';
     const label = labelMap[f.feature] || f.feature.replace('delta_','').replace(/_/g,' ');
     return `<div>
@@ -1976,10 +1972,10 @@ async function runVsAnalysis() {
       const div = document.createElement('div');
       div.className = 'sm-fight animate-in';
       div.innerHTML = `
-        <div class="sm-names"><span style="color:#b83040">${s.a}</span><span class="sm-vs">vs</span><span style="color:#2a5090">${s.bName}</span></div>
+        <div class="sm-names"><span style="color:#c23030">${s.a}</span><span class="sm-vs">vs</span><span style="color:#2b5fb3">${s.bName}</span></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
           <span class="sm-dist">style similarity: ${Math.round((1-s.dist/9)*100)}% match</span>
-          <span class="sm-winner" style="color:${winner===s.a ? '#b83040' : '#2a5090'}">${winner.split(' ').pop()}${finishStr}</span>
+          <span class="sm-winner" style="color:${winner===s.a ? '#c23030' : '#2b5fb3'}">${winner.split(' ').pop()}${finishStr}</span>
         </div>`;
       div.onclick = () => {
         if (fa && fb) { vsRed=fa; vsBlue=fb; setPickerUI('red',fa); setPickerUI('blue',fb); runVsAnalysis(); }
@@ -2037,8 +2033,8 @@ async function runVsAnalysis() {
 
       // Fight shape (ML-driven)
       const shapeMap = {
-        'KO/TKO':     { verdict:'EXPLOSIVE FIREFIGHT', color:'#b83040' },
-        'Submission': { verdict:'SUBMISSION HUNT',      color:'#2a5090' },
+        'KO/TKO':     { verdict:'EXPLOSIVE FIREFIGHT', color:'#c23030' },
+        'Submission': { verdict:'SUBMISSION HUNT',      color:'#4a7fd4' },
         'Decision':   { verdict:'WAR OF ATTRITION',     color:'#9994a0' },
       };
       const shape = shapeMap[data.method] || { verdict:'CALCULATED BATTLE', color:'#9994a0' };
@@ -2323,7 +2319,7 @@ function bFlashPip(featId, targetVal){
     const pip=document.getElementById(`pip-${featId}-${i}`);
     if(!pip) continue;
     pip.style.background = i<=targetVal ? flashColor : 'var(--border)';
-    pip.style.boxShadow  = (i<=targetVal&&elite) ? '0 0 4px rgba(184,48,64,0.5)' : 'none';
+    pip.style.boxShadow  = (i<=targetVal&&elite) ? '0 0 4px rgba(194,48,48,0.5)' : 'none';
   }
   const valEl=document.getElementById('val-'+featId);
   if(valEl){ valEl.textContent=targetVal; valEl.style.color=flashColor; }
@@ -2334,7 +2330,7 @@ function bUpdateBox(featId){
   const val   = bVals[featId];
   const elite = val >= 8;
   const fillColor = elite ? 'var(--crimson-2)' : 'var(--champagne)';
-  const glowColor = elite ? 'rgba(184,48,64,0.45)' : 'rgba(201,169,110,0.3)';
+  const glowColor = elite ? 'rgba(194,48,48,0.45)' : 'rgba(201,169,110,0.3)';
   for(let i=1;i<=10;i++){
     const pip=document.getElementById(`pip-${featId}-${i}`);
     if(!pip) continue;
@@ -2347,7 +2343,7 @@ function bUpdateBox(featId){
     valEl.style.color = elite ? 'var(--crimson-2)' : 'var(--champagne)';
   }
   const box=document.getElementById('attr-'+featId);
-  if(box) box.style.borderColor = elite ? 'rgba(184,48,64,0.35)' : 'var(--border)';
+  if(box) box.style.borderColor = elite ? 'rgba(194,48,48,0.35)' : 'var(--border)';
 }
 
 function bRefreshAll(){ B_DEFS.forEach(d=>bUpdateBox(d.id)); bUpdateBudget(); }
@@ -2648,7 +2644,7 @@ async function dnaInit(){
           ? (d.winrate_diff > 0 ? '+' : '') + d.winrate_diff.toFixed(1) + '%'
           : '—';
         const diffColor = d.winrate_diff != null
-          ? (d.winrate_diff > 0 ? '#b83040' : '#c9a96e')
+          ? (d.winrate_diff > 0 ? '#c23030' : '#c9a96e')
           : '#4a4858';
         ttName.textContent = d.year + (d.is_partial ? ' *' : '');
         ttBody.innerHTML =
@@ -2734,16 +2730,16 @@ function dnaDraw(canvas, W, H, dpr){
 
     // Striking bar (above mid)
     const sh = barH(d.pct_striking || 0);
-    ctx.fillStyle   = 'rgba(122,31,40,0.38)';
-    ctx.strokeStyle = 'rgba(122,31,40,0.60)';
+    ctx.fillStyle   = 'rgba(140,31,31,0.38)';
+    ctx.strokeStyle = 'rgba(140,31,31,0.60)';
     ctx.lineWidth   = 0.5;
     ctx.fillRect(bx, yMid - sh, bw, sh);
     ctx.strokeRect(bx, yMid - sh, bw, sh);
 
     // Grappling bar (below mid)
     const gh = barH(d.pct_grappling || 0);
-    ctx.fillStyle   = 'rgba(42,80,144,0.38)';
-    ctx.strokeStyle = 'rgba(42,80,144,0.60)';
+    ctx.fillStyle   = 'rgba(43,95,179,0.38)';
+    ctx.strokeStyle = 'rgba(43,95,179,0.60)';
     ctx.fillRect(bx, yMid, bw, gh);
     ctx.strokeRect(bx, yMid, bw, gh);
   });
@@ -2789,13 +2785,13 @@ function dnaDraw(canvas, W, H, dpr){
   const grpPts = yearly.map((d,i)=>
     d.grp_winrate != null ? {x: xPos(i), y: yWR(d.grp_winrate)} : null
   );
-  drawLine(grpPts.filter(Boolean), '#2a5090', 2);
+  drawLine(grpPts.filter(Boolean), '#4a7fd4', 2);
 
   // Striking win rate line (crimson)
   const strPts = yearly.map((d,i)=>
     d.str_winrate != null ? {x: xPos(i), y: yWR(d.str_winrate)} : null
   );
-  drawLine(strPts.filter(Boolean), '#b83040', 2);
+  drawLine(strPts.filter(Boolean), '#c23030', 2);
 
   // ── X axis labels ──
   ctx.fillStyle    = '#4a4858';

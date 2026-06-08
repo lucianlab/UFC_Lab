@@ -24,22 +24,22 @@
   --champagne-2: #a07c46;
   --champagne-dim:#4a3a22;
 
-  --crimson:     #7a1f28;
-  --crimson-2:   #b83040;
-  --crimson-dim: #2e1018;
+  --crimson:     #8c1f1f;
+  --crimson-2:   #c23030;
+  --crimson-dim: #3a1010;
 
-  --cobalt:      #1a3050;
-  --cobalt-2:    #2a5090;
-  --cobalt-dim:  #0d1828;
+  --cobalt:      #1a3a6e;
+  --cobalt-2:    #2b5fb3;
+  --cobalt-dim:  #0d1e3a;
 
   --text-hi:     #e8e4dc;
-  --text-md:     #b8b4c0;
-  --text-lo:     #6e6a7c;
-  --text-xlo:    #3a3748;
+  --text-md:     #9994a0;
+  --text-lo:     #4a4858;
+  --text-xlo:    #272535;
 
   /* legacy compat aliases used by JS innerHTML */
-  --red:         #b83040;
-  --blue:        #2a5090;
+  --red:         #c23030;
+  --blue:        #2b5fb3;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -137,13 +137,16 @@ body {
 }
 
 .mode-btn.active {
-  color: var(--champagne);
-  background: rgba(201,169,110,0.07);
-  border-color: var(--champagne-dim);
+  color: var(--text-hi);
+  background: var(--surface-3);
   border-color: var(--border-2);
 }
 
-/* btn-vs uses base active style */
+.mode-btn#btn-vs.active {
+  color: var(--text-hi);
+  background: linear-gradient(135deg, var(--crimson-dim), var(--cobalt-dim));
+  border-color: var(--border-2);
+}
 
 .mode-btn:hover:not(.active) {
   color: var(--text-md);
@@ -283,23 +286,22 @@ body {
 
 .stat-bar-wrap {
   width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, #1a1a24 0%, #2a1f0a 45%, #c9a96e 100%);
-  border-radius: 2px;
+  height: 1px;
+  background: var(--border);
+  border-radius: 1px;
   margin-top: 3px;
   margin-bottom: 10px;
-  overflow: hidden;
-  position: relative;
 }
 
 .stat-bar {
-  height: 100%;
-  border-radius: 0;
-  background: var(--obsidian);
+  height: 1px;
+  border-radius: 1px;
+  background: var(--cobalt-2);
   transition: width 0.5s cubic-bezier(.4,0,.2,1);
-  position: absolute;
-  right: 0;
-  top: 0;
+}
+
+.stat-bar.elite {
+  background: var(--crimson-2);
 }
 
 #similar-list { list-style: none; margin-top: 4px; }
@@ -356,7 +358,7 @@ body {
 #legend-all {
   font-family: 'DM Mono', monospace;
   font-size: 9px;
-  color: var(--text-lo);
+  color: var(--text-xlo);
   cursor: pointer;
   letter-spacing: 0.12em;
   margin-bottom: 8px;
@@ -409,17 +411,17 @@ body {
   min-height: 56px;
 }
 .vs-picker:hover { border-color: var(--border-2); background: var(--surface-3); }
-.vs-picker.filled-red  { border-color: var(--crimson);  background: linear-gradient(135deg, rgba(122,31,40,0.12), var(--surface-2)); }
-.vs-picker.filled-blue { border-color: var(--cobalt-2); background: linear-gradient(135deg, rgba(26,48,80,0.18), var(--surface-2)); }
-.vs-picker-label { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.18em; margin-bottom:4px; }
-.vs-picker.filled-red  .vs-picker-label { color:rgba(184,48,64,0.5); }
-.vs-picker.filled-blue .vs-picker-label { color:rgba(42,80,144,0.5); }
+.vs-picker.filled-red  { border-color: var(--crimson);  background: linear-gradient(135deg, rgba(140,31,31,0.12), var(--surface-2)); }
+.vs-picker.filled-blue { border-color: var(--cobalt-2); background: linear-gradient(135deg, rgba(26,58,110,0.18), var(--surface-2)); }
+.vs-picker-label { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-xlo); text-transform:uppercase; letter-spacing:0.18em; margin-bottom:4px; }
+.vs-picker.filled-red  .vs-picker-label { color:rgba(194,48,48,0.5); }
+.vs-picker.filled-blue .vs-picker-label { color:rgba(43,95,179,0.5); }
 .vs-picker-name { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:700; color:var(--text-lo); letter-spacing:0.04em; text-transform:uppercase; line-height:1.1; transition:color 0.18s; }
 .vs-picker.filled .vs-picker-name { color:var(--text-hi); }
 .vs-picker-wc { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); margin-top:2px; }
-.vs-picker.filled-red  .vs-picker-wc { color:rgba(184,48,64,0.5); }
-.vs-picker.filled-blue .vs-picker-wc { color:rgba(42,80,144,0.5); }
-.vs-divider { text-align:center; font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:500; color:var(--text-lo); }
+.vs-picker.filled-red  .vs-picker-wc { color:rgba(194,48,48,0.5); }
+.vs-picker.filled-blue .vs-picker-wc { color:rgba(43,95,179,0.5); }
+.vs-divider { text-align:center; font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:500; color:var(--text-xlo); }
 
 /* Search dropdown */
 .vs-search-wrap { position:absolute; top:100%; left:0; right:0; z-index:300; display:none; margin-top:2px; }
@@ -448,7 +450,7 @@ body {
   justify-content: center; gap: 12px; padding: 40px;
 }
 #vs-empty .vs-empty-icon { font-size: 32px; opacity: 0.08; }
-#vs-empty p { font-family:'DM Mono',monospace; font-size:10px; color:var(--text-lo); text-align:center; line-height:1.8; letter-spacing:0.04em; }
+#vs-empty p { font-family:'DM Mono',monospace; font-size:10px; color:var(--text-xlo); text-align:center; line-height:1.8; letter-spacing:0.04em; }
 
 /* Matchup — display:contents to participate in parent grid */
 #vs-matchup { display:none; grid-column:1/-1; grid-row:1/-1; }
@@ -526,8 +528,8 @@ body {
 .fo-track { flex:1; height:2px; background:var(--border); border-radius:1px; overflow:hidden; }
 .fo-fill { height:100%; border-radius:1px; transition:width 1s cubic-bezier(.4,0,.2,1); }
 .fo-fill.ko  { background:var(--crimson-2); }
-.fo-fill.sub { background:#2a5090; }
-.fo-fill.dec { background:var(--text-lo); }
+.fo-fill.sub { background:#6b3fa0; }
+.fo-fill.dec { background:var(--cobalt-2); }
 .fo-pct { font-family:'DM Mono',monospace; font-size:9.5px; color:var(--text-lo); width:30px; text-align:right; }
 
 /* Similar matchups */
@@ -535,9 +537,9 @@ body {
 .sm-fight { background:var(--surface-2); border:1px solid var(--border); border-radius:2px; padding:6px 9px; margin-bottom:4px; cursor:pointer; transition:border-color 0.15s,background 0.15s; }
 .sm-fight:hover { border-color:var(--border-2); background:var(--surface-3); }
 .sm-names { color:var(--text-md); display:flex; gap:5px; align-items:center; font-family:'Barlow',sans-serif; font-size:10px; }
-.sm-vs { color:var(--text-lo); font-family:'DM Mono',monospace; font-size:7.5px; }
+.sm-vs { color:var(--text-xlo); font-family:'DM Mono',monospace; font-size:7.5px; }
 .sm-dist { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); }
-.sm-winner { font-family:'DM Mono',monospace; font-size:8px; color:var(--champagne); }
+.sm-winner { font-family:'DM Mono',monospace; font-size:8px; color:var(--champagne-2); }
 
 /* VS section label */
 .vs-section-label { font-family:'DM Mono',monospace; font-size:7.5px; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.18em; margin-bottom:7px; }
@@ -553,30 +555,30 @@ body {
   font-family:'DM Mono',monospace; font-size:8.5px; cursor:pointer;
   text-align:center; letter-spacing:0.12em; text-transform:uppercase; transition:all 0.18s;
 }
-#vs-random-btn:hover, #vs-random-btn-bottom:hover { border-color:var(--champagne-dim); color:var(--champagne); }
+#vs-random-btn:hover, #vs-random-btn-bottom:hover { border-color:var(--champagne-dim); color:var(--champagne-2); }
 
 /* ─── 3-button mode toggle ─── */
 .mode-btn:not(:first-child):not(:last-child){ border-right:none; border-radius:0; }
 
 .vs-picker.filled-red {
   border-color: var(--crimson);
-  background: linear-gradient(135deg, rgba(122,31,40,0.12), var(--surface-2));
+  background: linear-gradient(135deg, rgba(140,31,31,0.12), var(--surface-2));
 }
 .vs-picker.filled-blue {
   border-color: var(--cobalt-2);
-  background: linear-gradient(135deg, rgba(26,48,80,0.18), var(--surface-2));
+  background: linear-gradient(135deg, rgba(26,58,110,0.18), var(--surface-2));
 }
 
 .vs-picker-label {
   font-family: 'DM Mono', monospace;
   font-size: 8px;
-  color: var(--text-lo);
+  color: var(--text-xlo);
   text-transform: uppercase;
   letter-spacing: 0.18em;
   margin-bottom: 5px;
 }
-.vs-picker.filled-red .vs-picker-label { color: rgba(184,48,64,0.5); }
-.vs-picker.filled-blue .vs-picker-label { color: rgba(42,80,144,0.5); }
+.vs-picker.filled-red .vs-picker-label { color: rgba(194,48,48,0.5); }
+.vs-picker.filled-blue .vs-picker-label { color: rgba(43,95,179,0.5); }
 
 .vs-picker-name {
   font-family: 'Barlow Condensed', sans-serif;
@@ -597,15 +599,15 @@ body {
   margin-top: 3px;
   letter-spacing: 0.04em;
 }
-.vs-picker.filled-red .vs-picker-wc { color: rgba(184,48,64,0.5); }
-.vs-picker.filled-blue .vs-picker-wc { color: rgba(42,80,144,0.5); }
+.vs-picker.filled-red .vs-picker-wc { color: rgba(194,48,48,0.5); }
+.vs-picker.filled-blue .vs-picker-wc { color: rgba(43,95,179,0.5); }
 
 .vs-divider {
   text-align: center;
   font-family: 'Cormorant Garamond', serif;
   font-size: 20px;
   font-weight: 500;
-  color: var(--text-lo);
+  color: var(--text-xlo);
   letter-spacing: 0.1em;
 }
 
@@ -686,7 +688,7 @@ body {
   font-weight:500; letter-spacing:0.12em; text-transform:uppercase;
   cursor:pointer; background:transparent; border:none; color:var(--text-lo); transition:all 0.15s;
 }
-.b-mode-btn.active{ background:rgba(201,169,110,0.07); color:var(--champagne); border-color:var(--champagne-dim); }
+.b-mode-btn.active{ background:var(--surface-3); color:var(--text-hi); }
 
 #b-diff{ display:none; gap:4px; }
 #b-diff.show{ display:flex; }
@@ -698,7 +700,7 @@ body {
 }
 .b-diff-btn.on.easy  { border-color:#2b5a30; color:#4caf50; background:rgba(76,175,80,0.07); }
 .b-diff-btn.on.medium{ border-color:var(--champagne-dim); color:var(--champagne); background:rgba(201,169,110,0.07); }
-.b-diff-btn.on.hard  { border-color:var(--crimson); color:var(--crimson-2); background:rgba(184,48,64,0.07); }
+.b-diff-btn.on.hard  { border-color:var(--crimson); color:var(--crimson-2); background:rgba(194,48,48,0.07); }
 
 #b-budget{ display:none; align-items:baseline; gap:5px; margin-left:auto; }
 #b-budget.show{ display:flex; }
@@ -782,7 +784,7 @@ body {
   display:flex; justify-content:space-between; align-items:center;
 }
 .b-attr-val{
-  font-size:10px; font-weight:500; color:var(--champagne);
+  font-size:10px; font-weight:500; color:var(--champagne-2);
   transition:color 0.15s;
 }
 
@@ -815,7 +817,7 @@ body {
   gap:10px; padding:28px 18px; text-align:center;
 }
 #b-empty .b-empty-icon{ font-size:24px; opacity:0.06; }
-#b-empty p{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-lo); line-height:1.9; letter-spacing:0.04em; }
+#b-empty p{ font-family:'DM Mono',monospace; font-size:9px; color:var(--text-xlo); line-height:1.9; letter-spacing:0.04em; }
 
 #b-results{ display:none; flex-direction:column; padding:12px 12px 6px; gap:0; }
 #b-results.show{ display:flex; }
@@ -829,7 +831,7 @@ body {
 }
 .b-section-label::after{ content:''; flex:1; height:1px; background:var(--border); }
 .b-section-label:first-child{ padding-top:0; }
-.b-section-label.your-label{ color:var(--champagne); }
+.b-section-label.your-label{ color:var(--champagne-2); }
 .b-section-label.your-label::after{ background:rgba(201,169,110,0.2); }
 
 /* Result cards */
@@ -837,7 +839,7 @@ body {
   background:var(--surface-2); border:1px solid var(--border);
   border-radius:2px; padding:10px; margin-bottom:6px;
 }
-.b-result-card.your-card{ border-left:3px solid var(--champagne); padding-left:8px; }
+.b-result-card.your-card{ border-left:3px solid var(--champagne-2); padding-left:8px; }
 .b-result-card:last-child{ margin-bottom:0; }
 
 /* Result card elements */
@@ -983,7 +985,11 @@ body {
 }
 
 /* DNA active nav btn */
-/* btn-dna uses base active style */
+.mode-btn#btn-dna.active {
+  color: var(--champagne);
+  background: rgba(201,169,110,0.07);
+  border-color: var(--champagne-dim);
+}
 
 
 /* DNA insight bar */
@@ -1039,7 +1045,7 @@ body {
       <div class="panel-title">Selected Fighter</div>
       <div id="fighter-name"></div>
       <div id="fighter-wc"></div>
-      <div id="fighter-status" style="font-size:10px;color:var(--champagne);margin-bottom:10px;letter-spacing:0.04em;font-family:'DM Mono',monospace;"></div>
+      <div id="fighter-status" style="font-size:10px;color:var(--champagne-2);margin-bottom:10px;letter-spacing:0.04em;font-family:'DM Mono',monospace;"></div>
       <div class="panel-title">Style Profile</div>
       <div class="stat-row"><span class="stat-label">Sig. Strikes / Round</span><span class="stat-val" id="s-sig"></span></div>
       <div class="stat-bar-wrap"><div class="stat-bar" id="b-sig"></div></div>
@@ -1060,10 +1066,10 @@ body {
     <div id="legend"><div class="panel-title">Weight Classes</div></div>
     <div id="tier-legend" style="margin-bottom:10px">
       <div class="panel-title">Status</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-md)"><div style="width:8px;height:8px;border-radius:50%;background:#FFD700;flex-shrink:0"></div>Current Champion</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#C0A060;flex-shrink:0"></div>Former Champion</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#7F8FA6;flex-shrink:0"></div>Ranked Top 15</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#2a2a3a;flex-shrink:0"></div>Unranked</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:#6a6a7a"><div style="width:8px;height:8px;border-radius:50%;background:#FFD700;flex-shrink:0"></div>Current Champion</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:#666"><div style="width:8px;height:8px;border-radius:50%;background:#C0A060;flex-shrink:0"></div>Former Champion</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:#555"><div style="width:8px;height:8px;border-radius:50%;background:#7F8FA6;flex-shrink:0"></div>Ranked Top 15</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:#333"><div style="width:8px;height:8px;border-radius:50%;background:#2a2a3a;flex-shrink:0"></div>Unranked</div>
     </div>
     <div id="hint">X: Grappler ↔ Striker<br>Y: Decision ↔ Finisher<br>Z: High-Output ↔ Patient</div>
   </div>
@@ -1115,7 +1121,7 @@ body {
           <div class="vs-section-label">Style Comparison</div>
           <div id="vs-crosswc-warn">⚠ Cross-weight class — absolute height & reach (not p4p adjusted)</div>
           <canvas id="vs-radar"></canvas>
-          <div id="vs-random-btn-bottom" onclick="loadRandomMatchup()" style="margin-top:8px;padding:6px 10px;border:1px solid var(--border);border-radius:2px;font-family:'DM Mono',monospace;font-size:8px;color:var(--text-lo);text-align:center;cursor:pointer;letter-spacing:0.12em;text-transform:uppercase;transition:all 0.18s" onmouseenter="this.style.color='var(--champagne)';this.style.borderColor='var(--champagne-dim)'" onmouseleave="this.style.color='var(--text-lo)';this.style.borderColor='var(--border)'">⚡ New Matchup</div>
+          <div id="vs-random-btn-bottom" onclick="loadRandomMatchup()" style="margin-top:8px;padding:6px 10px;border:1px solid var(--border);border-radius:2px;font-family:'DM Mono',monospace;font-size:8px;color:var(--text-lo);text-align:center;cursor:pointer;letter-spacing:0.12em;text-transform:uppercase;transition:all 0.18s" onmouseenter="this.style.color='var(--champagne-2)';this.style.borderColor='var(--champagne-dim)'" onmouseleave="this.style.color='var(--text-lo)';this.style.borderColor='var(--border)'">⚡ New Matchup</div>
         </div>
 
         <!-- RIGHT: 2×2 grid -->
@@ -1141,22 +1147,22 @@ body {
           <!-- TR1-L: Win Probability + Finish -->
           <div id="vs-win-col">
             <div class="vs-section-label">Win Probability
-              <span id="vs-ml-loading" style="font-size:7.5px;color:var(--text-lo);font-family:'DM Mono',monospace;text-transform:none;letter-spacing:0"></span>
+              <span id="vs-ml-loading" style="font-size:7.5px;color:#333;font-family:'DM Mono',monospace;text-transform:none;letter-spacing:0"></span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
-              <span id="vs-prob-red-pct"  style="font-size:30px;font-weight:700;color:#b83040;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
-              <span id="vs-prob-blue-pct" style="font-size:30px;font-weight:700;color:#2a5090;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
+              <span id="vs-prob-red-pct"  style="font-size:30px;font-weight:700;color:#c23030;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
+              <span id="vs-prob-blue-pct" style="font-size:30px;font-weight:700;color:#2b5fb3;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
             </div>
             <div style="height:5px;background:var(--surface-3);border-radius:2px;overflow:hidden;position:relative;margin-bottom:3px">
-              <div id="vs-prob-bar-red"  style="position:absolute;left:0;top:0;height:100%;width:50%;background:#7a1f28;transition:width 0.6s ease"></div>
-              <div id="vs-prob-bar-blue" style="position:absolute;right:0;top:0;height:100%;width:50%;background:#1a3050;transition:width 0.6s ease"></div>
+              <div id="vs-prob-bar-red"  style="position:absolute;left:0;top:0;height:100%;width:50%;background:#8c1f1f;transition:width 0.6s ease"></div>
+              <div id="vs-prob-bar-blue" style="position:absolute;right:0;top:0;height:100%;width:50%;background:#1a3a6e;transition:width 0.6s ease"></div>
             </div>
             <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-              <span id="vs-prob-red-name"  style="font-size:8.5px;color:rgba(184,48,64,0.55);font-family:'DM Mono',monospace">—</span>
-              <span id="vs-prob-blue-name" style="font-size:8.5px;color:rgba(42,80,144,0.55);font-family:'DM Mono',monospace">—</span>
+              <span id="vs-prob-red-name"  style="font-size:8.5px;color:rgba(194,48,48,0.55);font-family:'DM Mono',monospace">—</span>
+              <span id="vs-prob-blue-name" style="font-size:8.5px;color:rgba(43,95,179,0.55);font-family:'DM Mono',monospace">—</span>
             </div>
             <!-- Finish Probability inside win-col -->
-            <div class="fo-title">Finish Probability <span id="vs-round-badge" style="float:right;font-size:8px;color:var(--text-md);font-family:'DM Mono',monospace;letter-spacing:0;text-transform:none"></span></div>
+            <div class="fo-title">Finish Probability <span id="vs-round-badge" style="float:right;font-size:8px;color:var(--champagne-2);font-family:'DM Mono',monospace;letter-spacing:0;text-transform:none"></span></div>
             <div class="fo-row">
               <span class="fo-label">KO / TKO</span>
               <div class="fo-track"><div class="fo-fill ko" id="fo-ko" style="width:0%"></div></div>
@@ -1180,7 +1186,7 @@ body {
               <span id="vs-conf-label" style="float:right;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase"></span>
             </div>
             <div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden;margin-bottom:8px">
-              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:var(--text-lo)"></div>
+              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:var(--champagne-2)"></div>
             </div>
             <div style="font-size:7.5px;color:var(--text-lo);font-family:'DM Mono',monospace;letter-spacing:0.06em;margin-bottom:5px;text-transform:uppercase">How confidence is computed</div>
             <div id="vs-conf-breakdown" style="font-size:10px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6"></div>
@@ -1271,21 +1277,21 @@ body {
       <div id="dna-legend">
         <div class="dna-legend-row">
           <div class="dna-legend-item">
-            <div class="dna-legend-swatch" style="background:rgba(42,80,144,0.38);border:1px solid rgba(42,80,144,0.55)"></div>
+            <div class="dna-legend-swatch" style="background:rgba(43,95,179,0.38);border:1px solid rgba(43,95,179,0.55)"></div>
             Grappling-dominant fighters (%)
           </div>
           <div class="dna-legend-item">
-            <div class="dna-legend-swatch" style="background:rgba(122,31,40,0.38);border:1px solid rgba(122,31,40,0.55)"></div>
+            <div class="dna-legend-swatch" style="background:rgba(140,31,31,0.38);border:1px solid rgba(140,31,31,0.55)"></div>
             Striking-dominant fighters (%)
           </div>
         </div>
         <div class="dna-legend-row">
           <div class="dna-legend-item">
-            <div class="dna-legend-line" style="background:#2a5090"></div>
+            <div class="dna-legend-line" style="background:#4a7fd4"></div>
             Grappling win rate
           </div>
           <div class="dna-legend-item">
-            <div class="dna-legend-line" style="background:#b83040"></div>
+            <div class="dna-legend-line" style="background:#c23030"></div>
             Striking win rate
           </div>
         </div>
@@ -1306,7 +1312,7 @@ body {
     <!-- Axis labels -->
     <div id="dna-axis-labels">
       <span class="dna-axis-label">← Grappling era</span>
-      <span class="dna-axis-label" style="color:var(--text-lo);letter-spacing:0.12em">year</span>
+      <span class="dna-axis-label" style="color:var(--text-hi);letter-spacing:0.15em">YEAR</span>
       <span class="dna-axis-label">Striking era →</span>
     </div>
 
@@ -1442,11 +1448,8 @@ function selectFighter(name){
   if(stEl) stEl.style.display='none';
   function setBar(sid,bid,val,display,max,thr){
     const sv=document.getElementById(sid), bv=document.getElementById(bid);
-    sv.textContent=display;
-    const p=Math.min(100,Math.max(0,(val/max)*100));
-    bv.style.width=(100-p)+'%';
-    sv.classList.toggle('elite',val>=thr);
-    bv.classList.remove('elite');
+    sv.textContent=display; bv.style.width=pct(val,max);
+    sv.classList.toggle('elite',val>=thr); bv.classList.toggle('elite',val>=thr);
   }
   setBar('s-sig','b-sig',f.sig_per_r,f.sig_per_r,40,THRESHOLDS.sig_per_r);
   setBar('s-td','b-td',f.td_per_r,f.td_per_r,4,THRESHOLDS.td_per_r);
@@ -1493,7 +1496,7 @@ WC_ORDER.forEach(wc=>{
   if(!byWC[wc])return;
   const item=document.createElement('div');
   item.className='legend-item'; item.dataset.wc=wc;
-  item.innerHTML=`<div class="legend-dot" style="background:${WC_COLORS[wc]}"></div>${wc} <span style="color:var(--text-lo);margin-left:auto">${byWC[wc].length}</span>`;
+  item.innerHTML=`<div class="legend-dot" style="background:${WC_COLORS[wc]}"></div>${wc} <span style="color:#333;margin-left:auto">${byWC[wc].length}</span>`;
   item.addEventListener('click',()=>applyFilter(activeWC===wc?null:wc));
   legendEl.appendChild(item);
 });
@@ -1569,8 +1572,8 @@ function updateVsPlot(){
       type:'scatter3d', mode:'markers+text',
       x:[vsRed.x], y:[vsRed.y], z:[vsRed.z],
       text:[vsRed.name], textposition:'top center',
-      textfont:{color:'#b83040',size:10,family:'Barlow Condensed'},
-      marker:{size:9,color:'#7a1f28',opacity:1,line:{color:'#b83040',width:1.5},
+      textfont:{color:'#c23030',size:10,family:'Barlow Condensed'},
+      marker:{size:9,color:'#8c1f1f',opacity:1,line:{color:'#c23030',width:1.5},
               symbol:'circle'},
       hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
     });
@@ -1580,8 +1583,8 @@ function updateVsPlot(){
       type:'scatter3d', mode:'markers+text',
       x:[vsBlue.x], y:[vsBlue.y], z:[vsBlue.z],
       text:[vsBlue.name], textposition:'top center',
-      textfont:{color:'#9994a0',size:10,family:'Barlow Condensed'},
-      marker:{size:9,color:'#1a3050',opacity:1,line:{color:'#9994a0',width:1.5}},
+      textfont:{color:'#2b5fb3',size:10,family:'Barlow Condensed'},
+      marker:{size:9,color:'#1a3a6e',opacity:1,line:{color:'#2b5fb3',width:1.5}},
       hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
     });
   }
@@ -1841,8 +1844,8 @@ function buildRadar(r, b) {
     data: {
       labels,
       datasets: [
-        { label: r.name.split(' ').pop(), data: rData, borderColor: '#b83040', backgroundColor: 'rgba(184,48,64,0.1)', borderWidth: 1.5, pointBackgroundColor: '#b83040', pointRadius: 2 },
-        { label: b.name.split(' ').pop(), data: bData, borderColor: '#2a5090', backgroundColor: 'rgba(42,80,144,0.1)', borderWidth: 1.5, pointBackgroundColor: '#2a5090', pointRadius: 2 },
+        { label: r.name.split(' ').pop(), data: rData, borderColor: '#c23030', backgroundColor: 'rgba(194,48,48,0.1)', borderWidth: 1.5, pointBackgroundColor: '#c23030', pointRadius: 2 },
+        { label: b.name.split(' ').pop(), data: bData, borderColor: '#2b5fb3', backgroundColor: 'rgba(43,95,179,0.1)', borderWidth: 1.5, pointBackgroundColor: '#2b5fb3', pointRadius: 2 },
       ],
     },
     options: {
@@ -1877,7 +1880,7 @@ function toggleFeatExplain() {
 function renderShap(topFeatures) {
   const el = document.getElementById('vs-shap-list');
   if (!topFeatures || topFeatures.length === 0) {
-    el.innerHTML = '<div style="font-size:9px;color:var(--text-lo);font-family:DM Mono,monospace;grid-column:1/-1">SHAP unavailable</div>';
+    el.innerHTML = '<div style="font-size:9px;color:#333;font-family:DM Mono,monospace;grid-column:1/-1">SHAP unavailable</div>';
     return;
   }
   // Human-readable labels
@@ -1921,8 +1924,8 @@ function renderShap(topFeatures) {
   el.innerHTML = topFeatures.map(f => {
     const pct   = Math.round(Math.abs(f.shap) / maxAbs * 100);
     const isRed = f.shap > 0;
-    const color = isRed ? '#7a1f28' : '#1a3050';
-    const accentColor = isRed ? '#b83040' : '#2a5090';
+    const color = isRed ? '#8c1f1f' : '#1a3a6e';
+    const accentColor = isRed ? '#c23030' : '#2b5fb3';
     const dir   = isRed ? '▲ Red favored' : '▲ Blue favored';
     const label = labelMap[f.feature] || f.feature.replace('delta_','').replace(/_/g,' ');
     return `<div>
@@ -1976,10 +1979,10 @@ async function runVsAnalysis() {
       const div = document.createElement('div');
       div.className = 'sm-fight animate-in';
       div.innerHTML = `
-        <div class="sm-names"><span style="color:#b83040">${s.a}</span><span class="sm-vs">vs</span><span style="color:#2a5090">${s.bName}</span></div>
+        <div class="sm-names"><span style="color:#c23030">${s.a}</span><span class="sm-vs">vs</span><span style="color:#2b5fb3">${s.bName}</span></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
           <span class="sm-dist">style similarity: ${Math.round((1-s.dist/9)*100)}% match</span>
-          <span class="sm-winner" style="color:${winner===s.a ? '#b83040' : '#2a5090'}">${winner.split(' ').pop()}${finishStr}</span>
+          <span class="sm-winner">${winner.split(' ').pop()}${finishStr}</span>
         </div>`;
       div.onclick = () => {
         if (fa && fb) { vsRed=fa; vsBlue=fb; setPickerUI('red',fa); setPickerUI('blue',fb); runVsAnalysis(); }
@@ -2037,11 +2040,11 @@ async function runVsAnalysis() {
 
       // Fight shape (ML-driven)
       const shapeMap = {
-        'KO/TKO':     { verdict:'EXPLOSIVE FIREFIGHT', color:'#b83040' },
-        'Submission': { verdict:'SUBMISSION HUNT',      color:'#2a5090' },
-        'Decision':   { verdict:'WAR OF ATTRITION',     color:'#9994a0' },
+        'KO/TKO':     { verdict:'EXPLOSIVE FIREFIGHT', color:'#c23030' },
+        'Submission': { verdict:'SUBMISSION HUNT',      color:'#8a50b0' },
+        'Decision':   { verdict:'WAR OF ATTRITION',     color:'#2b5fb3' },
       };
-      const shape = shapeMap[data.method] || { verdict:'CALCULATED BATTLE', color:'#9994a0' };
+      const shape = shapeMap[data.method] || { verdict:'CALCULATED BATTLE', color:'#5a7a9a' };
       const shapeEl = document.getElementById('fight-shape-verdict');
       shapeEl.textContent = shape.verdict;
       shapeEl.style.color = shape.color;
@@ -2064,16 +2067,12 @@ async function runVsAnalysis() {
       const confBar = document.getElementById('vs-conf-bar');
       if (confBar) {
         confBar.style.width = confPct + '%';
-        // gradient fixed in HTML; only width changes
+        confBar.style.background = data.confidence_label==='HIGH' ? '#c9a96e' : data.confidence_label==='MEDIUM' ? '#5a7a9a' : '#444460';
       }
-            const confLabelEl = document.getElementById('vs-conf-label');
+      const confLabelEl = document.getElementById('vs-conf-label');
       if (confLabelEl) {
         confLabelEl.textContent = data.confidence_label;
-        const cf = Math.min(1, Math.max(0, data.confidence || 0));
-        const cr = Math.round(26  + (201-26)  * cf);
-        const cg = Math.round(24  + (169-24)  * cf);
-        const cb = Math.round(36  + (110-36)  * cf);
-        confLabelEl.style.color = `rgb(${cr},${cg},${cb})`;
+        confLabelEl.style.color = data.confidence_label==='HIGH' ? 'var(--champagne-2)' : data.confidence_label==='MEDIUM' ? '#5a9abf' : '#555468';
       }
       const winEdge    = Math.round(Math.abs(data.red_win_prob - 0.5) * 200);
       const methodEdge = Math.round(Math.max(mp.ko, mp.sub, mp.decision) * 100);
@@ -2090,7 +2089,7 @@ async function runVsAnalysis() {
     } else {
       document.getElementById('vs-ml-loading').textContent = 'unavailable';
       // Static fallback
-      const shapeFB = styleDist > 4 ? { verdict:'UNPREDICTABLE', color:'var(--text-md)' } : { verdict:'CALCULATED BATTLE', color:'#9994a0' };
+      const shapeFB = styleDist > 4 ? { verdict:'UNPREDICTABLE', color:'#6a6a7a' } : { verdict:'CALCULATED BATTLE', color:'#5a7a9a' };
       document.getElementById('fight-shape-verdict').textContent = shapeFB.verdict;
       document.getElementById('fight-shape-verdict').style.color = shapeFB.color;
     }
@@ -2201,8 +2200,8 @@ const B_TIER_STYLE = {
   S:   {color:'#FFD700', bg:'rgba(255,215,0,0.08)',    border:'rgba(255,215,0,0.3)',    gold:true},
   'A+':{color:'#c9a96e', bg:'rgba(201,169,110,0.08)',  border:'rgba(201,169,110,0.3)',  gold:true},
   A:   {color:'#c9a96e', bg:'rgba(201,169,110,0.07)',  border:'rgba(201,169,110,0.25)', gold:true},
-  'B+':{color:'var(--champagne)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
-  B:   {color:'var(--champagne)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
+  'B+':{color:'var(--champagne-2)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
+  B:   {color:'var(--champagne-2)', bg:'var(--surface-3)', border:'var(--border-2)',        gold:false},
   'C+':{color:'#a0a0b0',           bg:'transparent',      border:'var(--border-2)',        gold:false},
   C:   {color:'#a0a0b0',           bg:'transparent',      border:'var(--border)',          gold:false},
   'D+':{color:'#a0a0b0',           bg:'transparent',      border:'var(--border)',          gold:false},
@@ -2245,10 +2244,10 @@ function bBuildGrid(){
     {t:'S',  color:'#FFD700',           desc:'Gods of the sport. The one. The only.'},
     {t:'A+', color:'#c9a96e',           desc:'Legends of their era. Untouchable at their peak.'},
     {t:'A',  color:'#c9a96e',           desc:'Dynasty builders. Reigned supreme.'},
-    {t:'B+', color:'var(--champagne)',desc:'Champions who defended. Proved gold is earned, not given.'},
+    {t:'B+', color:'var(--champagne-2)',desc:'Champions who defended. Proved gold is earned, not given.'},
   ];
   const TIER_RIGHT = [
-    {t:'B',  color:'var(--champagne)',desc:'Once a champion, always a champion.'},
+    {t:'B',  color:'var(--champagne-2)',desc:'Once a champion, always a champion.'},
     {t:'C+', color:'#a0a0b0',           desc:'Greatness needs no gold to be proven.'},
     {t:'C-D',color:'#a0a0b0',           desc:'Historically ranked Top 5 / 10 / 15.'},
     {t:'E',  color:'#a0a0b0',           desc:'World-class. The UFC is the sharkest tank on earth.'},
@@ -2323,7 +2322,7 @@ function bFlashPip(featId, targetVal){
     const pip=document.getElementById(`pip-${featId}-${i}`);
     if(!pip) continue;
     pip.style.background = i<=targetVal ? flashColor : 'var(--border)';
-    pip.style.boxShadow  = (i<=targetVal&&elite) ? '0 0 4px rgba(184,48,64,0.5)' : 'none';
+    pip.style.boxShadow  = (i<=targetVal&&elite) ? '0 0 4px rgba(194,48,48,0.5)' : 'none';
   }
   const valEl=document.getElementById('val-'+featId);
   if(valEl){ valEl.textContent=targetVal; valEl.style.color=flashColor; }
@@ -2334,7 +2333,7 @@ function bUpdateBox(featId){
   const val   = bVals[featId];
   const elite = val >= 8;
   const fillColor = elite ? 'var(--crimson-2)' : 'var(--champagne)';
-  const glowColor = elite ? 'rgba(184,48,64,0.45)' : 'rgba(201,169,110,0.3)';
+  const glowColor = elite ? 'rgba(194,48,48,0.45)' : 'rgba(201,169,110,0.3)';
   for(let i=1;i<=10;i++){
     const pip=document.getElementById(`pip-${featId}-${i}`);
     if(!pip) continue;
@@ -2344,10 +2343,10 @@ function bUpdateBox(featId){
   const valEl=document.getElementById('val-'+featId);
   if(valEl){
     valEl.textContent=val;
-    valEl.style.color = elite ? 'var(--crimson-2)' : 'var(--champagne)';
+    valEl.style.color = elite ? 'var(--crimson-2)' : 'var(--champagne-2)';
   }
   const box=document.getElementById('attr-'+featId);
-  if(box) box.style.borderColor = elite ? 'rgba(184,48,64,0.35)' : 'var(--border)';
+  if(box) box.style.borderColor = elite ? 'rgba(194,48,48,0.35)' : 'var(--border)';
 }
 
 function bRefreshAll(){ B_DEFS.forEach(d=>bUpdateBox(d.id)); bUpdateBudget(); }
@@ -2532,7 +2531,7 @@ async function bLoadLeaderboard(){
     el.classList.add('show');
     el.innerHTML='<div class="b-lb-title">Compete Leaderboard</div>';
     if(!data.length){
-      el.innerHTML+=`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-lo);padding:8px 0">No entries yet.</div>`;
+      el.innerHTML+=`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-xlo);padding:8px 0">No entries yet.</div>`;
       return;
     }
     data.slice(0,10).forEach((e,i)=>{
@@ -2648,7 +2647,7 @@ async function dnaInit(){
           ? (d.winrate_diff > 0 ? '+' : '') + d.winrate_diff.toFixed(1) + '%'
           : '—';
         const diffColor = d.winrate_diff != null
-          ? (d.winrate_diff > 0 ? '#b83040' : '#c9a96e')
+          ? (d.winrate_diff > 0 ? '#c23030' : '#c9a96e')
           : '#4a4858';
         ttName.textContent = d.year + (d.is_partial ? ' *' : '');
         ttBody.innerHTML =
@@ -2657,7 +2656,7 @@ async function dnaInit(){
           `<span class="tt-dim">Striking win rate</span> ${d.str_winrate != null ? d.str_winrate+'%' : '—'}<br>`+
           `<span class="tt-dim">Grappling win rate</span> ${d.grp_winrate != null ? d.grp_winrate+'%' : '—'}<br>`+
           `<span class="tt-dim">Differential</span> <span style="color:${diffColor}">${diff}</span>`+
-          (d.is_partial ? '<br><span class="tt-dim" style="color:var(--text-lo)">※ partial year</span>' : '');
+          (d.is_partial ? '<br><span class="tt-dim" style="color:#4a4858">※ partial year</span>' : '');
       }
     } else {
       ttEl.style.display = 'none';
@@ -2734,16 +2733,16 @@ function dnaDraw(canvas, W, H, dpr){
 
     // Striking bar (above mid)
     const sh = barH(d.pct_striking || 0);
-    ctx.fillStyle   = 'rgba(122,31,40,0.38)';
-    ctx.strokeStyle = 'rgba(122,31,40,0.60)';
+    ctx.fillStyle   = 'rgba(140,31,31,0.38)';
+    ctx.strokeStyle = 'rgba(140,31,31,0.60)';
     ctx.lineWidth   = 0.5;
     ctx.fillRect(bx, yMid - sh, bw, sh);
     ctx.strokeRect(bx, yMid - sh, bw, sh);
 
     // Grappling bar (below mid)
     const gh = barH(d.pct_grappling || 0);
-    ctx.fillStyle   = 'rgba(42,80,144,0.38)';
-    ctx.strokeStyle = 'rgba(42,80,144,0.60)';
+    ctx.fillStyle   = 'rgba(43,95,179,0.38)';
+    ctx.strokeStyle = 'rgba(43,95,179,0.60)';
     ctx.fillRect(bx, yMid, bw, gh);
     ctx.strokeRect(bx, yMid, bw, gh);
   });
@@ -2789,13 +2788,13 @@ function dnaDraw(canvas, W, H, dpr){
   const grpPts = yearly.map((d,i)=>
     d.grp_winrate != null ? {x: xPos(i), y: yWR(d.grp_winrate)} : null
   );
-  drawLine(grpPts.filter(Boolean), '#2a5090', 2);
+  drawLine(grpPts.filter(Boolean), '#4a7fd4', 2);
 
   // Striking win rate line (crimson)
   const strPts = yearly.map((d,i)=>
     d.str_winrate != null ? {x: xPos(i), y: yWR(d.str_winrate)} : null
   );
-  drawLine(strPts.filter(Boolean), '#b83040', 2);
+  drawLine(strPts.filter(Boolean), '#c23030', 2);
 
   // ── X axis labels ──
   ctx.fillStyle    = '#4a4858';
