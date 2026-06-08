@@ -1388,7 +1388,7 @@ function tierOpacity(f){
   return 0.55;
 }
 
-let univTraces = Object.entries(byWC).map(([wc,fighters])=>({
+const univTraces = Object.entries(byWC).map(([wc,fighters])=>({
   type:'scatter3d', mode:'markers', name:wc,
   x:fighters.map(f=>f.x), y:fighters.map(f=>f.y), z:fighters.map(f=>f.z),
   text:fighters.map(f=>f.name), customdata:fighters.map(f=>f.name),
@@ -1511,23 +1511,15 @@ function applyTierFilter(tier){
 }
 
 function applyFilters(){
-  univTraces = Object.entries(byWC).map(([wc,fighters])=>({
-    type:'scatter3d', mode:'markers', name:wc,
-    x:fighters.map(f=>f.x), y:fighters.map(f=>f.y), z:fighters.map(f=>f.z),
-    text:fighters.map(f=>f.name), customdata:fighters.map(f=>f.name),
-    marker:{
-      size:fighters.map(f=>tierSize(f)),
-      color:fighters.map(f=>tierColor(f)),
-      opacity:fighters.map(f=>{
-        const wcMatch  = activeWC===null || wc===activeWC;
-        const tierMatch= activeTier===null || f.tier===activeTier;
-        return (wcMatch && tierMatch) ? tierOpacity(f) : 0;
-      }),
-      line:{width:0},
-    },
-    hovertemplate:'<b>%{text}</b><extra></extra>',
-  }));
-  Plotly.react('plot',[...univTraces,hlTrace],univLayout,{responsive:true,displayModeBar:false});
+  Object.entries(wcTraceIdx).forEach(([wc,i])=>{
+    const fighters = byWC[wc]||[];
+    const opacities = fighters.map(f=>{
+      const wcMatch  = activeWC===null || wc===activeWC;
+      const tierMatch= activeTier===null || f.tier===activeTier;
+      return (wcMatch && tierMatch) ? tierOpacity(f) : 0;
+    });
+    Plotly.restyle('plot',{'marker.opacity':[opacities]},[i]);
+  });
 }
 const allBtn=document.createElement('div');
 allBtn.id='legend-all'; allBtn.className='active-filter'; allBtn.textContent='ALL';
