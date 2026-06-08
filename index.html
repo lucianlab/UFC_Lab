@@ -1542,8 +1542,8 @@ body {
     <div id="helix-graph-wrap">
 
       <svg id="helix-svg"></svg>
-      <div id="helix-hint" style="position:absolute;bottom:16px;left:20px;font-family:DM Mono,monospace;font-size:8px;color:#3a3748;letter-spacing:0.10em;pointer-events:none;line-height:1.9">
-        SPACE &nbsp;full graph &nbsp;·&nbsp; CLICK &nbsp;focus &nbsp;·&nbsp; DBL-CLICK &nbsp;<span class="hint-mode">RANKED</span> / ALL
+      <div id="helix-hint" style="position:absolute;bottom:16px;left:20px;font-family:DM Mono,monospace;font-size:8px;color:#3a3748;letter-spacing:0.10em;pointer-events:none;line-height:1.9;display:none">
+        SPACE &nbsp;<span class="hint-mode">RANKED</span> / ALL
       </div>
     </div>
     <div id="helix-panel">
@@ -1559,6 +1559,9 @@ body {
           <div class="helix-leg-item"><div class="helix-leg-dot" style="background:#2a2a3a;border:1px solid #3a3a4a"></div>Unranked</div>
           <div class="helix-leg-item"><div style="width:20px;height:2px;background:rgba(184,48,64,0.7);margin-right:2px"></div>KO</div>
           <div class="helix-leg-item"><div style="width:20px;height:2px;background:rgba(42,80,144,0.7);margin-right:2px"></div>Sub</div>
+        </div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+          <div onclick="helixGoFull()" style="font-family:DM Mono,monospace;font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-lo);cursor:pointer;padding:5px 0;transition:color 0.15s" onmouseover="this.style.color='var(--champagne)'" onmouseout="this.style.color='var(--text-lo)'">&#x2B21; Full Graph</div>
         </div>
       </div>
       <div id="helix-panel-body">
@@ -1912,12 +1915,13 @@ document.addEventListener('keydown', e=>{
     e.preventDefault();
     const helixActive=document.getElementById('helix-mode').classList.contains('active');
     if(helixActive){
-      // HELIX 空白鍵：回到完整 ranked graph
-      document.getElementById('helix-search').value='';
-      _helixFocusName=null;
-      _helixSelected=null;
-      helixClearPanel();
-      helixRenderFull();
+      if(_helixMode==='local'){
+        // local 模式：切換 ranked / all
+        _helixShowAll = !_helixShowAll;
+        helixUpdateHint();
+        helixRenderLocal();
+      }
+      // full 模式：space 無效
     } else if(document.getElementById('plot').style.display!=='none'){
       // Universe：重置相機
       Plotly.relayout('plot', {'scene.camera': {eye:{x:1.8,y:0.8,z:1.0}}});
@@ -3305,221 +3309,174 @@ function dnaDraw(canvas, W, H, dpr){
 
 
 // HELIX MODE
-let _helixInited=false,_helixData=null,_helixShowAll=false,_helixSelected=null;
-const HELIX_DEFAULT='Charles Oliveira';
-let _helixFocusName=HELIX_DEFAULT;  // 當前中心選手
-let _helixAllNodes=null;            // 完整 node 列表（搜尋用）
+// State
+let _helixInited    = false;
+let _helixAllNodes  = null;   // 全量 node 列表（搜尋用）
+let _helixAllEdges  = null;   // 全量 edge 列表
+let _helixMode      = 'local'; // 'local' | 'full'
+let _helixShowAll   = false;  // local 模式：是否顯示 unranked
+let _helixSelected  = null;   // 單擊選中的選手（panel）
+let _helixCenter    = null;   // local 模式的中心選手
+let _helixLocalRaw  = null;   // local 模式 API 回傳的原始 nodes（含 unranked）
+let _helixLocalEdgesRaw = null; // local 模式原始 edges
+const HELIX_DEFAULT = 'Charles Oliveira';
 
+// ── Color / size helpers ──
 function helixNodeColor(d){
   if(d.tier==='champion')        return '#FFD700';
   if(d.tier==='former_champion') return '#C0A060';
   if(d.tier==='ever_ranked')     return '#9a9a9a';
   return '#2a2a3a';
 }
-function helixNodeStroke(d){
+function helixNodeStroke(d, centerName){
   if(d.id===_helixSelected)      return '#c9a96e';
+  if(centerName && d.id===centerName) return '#c9a96e';
   if(d.tier==='champion')        return 'rgba(255,215,0,0.55)';
   if(d.tier==='former_champion') return 'rgba(192,160,96,0.35)';
   if(d.tier==='ever_ranked')     return 'rgba(154,154,154,0.15)';
   return 'transparent';
 }
-function helixNodeR(d){
-  const base=3+(d.pr/100)*11;
-  return d.id===_helixSelected ? base+2 : base;
+function helixNodeR(d, centerName){
+  if(centerName && d.id===centerName) return 14;
+  return 3 + (d.pr/100)*10;
 }
 
+// ── Init ──
 async function helixInit(){
-  if(_helixInited&&_helixAllNodes){
-    if(_helixFocusName) helixFocusOn(_helixFocusName);
-    else helixRenderFull();
-    return;
-  }
+  if(_helixInited && _helixAllNodes){ helixFocusOn(HELIX_DEFAULT); return; }
   if(_helixInited) return;
-  _helixInited=true;
+  _helixInited = true;
   try{
-    // 載入全量資料供搜尋用
-    const res=await fetch(API_BASE+'/api/helix/graph?ranked_only=false');
+    const res = await fetch(API_BASE+'/api/helix/graph?ranked_only=false');
     if(!res.ok) throw new Error('HTTP '+res.status);
-    const full=await res.json();
-    _helixAllNodes=full.nodes||[];
-    _helixData=full;
+    const full = await res.json();
+    _helixAllNodes = full.nodes||[];
+    _helixAllEdges = full.edges||[];
   }catch(e){
     console.error('HELIX load failed:',e);
-    document.getElementById('helix-loading').innerHTML='<span style="color:#b83040">Failed to load graph</span>';
+    const ld = document.getElementById('helix-loading');
+    ld.textContent = 'Failed to load graph data';
+    ld.style.color = '#b83040';
     return;
   }
   helixBuildSearch();
-  // 存完整 edges 供 helixRenderFull 使用
-  if(_helixData) _helixData._fullEdges = _helixData.edges||[];
-  helixRenderFull();
-
-  // 雙擊空白切換 ranked/all（不點到 node 才觸發）
-  const svgEl2=document.getElementById('helix-svg');
-  svgEl2.addEventListener('dblclick',e=>{
-    if(e.target.tagName==='circle') return;
-    _helixShowAll=!_helixShowAll;
-    const hint=document.getElementById('helix-hint');
-    if(hint){
-      hint.querySelector('.hint-mode').textContent=_helixShowAll?'ALL':'RANKED';
-    }
-    document.getElementById('helix-search').value='';
-    _helixFocusName=null; _helixSelected=null;
-    helixClearPanel();
-    helixRenderFull();
-  });
+  helixFocusOn(HELIX_DEFAULT);
 }
 
+// ── Search autocomplete ──
 function helixBuildSearch(){
-  const nodes=_helixAllNodes||[];
-  const inp=document.getElementById('helix-search');
-  const ac=document.getElementById('helix-ac');
+  const nodes = _helixAllNodes||[];
+  const inp = document.getElementById('helix-search');
+  const ac  = document.getElementById('helix-ac');
   inp.addEventListener('input',()=>{
-    const q=inp.value.toLowerCase().trim();
-    ac.innerHTML='';
-    if(!q){ac.style.display='none';return;}
-    const matches=nodes.filter(n=>n.id.toLowerCase().includes(q)).sort((a,b)=>b.pr-a.pr).slice(0,8);
-    if(!matches.length){ac.style.display='none';return;}
+    const q = inp.value.toLowerCase().trim();
+    ac.innerHTML = ''; ac.style.display='none';
+    if(!q) return;
+    const matches = nodes.filter(n=>n.id.toLowerCase().includes(q))
+                         .sort((a,b)=>b.pr-a.pr).slice(0,8);
+    if(!matches.length) return;
     matches.forEach(n=>{
-      const div=document.createElement('div');
-      div.className='helix-ac-item';
-      const sp1=document.createElement('span'); sp1.textContent=n.id;
-      const sp2=document.createElement('span'); sp2.className='helix-ac-pr'; sp2.textContent='PR #'+n.pr_rank;
-      div.appendChild(sp1); div.appendChild(sp2);
-      div.onclick=()=>{inp.value=n.id;ac.style.display='none';helixFocusOn(n.id);};
+      const div=document.createElement('div'); div.className='helix-ac-item';
+      const s1=document.createElement('span'); s1.textContent=n.id;
+      const s2=document.createElement('span'); s2.className='helix-ac-pr'; s2.textContent='PR #'+n.pr_rank;
+      div.appendChild(s1); div.appendChild(s2);
+      div.onclick=()=>{ inp.value=n.id; ac.style.display='none'; helixFocusOn(n.id); };
       ac.appendChild(div);
     });
     ac.style.display='block';
   });
-  document.addEventListener('click',e=>{if(!inp.contains(e.target))ac.style.display='none';});
+  document.addEventListener('click',e=>{ if(!inp.contains(e.target)) ac.style.display='none'; });
 }
 
-
-
-// 顯示完整 ranked（或 all）graph
-function helixRenderFull(){
-  if(!_helixAllNodes) return;
-  const loading=document.getElementById('helix-loading');
-  loading.style.display='flex';
-  const nodes=_helixAllNodes.filter(n=>_helixShowAll?true:n.tier!=='unranked');
-  const nodeIds=new Set(nodes.map(n=>n.id));
-  const fullEdges=(_helixData&&_helixData._fullEdges)||(_helixData&&_helixData.edges)||[];
-  const edges=fullEdges.filter(e=>nodeIds.has(e.winner)&&nodeIds.has(e.loser));
-  _helixData=Object.assign({},_helixData,{nodes,edges,_fullEdges:fullEdges});
-  helixRender();
-}
-
-// 以某選手為中心重新渲染 graph（局部鄰居）
+// ── LOCAL MODE: focus on fighter ──
 async function helixFocusOn(name){
-  _helixFocusName = name;
-  _helixSelected  = name;
-  const loading=document.getElementById('helix-loading');
-  loading.style.display='flex';
+  _helixMode   = 'local';
+  _helixCenter = name;
+  _helixShowAll = false;  // 每次 focus 重設為 ranked only
+  _helixSelected = name;
+
+  const loading = document.getElementById('helix-loading');
+  loading.style.display = 'flex';
+  helixUpdateHint();
 
   try{
-    const res=await fetch(API_BASE+'/api/helix/fighter/'+encodeURIComponent(name)+'?depth=2');
+    const res = await fetch(API_BASE+'/api/helix/fighter/'+encodeURIComponent(name)+'?depth=2');
     if(!res.ok) throw new Error('HTTP '+res.status);
-    const data=await res.json();
-
-    // 把局部 nodes/edges 存進 _helixData 供 helixRender 使用
-    _helixData={ nodes: data.nodes, edges: data.edges };
-
-    // 把 panel 顯示出來
+    const data = await res.json();
+    _helixLocalRaw      = data.nodes||[];
+    _helixLocalEdgesRaw = data.edges||[];
     helixShowPanel(name);
-
-    // 更新 hint
-    const hint=document.getElementById('helix-hint');
-    if(hint) hint.style.display='block';
-
   }catch(e){
     console.error('helixFocusOn failed:',e);
     loading.style.display='none';
     return;
   }
 
-  helixRenderFocus(name);
+  helixRenderLocal();
 }
 
+// ── Render local graph（用 _helixLocalRaw + _helixShowAll 過濾）──
+function helixRenderLocal(){
+  if(!_helixLocalRaw) return;
+  const centerName = _helixCenter;
 
-// 渲染以某選手為中心的局部 graph
-function helixRenderFocus(centerName){
-  const loading=document.getElementById('helix-loading');
-  if(!_helixData) return;
+  // 過濾：中心選手永遠顯示，其餘根據 _helixShowAll
+  let nodes = _helixLocalRaw.filter(n=>
+    n.id===centerName || (_helixShowAll ? true : n.tier!=='unranked')
+  );
+  const nodeIds = new Set(nodes.map(n=>n.id));
+  const edges   = _helixLocalEdgesRaw.filter(e=>nodeIds.has(e.winner)&&nodeIds.has(e.loser));
 
-  const nodes=(_helixData.nodes||[]).map(n=>({...n}));
-  const nodeMap=Object.fromEntries(nodes.map(n=>[n.id,n]));
-  const nodeIds=new Set(nodes.map(n=>n.id));
-  const edges=(_helixData.edges||[]).filter(e=>nodeIds.has(e.winner)&&nodeIds.has(e.loser));
-  const links=edges.map(e=>({
-    source:nodeMap[e.winner],target:nodeMap[e.loser],
-    weight:e.weight,count:e.count,
+  nodes = nodes.map(n=>({...n}));
+  const nodeMap = Object.fromEntries(nodes.map(n=>[n.id,n]));
+  const links   = edges.map(e=>({
+    source:nodeMap[e.winner], target:nodeMap[e.loser],
+    weight:e.weight, count:e.count,
     method:e.bouts&&e.bouts[0]?e.bouts[0].method:''
   })).filter(l=>l.source&&l.target);
 
-  const wrap=document.getElementById('helix-graph-wrap');
-  const W=wrap.clientWidth||900, H=wrap.clientHeight||700;
-  const svgEl=d3.select('#helix-svg').attr('viewBox','0 0 '+W+' '+H).style('background','#09090d');
+  const wrap = document.getElementById('helix-graph-wrap');
+  const W = wrap.clientWidth||900, H = wrap.clientHeight||700;
+  const svgEl = d3.select('#helix-svg').attr('viewBox','0 0 '+W+' '+H).style('background','#09090d');
   svgEl.selectAll('*').remove();
 
-  const defs=svgEl.append('defs');
-  defs.append('marker').attr('id','arrow-ko2').attr('viewBox','0 -4 8 8')
-    .attr('refX',16).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
-    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','rgba(184,48,64,0.7)');
-  defs.append('marker').attr('id','arrow-sub2').attr('viewBox','0 -4 8 8')
-    .attr('refX',16).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
-    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','rgba(42,80,144,0.7)');
-  defs.append('marker').attr('id','arrow-dec2').attr('viewBox','0 -4 8 8')
-    .attr('refX',16).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
-    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','rgba(100,100,120,0.5)');
+  helixAddArrows(svgEl,'2');
 
-  const g=svgEl.append('g');
-  const zoom=d3.zoom().scaleExtent([0.15,8]).on('zoom',e=>g.attr('transform',e.transform));
-  svgEl.call(zoom);
-  window._helixZoom=zoom; window._helixSvgEl=svgEl;
+  const g = svgEl.append('g');
+  helixSetZoom(svgEl,g);
 
-  // 中心節點固定在畫面中央，simulation 收斂更快
-  const centerNode=nodes.find(n=>n.id===centerName);
+  // 中心節點固定在畫面中央
+  const centerNode = nodes.find(n=>n.id===centerName);
   if(centerNode){ centerNode.fx=W/2; centerNode.fy=H/2; }
 
-  const sim=d3.forceSimulation(nodes)
+  const sim = d3.forceSimulation(nodes)
     .force('link',d3.forceLink(links).id(d=>d.id).distance(d=>70-d.weight*8).strength(0.6))
     .force('charge',d3.forceManyBody().strength(d=>d.id===centerName?-300:-80-d.pr*0.5))
     .force('center',d3.forceCenter(W/2,H/2))
-    .force('collision',d3.forceCollide().radius(d=>helixFocusNodeR(d,centerName)+4));
+    .force('collision',d3.forceCollide().radius(d=>helixNodeR(d,centerName)+4));
 
-  const link=g.append('g').selectAll('line').data(links).join('line')
-    .attr('stroke',d=>d.method.includes('KO')?'rgba(184,48,64,0.5)':d.method.includes('Sub')?'rgba(42,80,144,0.5)':'rgba(80,80,100,0.3)')
-    .attr('stroke-width',d=>Math.min(3,0.8+d.weight*0.4))
-    .attr('marker-end',d=>d.method.includes('KO')?'url(#arrow-ko2)':d.method.includes('Sub')?'url(#arrow-sub2)':'url(#arrow-dec2)');
+  const link = helixDrawLinks(g, links, '2');
 
-  const node=g.append('g').selectAll('circle').data(nodes).join('circle')
-    .attr('r',d=>helixFocusNodeR(d,centerName))
+  const node = g.append('g').selectAll('circle').data(nodes).join('circle')
+    .attr('r',d=>helixNodeR(d,centerName))
     .attr('fill',d=>helixNodeColor(d))
-    .attr('stroke',d=>d.id===centerName?'#c9a96e':helixNodeStroke(d))
+    .attr('stroke',d=>helixNodeStroke(d,centerName))
     .attr('stroke-width',d=>d.id===centerName?2:1)
     .attr('opacity',d=>d.id===centerName?1:d.tier==='unranked'?0.5:0.85)
     .style('cursor','pointer')
-    .on('click',(event,d)=>{ event.stopPropagation(); helixFocusOn(d.id); })
+    // 單擊：顯示 panel
+    .on('click',(event,d)=>{ event.stopPropagation(); _helixSelected=d.id; helixShowPanel(d.id); helixHighlightNode(node,d.id,centerName); })
+    // 雙擊：focus 到該選手
+    .on('dblclick',(event,d)=>{ event.stopPropagation(); helixFocusOn(d.id); })
     .call(d3.drag()
       .on('start',(e,d)=>{ if(!e.active)sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
       .on('drag', (e,d)=>{ d.fx=e.x; d.fy=e.y; })
       .on('end',  (e,d)=>{ if(!e.active)sim.alphaTarget(0); if(d.id!==centerName){d.fx=null;d.fy=null;} }));
 
-  // Tooltip
-  let tt=document.getElementById('helix-tt');
-  if(!tt){tt=document.createElement('div');tt.id='helix-tt';
-    tt.style.cssText='position:fixed;pointer-events:none;background:rgba(14,14,20,0.95);border:1px solid #1f1f2c;border-radius:3px;padding:7px 10px;font-family:DM Mono,monospace;font-size:10px;color:#b8b4c0;display:none;z-index:9999;max-width:200px;line-height:1.6';
-    document.body.appendChild(tt);}
-  node.on('mouseover',(e,d)=>{
-    tt.style.display='block';
-    tt.innerHTML='<strong style="color:#e8e4dc;font-size:13px;text-transform:uppercase">'+d.id+'</strong><br>'+
-      'PR Rank <span style="color:#c9a96e">#'+d.pr_rank+'</span><br>'+
-      d.style+'<br>W/L graph: '+d.wins_graph+'/'+d.losses_graph+
-      (d.id===centerName?'<br><span style="color:#c9a96e">● center</span>':'<br><span style="color:#6e6a7c">click to focus</span>');
-  }).on('mousemove',e=>{tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-8)+'px';})
-    .on('mouseout',()=>tt.style.display='none');
+  helixAddTooltip(node, centerName);
 
-  // Labels — 全部顯示（局部 graph node 少）
-  g.append('g').selectAll('text').data(nodes).join('text')
+  // Labels — 全部顯示（local graph node 少）
+  const labels = g.append('g').selectAll('text').data(nodes).join('text')
     .attr('font-family','Barlow Condensed,sans-serif')
     .attr('font-size',d=>d.id===centerName?12:8)
     .attr('fill',d=>d.id===centerName?'#c9a96e':d.tier==='unranked'?'#3a3748':'#6e6a7c')
@@ -3530,99 +3487,88 @@ function helixRenderFocus(centerName){
   sim.on('tick',()=>{
     link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
     node.attr('cx',d=>d.x).attr('cy',d=>d.y);
-    g.selectAll('text').attr('x',d=>d.x).attr('y',d=>d.y);
+    labels.attr('x',d=>d.x).attr('y',d=>d.y);
   });
 
-  setTimeout(()=>{ loading.style.display='none'; },1500);
+  setTimeout(()=>{ document.getElementById('helix-loading').style.display='none'; },1500);
 
-  svgEl.on('click',()=>{
-    // 點空白不 deselect，只隱藏 tooltip
-    tt.style.display='none';
-  });
+  svgEl.on('click',()=>{ const tt=document.getElementById('helix-tt'); if(tt)tt.style.display='none'; });
 }
 
-function helixFocusNodeR(d, centerName){
-  if(d.id===centerName) return 14;   // 中心節點明顯大
-  return 3+(d.pr/100)*9;
+function helixHighlightNode(nodeSel, name, centerName){
+  nodeSel
+    .attr('stroke',d=>helixNodeStroke(d,centerName))
+    .attr('stroke-width',d=>d.id===name||d.id===centerName?2:1)
+    .attr('r',d=>helixNodeR(d,centerName));
 }
 
-function helixRender(){
-  const loading=document.getElementById('helix-loading');
-  if(!_helixData) return;
-  let nodes=(_helixData.nodes||[]).filter(n=>_helixShowAll?true:n.tier!=='unranked');
-  const nodeIds=new Set(nodes.map(n=>n.id));
-  let edges=(_helixData.edges||[]).filter(e=>nodeIds.has(e.winner)&&nodeIds.has(e.loser));
-  nodes=nodes.map(n=>({...n}));
-  const nodeMap=Object.fromEntries(nodes.map(n=>[n.id,n]));
-  const links=edges.map(e=>({
-    source:nodeMap[e.winner],target:nodeMap[e.loser],
-    weight:e.weight,count:e.count,
+// ── FULL MODE ──
+function helixGoFull(){
+  _helixMode    = 'full';
+  _helixCenter  = null;
+  _helixShowAll = false;
+  _helixSelected = null;
+  helixClearPanel();
+  helixUpdateHint();
+  helixRenderFull();
+}
+
+function helixRenderFull(){
+  if(!_helixAllNodes) return;
+  const loading = document.getElementById('helix-loading');
+  loading.style.display = 'flex';
+
+  const nodes   = _helixAllNodes.filter(n=>n.tier!=='unranked');
+  const nodeIds = new Set(nodes.map(n=>n.id));
+  const edges   = _helixAllEdges.filter(e=>nodeIds.has(e.winner)&&nodeIds.has(e.loser));
+  const nodesCopy = nodes.map(n=>({...n}));
+  const nodeMap = Object.fromEntries(nodesCopy.map(n=>[n.id,n]));
+  const links   = edges.map(e=>({
+    source:nodeMap[e.winner], target:nodeMap[e.loser],
+    weight:e.weight, count:e.count,
     method:e.bouts&&e.bouts[0]?e.bouts[0].method:''
   })).filter(l=>l.source&&l.target);
 
-  const wrap=document.getElementById('helix-graph-wrap');
-  const W=wrap.clientWidth||900,H=wrap.clientHeight||700;
-  const svgEl=d3.select('#helix-svg').attr('viewBox','0 0 '+W+' '+H).style('background','#09090d');
+  const wrap = document.getElementById('helix-graph-wrap');
+  const W = wrap.clientWidth||900, H = wrap.clientHeight||700;
+  const svgEl = d3.select('#helix-svg').attr('viewBox','0 0 '+W+' '+H).style('background','#09090d');
   svgEl.selectAll('*').remove();
 
-  const defs=svgEl.append('defs');
-  // KO arrow — red accent
-  defs.append('marker').attr('id','arrow-ko').attr('viewBox','0 -4 8 8')
-    .attr('refX',16).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
-    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','rgba(184,48,64,0.7)');
-  // Sub arrow — blue accent
-  defs.append('marker').attr('id','arrow-sub').attr('viewBox','0 -4 8 8')
-    .attr('refX',16).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
-    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','rgba(42,80,144,0.7)');
-  // Dec arrow — grey
-  defs.append('marker').attr('id','arrow-dec').attr('viewBox','0 -4 8 8')
-    .attr('refX',16).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
-    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','rgba(100,100,120,0.5)');
+  helixAddArrows(svgEl,'f');
 
-  const g=svgEl.append('g');
-  const zoom=d3.zoom().scaleExtent([0.15,8]).on('zoom',e=>g.attr('transform',e.transform));
-  svgEl.call(zoom);
-  window._helixZoom=zoom; window._helixSvgEl=svgEl;
+  const g = svgEl.append('g');
+  helixSetZoom(svgEl,g);
 
-  const sim=d3.forceSimulation(nodes)
+  const sim = d3.forceSimulation(nodesCopy)
     .force('link',d3.forceLink(links).id(d=>d.id).distance(d=>55-d.weight*6).strength(0.5))
     .force('charge',d3.forceManyBody().strength(d=>-60-d.pr*0.7))
     .force('center',d3.forceCenter(W/2,H/2))
-    .force('collision',d3.forceCollide().radius(d=>helixNodeR(d)+3));
+    .force('collision',d3.forceCollide().radius(d=>helixNodeR(d,null)+3));
 
-  const link=g.append('g').selectAll('line').data(links).join('line')
-    .attr('stroke',d=>d.method.includes('KO')?'rgba(184,48,64,0.45)':d.method.includes('Sub')?'rgba(42,80,144,0.45)':'rgba(80,80,100,0.25)')
-    .attr('stroke-width',d=>Math.min(2.5,0.6+d.weight*0.3))
-    .attr('marker-end',d=>d.method.includes('KO')?'url(#arrow-ko)':d.method.includes('Sub')?'url(#arrow-sub)':'url(#arrow-dec)');
+  const link = helixDrawLinks(g, links, 'f');
 
-  const node=g.append('g').selectAll('circle').data(nodes).join('circle')
-    .attr('r',d=>helixNodeR(d))
+  const node = g.append('g').selectAll('circle').data(nodesCopy).join('circle')
+    .attr('r',d=>helixNodeR(d,null))
     .attr('fill',d=>helixNodeColor(d))
-    .attr('stroke',d=>helixNodeStroke(d))
+    .attr('stroke',d=>helixNodeStroke(d,null))
     .attr('stroke-width',1)
-    .attr('opacity',d=>d.tier==='unranked'?0.35:0.9)
+    .attr('opacity',0.85)
     .style('cursor','pointer')
-    .on('click',(event,d)=>{event.stopPropagation();helixSelectFighter(d.id);})
+    // 單擊：顯示 panel
+    .on('click',(event,d)=>{ event.stopPropagation(); _helixSelected=d.id; helixShowPanel(d.id); })
+    // 雙擊：切到 local mode
+    .on('dblclick',(event,d)=>{ event.stopPropagation(); helixFocusOn(d.id); })
     .call(d3.drag()
-      .on('start',(e,d)=>{if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;})
-      .on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y;})
-      .on('end',(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null;}));
+      .on('start',(e,d)=>{ if(!e.active)sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+      .on('drag', (e,d)=>{ d.fx=e.x; d.fy=e.y; })
+      .on('end',  (e,d)=>{ if(!e.active)sim.alphaTarget(0); d.fx=null; d.fy=null; }));
 
-  // Tooltip
-  let tt=document.getElementById('helix-tt');
-  if(!tt){tt=document.createElement('div');tt.id='helix-tt';
-    tt.style.cssText='position:fixed;pointer-events:none;background:rgba(14,14,20,0.95);border:1px solid #1f1f2c;border-radius:3px;padding:7px 10px;font-family:"DM Mono",monospace;font-size:10px;color:#b8b4c0;display:none;z-index:9999;max-width:200px;line-height:1.6';
-    document.body.appendChild(tt);}
-  node.on('mouseover',(e,d)=>{
-    tt.style.display='block';
-    tt.innerHTML='<strong style="color:#e8e4dc;font-family:Barlow Condensed,sans-serif;font-size:13px;text-transform:uppercase">'+d.id+'</strong><br>PR Rank <span style="color:#c9a96e">#'+d.pr_rank+'</span><br>Style '+d.style+'<br>W/L '+d.wins_graph+'/'+d.losses_graph;
-  }).on('mousemove',e=>{tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-8)+'px';})
-    .on('mouseout',()=>tt.style.display='none');
+  helixAddTooltip(node, null);
 
-  const label=g.append('g').selectAll('text')
-    .data(nodes.filter(n=>n.pr>=55))
+  const labels = g.append('g').selectAll('text')
+    .data(nodesCopy.filter(n=>n.pr>=55))
     .join('text')
-    .attr('font-family','"Barlow Condensed",sans-serif')
+    .attr('font-family','Barlow Condensed,sans-serif')
     .attr('font-size',d=>d.pr>=75?10:8)
     .attr('fill',d=>d.pr>=80?'#c9a96e':'#6e6a7c')
     .attr('text-anchor','middle').attr('dy','2em').attr('pointer-events','none')
@@ -3631,43 +3577,81 @@ function helixRender(){
   sim.on('tick',()=>{
     link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
     node.attr('cx',d=>d.x).attr('cy',d=>d.y);
-    label.attr('x',d=>d.x).attr('y',d=>d.y);
+    labels.attr('x',d=>d.x).attr('y',d=>d.y);
   });
-  setTimeout(()=>{
-    loading.style.display='none';
-    const hint=document.getElementById('helix-hint');
-    if(hint) hint.style.display='block';
-  },2500);
-  svgEl.on('click',()=>{_helixSelected=null;helixClearPanel();node.attr('stroke',d=>helixNodeStroke(d)).attr('r',d=>helixNodeR(d));});
+
+  setTimeout(()=>{ loading.style.display='none'; },2500);
+  svgEl.on('click',()=>{ const tt=document.getElementById('helix-tt'); if(tt)tt.style.display='none'; });
 }
 
-function helixSelectFighter(name){
-  _helixSelected=name;
-  d3.selectAll('#helix-svg circle')
-    .attr('stroke',d=>helixNodeStroke(d))
-    .attr('stroke-width',d=>d.id===name?2:1)
-    .attr('r',d=>helixNodeR(d))
-    .attr('opacity',d=>d.id===name?1:d.tier==='unranked'?0.35:0.9);
-  helixShowPanel(name);
+// ── Shared helpers ──
+function helixAddArrows(svgEl, suffix){
+  const defs = svgEl.append('defs');
+  [['ko'+suffix,'rgba(184,48,64,0.7)'],['sub'+suffix,'rgba(42,80,144,0.7)'],['dec'+suffix,'rgba(100,100,120,0.5)']].forEach(([id,fill])=>{
+    defs.append('marker').attr('id','arrow-'+id).attr('viewBox','0 -4 8 8')
+      .attr('refX',16).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
+      .append('path').attr('d','M0,-4L8,0L0,4').attr('fill',fill);
+  });
+}
+function helixSetZoom(svgEl, g){
+  const zoom = d3.zoom().scaleExtent([0.15,8]).on('zoom',e=>g.attr('transform',e.transform));
+  svgEl.call(zoom);
+  window._helixZoom=zoom; window._helixSvgEl=svgEl;
+}
+function helixDrawLinks(g, links, suffix){
+  return g.append('g').selectAll('line').data(links).join('line')
+    .attr('stroke',d=>d.method.includes('KO')?'rgba(184,48,64,0.45)':d.method.includes('Sub')?'rgba(42,80,144,0.45)':'rgba(80,80,100,0.25)')
+    .attr('stroke-width',d=>Math.min(2.5,0.6+d.weight*0.3))
+    .attr('marker-end',d=>d.method.includes('KO')?'url(#arrow-ko'+suffix+')':d.method.includes('Sub')?'url(#arrow-sub'+suffix+')':'url(#arrow-dec'+suffix+')');
+}
+function helixAddTooltip(node, centerName){
+  let tt=document.getElementById('helix-tt');
+  if(!tt){
+    tt=document.createElement('div'); tt.id='helix-tt';
+    tt.style.cssText='position:fixed;pointer-events:none;background:rgba(14,14,20,0.95);border:1px solid #1f1f2c;border-radius:3px;padding:7px 10px;font-family:DM Mono,monospace;font-size:10px;color:#b8b4c0;display:none;z-index:9999;max-width:200px;line-height:1.6';
+    document.body.appendChild(tt);
+  }
+  node
+    .on('mouseover',(e,d)=>{
+      tt.style.display='block';
+      const hint = centerName && d.id===centerName ? '<br><span style="color:#c9a96e">center</span>' : '<br><span style="color:#3a3748">dbl-click to focus</span>';
+      tt.innerHTML='<strong style="color:#e8e4dc;font-size:13px;text-transform:uppercase">'+d.id+'</strong><br>PR Rank <span style="color:#c9a96e">#'+d.pr_rank+'</span><br>'+d.style+hint;
+    })
+    .on('mousemove',e=>{ tt.style.left=(e.clientX+14)+'px'; tt.style.top=(e.clientY-8)+'px'; })
+    .on('mouseout', ()=>{ tt.style.display='none'; });
 }
 
+// ── Hint bar ──
+function helixUpdateHint(){
+  const hint = document.getElementById('helix-hint');
+  if(!hint) return;
+  if(_helixMode==='local'){
+    hint.style.display='block';
+    const modeSpan = hint.querySelector('.hint-mode');
+    if(modeSpan) modeSpan.textContent = _helixShowAll ? 'ALL' : 'RANKED';
+  } else {
+    hint.style.display='none';
+  }
+}
+
+// ── Panel ──
 async function helixShowPanel(name){
-  const emptyEl=document.getElementById('helix-empty');
-  const detailEl=document.getElementById('helix-fighter-detail');
-  emptyEl.style.display='none';
-  detailEl.style.display='block';
-  detailEl.textContent='';
-  const ld=document.createElement('div');
-  ld.style.cssText='color:var(--text-lo);font-family:DM Mono,monospace;font-size:9px;letter-spacing:0.1em';
-  ld.textContent='LOADING...';
+  const emptyEl  = document.getElementById('helix-empty');
+  const detailEl = document.getElementById('helix-fighter-detail');
+  emptyEl.style.display  = 'none';
+  detailEl.style.display = 'block';
+  detailEl.textContent   = '';
+  const ld = document.createElement('div');
+  ld.style.cssText = 'color:var(--text-lo);font-family:DM Mono,monospace;font-size:9px;letter-spacing:0.1em';
+  ld.textContent = 'LOADING...';
   detailEl.appendChild(ld);
   try{
-    const res=await fetch(API_BASE+'/api/helix/fighter/'+encodeURIComponent(name));
-    const data=await res.json();
-    const fn=data.fighter;
-    const beats=data.beat_chain||[];
-    const lost=data.loss_chain||[];
-    detailEl.textContent='';
+    const res  = await fetch(API_BASE+'/api/helix/fighter/'+encodeURIComponent(name));
+    const data = await res.json();
+    const fn   = data.fighter;
+    const beats= data.beat_chain||[];
+    const lost = data.loss_chain||[];
+    detailEl.textContent = '';
     function mk(tag,cls,txt){
       const d=document.createElement(tag);
       if(cls) d.className=cls;
@@ -3682,7 +3666,7 @@ async function helixShowPanel(name){
     }
     function chainItem(opponent,method){
       const d=mk('div','helix-chain-item');
-      d.addEventListener('click',()=>helixSelectFighter(opponent));
+      d.addEventListener('click',()=>helixFocusOn(opponent));
       const mc=method&&method.includes('KO')?'ko':method&&method.includes('Sub')?'sub':'dec';
       const ms=method&&method.includes('KO')?'KO':method&&method.includes('Sub')?'SUB':'DEC';
       d.appendChild(mk('span','helix-chain-name',opponent));
@@ -3690,15 +3674,14 @@ async function helixShowPanel(name){
       return d;
     }
     function note(t){
-      const d=mk('div');
-      d.style.cssText='font-size:9px;color:var(--text-lo);padding:4px 0';
+      const d=mk('div'); d.style.cssText='font-size:9px;color:var(--text-lo);padding:4px 0';
       d.textContent=t; return d;
     }
     function getMethod(b){ return b&&b.bouts&&b.bouts[0]?b.bouts[0].method:''; }
-    const tierLabel={'champion':'◆ Champion','former_champion':'Former Champion','ever_ranked':'Ever Ranked','unranked':'Unranked'};
+    const tl={'champion':'◆ Champion','former_champion':'Former Champion','ever_ranked':'Ever Ranked','unranked':'Unranked'};
     const nameEl=mk('div'); nameEl.id='helix-fighter-name'; nameEl.textContent=fn.id;
     const metaEl=mk('div'); metaEl.id='helix-fighter-meta';
-    metaEl.textContent=(fn.style||'-')+' · '+(fn.stance||'-')+' · '+(tierLabel[fn.tier]||fn.tier||'-');
+    metaEl.textContent=(fn.style||'-')+' · '+(fn.stance||'-')+' · '+(tl[fn.tier]||fn.tier||'-');
     detailEl.appendChild(nameEl);
     detailEl.appendChild(metaEl);
     detailEl.appendChild(row('PageRank','#'+fn.pr_rank,fn.tier==='champion'));
@@ -3716,30 +3699,11 @@ async function helixShowPanel(name){
     err.textContent='Load failed'; detailEl.appendChild(err);
   }
 }
+
 function helixClearPanel(){
   document.getElementById('helix-empty').style.display='flex';
   document.getElementById('helix-fighter-detail').style.display='none';
-}
-
-function helixToggleRanked(){
-  _helixShowAll=false;_helixInited=false;_helixData=null;
-  document.getElementById('helix-btn-ranked').classList.add('active');
-  document.getElementById('helix-btn-all').classList.remove('active');
-  document.getElementById('helix-loading').style.display='flex';
-  helixInit();
-}
-
-function helixToggleAll(){
-  _helixShowAll=true;
-  document.getElementById('helix-btn-ranked').classList.remove('active');
-  document.getElementById('helix-btn-all').classList.add('active');
-  document.getElementById('helix-loading').style.display='flex';
-  fetch(API_BASE+'/api/helix/graph?ranked_only=false').then(r=>r.json()).then(data=>{_helixData=data;_helixInited=true;helixRender();});
-}
-
-function helixResetZoom(){
-  if(window._helixSvgEl&&window._helixZoom)
-    window._helixSvgEl.transition().duration(400).call(window._helixZoom.transform,d3.zoomIdentity);
+  document.getElementById('helix-fighter-detail').textContent='';
 }
 
   window.setMode=setMode;
@@ -3752,6 +3716,7 @@ function helixResetZoom(){
   window.bPipClick=bPipClick;
   window.bSubmit=bSubmit;
   window.helixSelectFighter=helixSelectFighter;
+  window.helixGoFull=helixGoFull;
 }
 boot();
 </script>
