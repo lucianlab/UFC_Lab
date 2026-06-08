@@ -1488,21 +1488,21 @@ Object.keys(byWC).forEach(wc=>{ wcTraceIdx[wc]=ti++; });
 let activeWC=null, activeTier=null;
 
 function applyFilter(wc){
-  activeWC = activeWC===wc ? null : wc;
+  activeWC=wc;
   applyFilters();
-  document.querySelectorAll('.legend-item[data-wc]').forEach(item=>{
+  document.querySelectorAll('.legend-item').forEach(item=>{
     const iw=item.dataset.wc;
-    if(activeWC===null){item.classList.remove('muted','active-filter');}
-    else if(iw===activeWC){item.classList.remove('muted');item.classList.add('active-filter');}
+    if(wc===null){item.classList.remove('muted','active-filter');}
+    else if(iw===wc){item.classList.remove('muted');item.classList.add('active-filter');}
     else{item.classList.add('muted');item.classList.remove('active-filter');}
   });
-  allBtn.classList.toggle('active-filter',activeWC===null);
+  allBtn.classList.toggle('active-filter',wc===null);
 }
 
 function applyTierFilter(tier){
   activeTier = activeTier===tier ? null : tier;
   applyFilters();
-  document.querySelectorAll('.legend-item[data-tier]').forEach(item=>{
+  document.querySelectorAll('.tier-legend-item').forEach(item=>{
     const it=item.dataset.tier;
     if(activeTier===null){item.classList.remove('muted','active-filter');}
     else if(it===activeTier){item.classList.remove('muted');item.classList.add('active-filter');}
@@ -1518,39 +1518,41 @@ function applyFilters(){
       const tierMatch= activeTier===null || f.tier===activeTier;
       return (wcMatch && tierMatch) ? tierOpacity(f) : 0;
     });
-    Plotly.restyle('plot',{'marker.opacity':[opacities]},[i]);
+    const visible = activeWC===null ? true : (wc===activeWC);
+    Plotly.restyle('plot',{'marker.opacity':opacities, visible:visible},[i]);
   });
 }
 const allBtn=document.createElement('div');
 allBtn.id='legend-all'; allBtn.className='active-filter'; allBtn.textContent='ALL';
-allBtn.addEventListener('click',()=>{ activeWC=null; activeTier=null; applyFilters(); document.querySelectorAll('.legend-item').forEach(i=>i.classList.remove('muted','active-filter')); allBtn.classList.add('active-filter'); });
+allBtn.addEventListener('click',()=>applyFilter(null));
 legendEl.appendChild(allBtn);
 WC_ORDER.forEach(wc=>{
   if(!byWC[wc])return;
   const item=document.createElement('div');
   item.className='legend-item'; item.dataset.wc=wc;
   item.innerHTML=`<div class="legend-dot" style="background:${WC_COLORS[wc]}"></div>${wc} <span style="color:var(--text-lo);margin-left:auto">${byWC[wc].length}</span>`;
-  item.addEventListener('click',()=>applyFilter(wc));
+  item.addEventListener('click',()=>applyFilter(activeWC===wc?null:wc));
   legendEl.appendChild(item);
 });
 
 // ── Tier legend ──
-const TIER_ITEMS=[
+const TIER_ITEMS = [
   {tier:'champion',   label:'Current Champion', color:'#FFD700'},
   {tier:'ex_champion',label:'Former Champion',  color:'#C0A060'},
   {tier:'ranked',     label:'Ranked Top 15',    color:'#7F8FA6'},
   {tier:'unranked',   label:'Unranked',         color:'#2a2a3a'},
 ];
-const tierLegendEl=document.getElementById('tier-legend');
-const tierTitle=document.createElement('div');
-tierTitle.className='panel-title'; tierTitle.textContent='Status';
+const tierLegendEl = document.getElementById('tier-legend');
+const tierTitle = document.createElement('div');
+tierTitle.className = 'panel-title';
+tierTitle.textContent = 'Status';
 tierLegendEl.appendChild(tierTitle);
 TIER_ITEMS.forEach(({tier,label,color})=>{
-  const item=document.createElement('div');
-  item.className='legend-item';
-  item.dataset.tier=tier;
-  item.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo);cursor:pointer;';
-  item.innerHTML=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>${label}`;
+  const item = document.createElement('div');
+  item.className = 'tier-legend-item legend-item';
+  item.dataset.tier = tier;
+  item.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;';
+  item.innerHTML = `<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>${label}`;
   item.addEventListener('click',()=>applyTierFilter(tier));
   tierLegendEl.appendChild(item);
 });
