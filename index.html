@@ -2621,7 +2621,8 @@ async function dnaInit(){
     // Hit-test year column
     if(!hit && _dnaYearly.length){
       const pad = dnaGetPad(canvas);
-      const chartW = canvas.width  - pad.l - pad.r;
+      const rect2 = canvas.getBoundingClientRect();
+      const chartW = rect2.width - pad.l - pad.r;
       const n = _dnaYearly.length;
       const colW = chartW / n;
       const xi = Math.floor((mx - pad.l) / colW);
