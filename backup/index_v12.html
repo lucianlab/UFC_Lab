@@ -7,7 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@400;500&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <style>
 /* ═══════════════════════════════════════════════════════
    UFC FIGHTER UNIVERSE v7 — Luxury Data Laboratory
@@ -1046,183 +1045,6 @@ body {
   margin-right: 10px;
 }
 
-
-/* ─── HELIX MODE ─── */
-#helix-mode {
-  display: none; position: absolute; inset: 0;
-  background: var(--obsidian); z-index: 5;
-  flex-direction: row; overflow: hidden;
-}
-#helix-mode.active { display: flex; }
-
-/* Graph 主畫布區 */
-#helix-graph-wrap {
-  flex: 1; min-width: 0; position: relative;
-  background: var(--obsidian);
-}
-#helix-graph-wrap svg { width: 100%; height: 100%; }
-
-/* 右側 Panel */
-#helix-panel {
-  width: 280px; flex-shrink: 0;
-  border-left: 1px solid var(--border);
-  background: var(--surface);
-  display: flex; flex-direction: column;
-  overflow: hidden;
-}
-
-/* Panel header（搜尋 + legend）*/
-#helix-panel-head {
-  padding: 14px 16px 10px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-#helix-search-wrap { position: relative; margin-bottom: 10px; }
-#helix-search {
-  width: 100%;
-  background: var(--surface-2); border: 1px solid var(--border-2);
-  color: var(--text-hi); padding: 6px 12px; border-radius: 3px;
-  font-family: 'Barlow', sans-serif; font-size: 11px; outline: none;
-  transition: border-color 0.15s;
-}
-#helix-search::placeholder { color: var(--text-lo); }
-#helix-search:focus { border-color: var(--champagne-dim); }
-#helix-ac {
-  position: absolute; top: calc(100% + 2px); left: 0; right: 0;
-  background: var(--surface-2); border: 1px solid var(--border-2);
-  border-radius: 0 0 3px 3px; max-height: 180px; overflow-y: auto;
-  z-index: 200; display: none;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-}
-.helix-ac-item {
-  padding: 7px 12px; font-size: 11px; cursor: pointer;
-  color: var(--text-md); font-family: 'Barlow', sans-serif;
-  display: flex; justify-content: space-between; align-items: center;
-  transition: background 0.1s;
-}
-.helix-ac-item:hover { background: var(--surface-3); color: var(--text-hi); }
-.helix-ac-pr {
-  font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text-lo);
-}
-
-/* Legend */
-#helix-legend {
-  display: flex; gap: 10px; flex-wrap: wrap;
-}
-.helix-leg-item {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 9px; color: var(--text-lo); font-family: 'Barlow', sans-serif;
-}
-.helix-leg-dot {
-  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-}
-
-/* Panel body（選手詳情 + beat chain）*/
-#helix-panel-body {
-  flex: 1; overflow-y: auto; padding: 14px 16px;
-}
-
-/* Empty state */
-#helix-empty {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 10px; height: 100%;
-  padding: 20px;
-}
-#helix-empty .helix-empty-icon { font-size: 28px; opacity: 0.08; }
-#helix-empty p {
-  font-family: 'DM Mono', monospace; font-size: 9px;
-  color: var(--text-lo); text-align: center; line-height: 1.8;
-  letter-spacing: 0.04em;
-}
-
-/* Fighter detail */
-#helix-fighter-detail { display: none; }
-#helix-fighter-name {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 20px; font-weight: 700; color: var(--text-hi);
-  letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.1;
-  margin-bottom: 2px;
-}
-#helix-fighter-meta {
-  font-family: 'DM Mono', monospace; font-size: 9px;
-  color: var(--text-lo); margin-bottom: 12px; letter-spacing: 0.04em;
-}
-.helix-stat-row {
-  display: flex; justify-content: space-between; align-items: baseline;
-  margin-bottom: 6px; padding-bottom: 6px;
-  border-bottom: 1px solid var(--border);
-}
-.helix-stat-label {
-  font-size: 9px; color: var(--text-lo); font-family: 'Barlow', sans-serif;
-  letter-spacing: 0.02em;
-}
-.helix-stat-val {
-  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-md);
-}
-.helix-stat-val.gold { color: var(--champagne); }
-
-/* Beat chain */
-.helix-chain-title {
-  font-family: 'DM Mono', monospace; font-size: 8px; font-weight: 500;
-  color: var(--text-lo); letter-spacing: 0.18em; text-transform: uppercase;
-  margin: 12px 0 6px; padding-bottom: 5px; border-bottom: 1px solid var(--border);
-}
-.helix-chain-item {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 5px 0; border-bottom: 1px solid var(--border);
-  cursor: pointer; transition: background 0.1s;
-}
-.helix-chain-item:hover { background: var(--surface-2); }
-.helix-chain-name {
-  font-size: 11px; color: var(--text-md); font-family: 'Barlow', sans-serif;
-  transition: color 0.12s;
-}
-.helix-chain-item:hover .helix-chain-name { color: var(--text-hi); }
-.helix-chain-method {
-  font-family: 'DM Mono', monospace; font-size: 8px;
-}
-.helix-chain-method.ko  { color: var(--crimson-2); }
-.helix-chain-method.sub { color: var(--cobalt-2); }
-.helix-chain-method.dec { color: var(--text-lo); }
-
-/* Overlay controls */
-#helix-controls {
-  position: absolute; top: 12px; left: 14px;
-  display: flex; gap: 6px; z-index: 10;
-}
-.helix-ctrl-btn {
-  font-family: 'DM Mono', monospace; font-size: 8px; font-weight: 500;
-  letter-spacing: 0.12em; text-transform: uppercase;
-  padding: 4px 10px; border-radius: 2px; cursor: pointer;
-  border: 1px solid var(--border-2); background: rgba(9,9,13,0.85);
-  color: var(--text-lo); transition: all 0.18s;
-}
-.helix-ctrl-btn:hover { color: var(--text-md); border-color: var(--border-2); }
-.helix-ctrl-btn.active { color: var(--champagne); border-color: var(--champagne-dim); }
-
-/* Loading */
-#helix-loading {
-  position: absolute; inset: 0; display: flex;
-  align-items: center; justify-content: center;
-  background: var(--obsidian); z-index: 20;
-  font-family: 'DM Mono', monospace; font-size: 10px;
-  color: var(--text-lo); letter-spacing: 0.12em;
-  flex-direction: column; gap: 10px;
-}
-.helix-loading-bar {
-  width: 120px; height: 1px; background: var(--border-2);
-  position: relative; overflow: hidden;
-}
-.helix-loading-fill {
-  position: absolute; top: 0; left: -100%; width: 100%;
-  height: 100%; background: var(--champagne-dim);
-  animation: helixLoad 1.2s ease-in-out infinite;
-}
-@keyframes helixLoad {
-  0%   { left: -100%; }
-  100% { left: 100%; }
-}
-
 </style>
 
 </head>
@@ -1239,7 +1061,6 @@ body {
     <button class="mode-btn" id="btn-vs" onclick="setMode('vs')">VS Mode</button>
     <button class="mode-btn" id="btn-builder" onclick="setMode('builder')">Blueprint</button>
     <button class="mode-btn" id="btn-dna" onclick="setMode('dna')">META</button>
-    <button class="mode-btn" id="btn-helix" onclick="setMode('helix')">Helix</button>
   </div>
 
   <div id="search-wrap">
@@ -2536,18 +2357,9 @@ function setMode(mode){
   } else if(mode==='dna'){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.add('active');
-    if(helixEl) helixEl.classList.remove('active');
     searchWrap.style.display='none';
     document.getElementById('header-sub').textContent='META · Striking vs Grappling';
     dnaInit();
-  } else if(mode==='helix'){
-    univEl.style.display='none'; sideEl.style.display='none';
-    vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
-    if(helixEl) helixEl.classList.add('active');
-    searchWrap.style.display='none';
-    document.getElementById('header-sub').textContent='HELIX · Style Network & PageRank';
-    document.getElementById('btn-helix').classList.add('active');
-    helixInit();
   }
 }
 
@@ -3261,7 +3073,6 @@ function dnaDraw(canvas, W, H, dpr){
   window.bFind=bFind;
   window.bPipClick=bPipClick;
   window.bSubmit=bSubmit;
-  window.helixSelectFighter=helixSelectFighter;
 }
 boot();
 </script>
