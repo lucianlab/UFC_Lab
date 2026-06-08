@@ -1426,10 +1426,11 @@ function tierSize(f){
 }
 function tierOpacity(f){
   if(isNebula){
-    if(f.tier==='champion') return 1.0;
-    if(f.tier==='ex_champion') return 0.75;
-    if(f.tier==='ranked') return 0.5;
-    return 0.15;
+    const finish = Math.min(1, ((f.ko_rate||0) + (f.sub_rate||0)));
+    if(f.tier==='champion')    return 0.85 + 0.15 * finish;
+    if(f.tier==='ex_champion') return 0.6  + 0.2  * finish;
+    if(f.tier==='ranked')      return 0.35 + 0.25 * finish;
+    return 0.08 + 0.22 * finish;
   }
   if(f.tier==='champion') return 1.0;
   if(f.tier==='ex_champion') return 0.85;
@@ -1467,6 +1468,10 @@ const hlTrace={
   marker:{size:7,color:'#7a1f28',opacity:1,line:{color:'#b83040',width:1.5}},
   hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
 };
+function updateHlColor(){
+  hlTrace.marker.color = isNebula ? '#e8f0ff' : '#7a1f28';
+  hlTrace.marker.line.color = isNebula ? '#ffffff' : '#b83040';
+}
 
 const univLayout={
   paper_bgcolor:'#09090d', plot_bgcolor:'#09090d',
@@ -1535,6 +1540,7 @@ function selectFighter(name){
     li.onclick=()=>selectFighter(simName);
     ul.appendChild(li);
   });
+  updateHlColor();
   hlTrace.x=[f.x]; hlTrace.y=[f.y]; hlTrace.z=[f.z]; hlTrace.text=[f.name];
   setTimeout(()=>Plotly.react('plot',[...univTraces,hlTrace],univLayout,{responsive:true,displayModeBar:false}),0);
 }
@@ -1655,8 +1661,10 @@ themeBtn.addEventListener('click',()=>{
   plotEl.style.transition = 'opacity 0.3s';
   plotEl.style.opacity = '0';
   setTimeout(()=>{
+    updateHlColor();
     rebuildTraces();
     Plotly.react('plot',[...univTraces,hlTrace],univLayout,{responsive:true,displayModeBar:false});
+    updateTierIcons();
     plotEl.style.opacity = '1';
   }, 300);
 });
