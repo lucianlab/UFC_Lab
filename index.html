@@ -3543,7 +3543,8 @@ function helixRenderFull(){
     .force('link',d3.forceLink(links).id(d=>d.id).distance(d=>55-d.weight*6).strength(0.5))
     .force('charge',d3.forceManyBody().strength(d=>-60-d.pr*0.7))
     .force('center',d3.forceCenter(W/2,H/2))
-    .force('collision',d3.forceCollide().radius(d=>helixNodeR(d,null)+3));
+    .force('collision',d3.forceCollide().radius(d=>helixNodeR(d,null)+3))
+    .alphaMin(0.005);
 
   const link = helixDrawLinks(g, links, 'f');
 
@@ -3580,6 +3581,20 @@ function helixRenderFull(){
     labels.attr('x',d=>d.x).attr('y',d=>d.y);
   });
 
+  // Zoom-to-fit after simulation settles
+  sim.on('end',()=>{
+    const padding = 40;
+    const xs = nodesCopy.map(n=>n.x).filter(Boolean);
+    const ys = nodesCopy.map(n=>n.y).filter(Boolean);
+    if(!xs.length) return;
+    const x0=Math.min(...xs)-padding, x1=Math.max(...xs)+padding;
+    const y0=Math.min(...ys)-padding, y1=Math.max(...ys)+padding;
+    const scale = Math.min(0.95, Math.min(W/(x1-x0), H/(y1-y0)));
+    const tx = (W - scale*(x0+x1))/2;
+    const ty = (H - scale*(y0+y1))/2;
+    window._helixSvgEl.transition().duration(600)
+      .call(window._helixZoom.transform, d3.zoomIdentity.translate(tx,ty).scale(scale));
+  });
   setTimeout(()=>{ loading.style.display='none'; },2500);
   svgEl.on('click',()=>{ const tt=document.getElementById('helix-tt'); if(tt)tt.style.display='none'; });
 }
@@ -3686,7 +3701,20 @@ async function helixShowPanel(name){
     detailEl.appendChild(metaEl);
     detailEl.appendChild(row('PageRank','#'+fn.pr_rank,fn.tier==='champion'));
     detailEl.appendChild(row('W / L (graph)',fn.wins_graph+' / '+fn.losses_graph,false));
-    detailEl.appendChild(row('Community','#'+fn.community,false));
+    // 找社群代表：同 community 裡 tier 最高、PR 最高的 ranked 選手
+    (function(){
+      const comm = fn.community;
+      const allN = window._helixAllNodes||[];
+      const TIER_W = {'champion':4,'former_champion':3,'ever_ranked':2,'unranked':1};
+      const peers = allN.filter(n=>n.community===comm && n.id!==fn.id);
+      peers.sort((a,b)=>{
+        const tw = (TIER_W[b.tier]||0)-(TIER_W[a.tier]||0);
+        return tw!==0 ? tw : b.pr-a.pr;
+      });
+      const leader = peers.find(n=>n.tier!=='unranked');
+      const label = leader ? leader.id.split(' ').pop() : '#'+comm;
+      detailEl.appendChild(row('Community',label,false));
+    })();
     detailEl.appendChild(mk('div','helix-chain-title','Beat Chain'));
     if(beats.length) beats.slice(0,10).forEach(b=>detailEl.appendChild(chainItem(b.opponent,getMethod(b))));
     else detailEl.appendChild(note('No recorded victories'));
@@ -3716,6 +3744,8 @@ function helixClearPanel(){
   window.bPipClick=bPipClick;
   window.bSubmit=bSubmit;
   window.helixGoFull=helixGoFull;
+  // expose for community lookup
+  Object.defineProperty(window,'_helixAllNodes',{get:()=>_helixAllNodes});
 }
 boot();
 </script>
