@@ -1408,10 +1408,10 @@ const CLASSIC_COLORS = {
   unranked:   '#2a2a3a',
 };
 const NEBULA_COLORS = {
-  champion:   '#f0f4ff',
-  ex_champion:'#f4a261',
-  ranked:     '#9b72cf',
-  unranked:   '#2d1f5e',
+  champion:   '#e8f0ff',
+  ex_champion:'#e8c56a',
+  ranked:     '#b08adf',
+  unranked:   '#1e1440',
 };
 function tierColor(f){
   const t = f.tier||'unranked';
@@ -1469,8 +1469,8 @@ const hlTrace={
   hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
 };
 function updateHlColor(){
-  hlTrace.marker.color = isNebula ? '#e8f0ff' : '#7a1f28';
-  hlTrace.marker.line.color = isNebula ? '#ffffff' : '#b83040';
+  hlTrace.marker.color = isNebula ? '#7ef4f4' : '#7a1f28';
+  hlTrace.marker.line.color = isNebula ? '#7ef4f4' : '#b83040';
 }
 
 const univLayout={
@@ -1620,7 +1620,17 @@ TIER_ITEMS.forEach(({tier,label,color})=>{
   item.dataset.tier=tier;
   item.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo);cursor:pointer;';
   const count=tierCounts[tier]||0;
-  item.innerHTML=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>${label}<span style="color:var(--text-lo);margin-left:auto">${count}</span>`;
+  const dot=document.createElement('div');
+  dot.style.cssText='width:8px;height:8px;border-radius:50%;flex-shrink:0;';
+  dot.style.background=color;
+  dot.dataset.classic=color;
+  dot.dataset.nebula=nebulaColor;
+  item.appendChild(dot);
+  item.appendChild(document.createTextNode(label));
+  const countEl=document.createElement('span');
+  countEl.style.cssText='color:var(--text-lo);margin-left:auto;';
+  countEl.textContent=count;
+  item.appendChild(countEl);
   item.addEventListener('click',()=>applyTierFilter(tier));
   tierLegendEl.appendChild(item);
 });
