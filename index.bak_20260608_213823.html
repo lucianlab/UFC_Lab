@@ -1388,18 +1388,30 @@ function tierOpacity(f){
   return 0.55;
 }
 
-const univTraces = Object.entries(byWC).map(([wc,fighters])=>({
-  type:'scatter3d', mode:'markers', name:wc,
-  x:fighters.map(f=>f.x), y:fighters.map(f=>f.y), z:fighters.map(f=>f.z),
-  text:fighters.map(f=>f.name), customdata:fighters.map(f=>f.name),
-  marker:{
-    size:fighters.map(f=>tierSize(f)),
-    color:fighters.map(f=>tierColor(f)),
-    opacity:fighters.map(f=>tierOpacity(f)),
-    line:{width:0},
-  },
-  hovertemplate:'<b>%{text}</b><extra></extra>',
-}));
+const TIER_ORDER = ['champion','ex_champion','ranked','unranked'];
+let univTraces = [];
+const traceIdx = {};
+let _ti = 0;
+Object.entries(byWC).forEach(([wc, fighters])=>{
+  traceIdx[wc] = {};
+  TIER_ORDER.forEach(tier=>{
+    const group = fighters.filter(f=>(f.tier||'unranked')===tier);
+    if(!group.length) return;
+    traceIdx[wc][tier] = _ti++;
+    univTraces.push({
+      type:'scatter3d', mode:'markers', name:wc+'__'+tier,
+      x:group.map(f=>f.x), y:group.map(f=>f.y), z:group.map(f=>f.z),
+      text:group.map(f=>f.name), customdata:group.map(f=>f.name),
+      marker:{
+        size:group.map(f=>tierSize(f)),
+        color:group.map(f=>tierColor(f)),
+        opacity:group.map(f=>tierOpacity(f)),
+        line:{width:0},
+      },
+      hovertemplate:'<b>%{text}</b><extra></extra>',
+    });
+  });
+});
 
 const hlTrace={
   type:'scatter3d', mode:'markers', x:[],y:[],z:[],text:[],
@@ -1483,8 +1495,7 @@ const legendEl=document.getElementById('legend');
 const WC_ORDER=['Heavyweight','Light Heavyweight','Middleweight','Welterweight','Lightweight',
   'Featherweight','Bantamweight','Flyweight','Strawweight',
   "Women's Featherweight","Women's Bantamweight","Women's Flyweight","Women's Strawweight"];
-const wcTraceIdx={};
-Object.entries(byWC).forEach(([wc],i)=>{ wcTraceIdx[wc]=i; });
+
 let activeWC=null, activeTier=null;
 
 function applyFilter(wc){
@@ -1511,15 +1522,16 @@ function applyTierFilter(tier){
 }
 
 function applyFilters(){
-  Object.entries(wcTraceIdx).forEach(([wc,i])=>{
-    const fighters = byWC[wc]||[];
-    const opacities = fighters.map(f=>{
-      const wcMatch  = activeWC===null || wc===activeWC;
-      const tierMatch= activeTier===null || f.tier===activeTier;
-      return (wcMatch && tierMatch) ? tierOpacity(f) : 0;
+  const indices = [], visibles = [];
+  Object.entries(traceIdx).forEach(([wc, tierMap])=>{
+    const wcMatch = activeWC===null || wc===activeWC;
+    Object.entries(tierMap).forEach(([tier, idx])=>{
+      const tierMatch = activeTier===null || tier===activeTier;
+      indices.push(idx);
+      visibles.push(wcMatch && tierMatch);
     });
-    Plotly.restyle('plot',{'marker.opacity':[opacities]},[i]);
   });
+  Plotly.restyle('plot', {visible: visibles}, indices);
 }
 const allBtn=document.createElement('div');
 allBtn.id='legend-all'; allBtn.className='active-filter'; allBtn.textContent='ALL';

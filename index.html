@@ -1371,7 +1371,7 @@ const allNames = FIGHTERS.map(f=>f.name).sort();
 function tierColor(f){
   if(f.tier==='champion') return '#FFD700';
   if(f.tier==='ex_champion') return '#C0A060';
-  if(f.tier==='ranked') return '#7F8FA6';
+  if(f.tier==='ranked') return '#9a9a9a';
   return '#2a2a3a';
 }
 function tierSize(f){
@@ -1415,7 +1415,7 @@ Object.entries(byWC).forEach(([wc, fighters])=>{
 
 const hlTrace={
   type:'scatter3d', mode:'markers', x:[],y:[],z:[],text:[],
-  marker:{size:6,color:'#c0392b',opacity:0.95,line:{color:'#7f0000',width:1}},
+  marker:{size:7,color:'#7a1f28',opacity:1,line:{color:'#b83040',width:1.5}},
   hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
 };
 
@@ -1426,7 +1426,7 @@ const univLayout={
     xaxis:{title:'Grappler ↔ Striker',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
     yaxis:{title:'Decision ↔ Finisher',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
     zaxis:{title:'High-Output ↔ Patient',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
-    camera:{eye:{x:1.5,y:1.5,z:1.2}},
+    camera:{eye:{x:1.8,y:0.8,z:1.0}},
   },
   margin:{l:0,r:0,t:0,b:0},
   showlegend:false,
@@ -1547,10 +1547,12 @@ WC_ORDER.forEach(wc=>{
 });
 
 // ── Tier legend ──
+const tierCounts={};
+FIGHTERS.forEach(f=>{ const t=f.tier||'unranked'; tierCounts[t]=(tierCounts[t]||0)+1; });
 const TIER_ITEMS=[
   {tier:'champion',   label:'Current Champion', color:'#FFD700'},
   {tier:'ex_champion',label:'Former Champion',  color:'#C0A060'},
-  {tier:'ranked',     label:'Ranked Top 15',    color:'#7F8FA6'},
+  {tier:'ranked',     label:'Ranked Top 15',    color:'#9a9a9a'},
   {tier:'unranked',   label:'Unranked',         color:'#2a2a3a'},
 ];
 const tierLegendEl=document.getElementById('tier-legend');
@@ -1562,7 +1564,8 @@ TIER_ITEMS.forEach(({tier,label,color})=>{
   item.className='legend-item';
   item.dataset.tier=tier;
   item.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo);cursor:pointer;';
-  item.innerHTML=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>${label}`;
+  const count=tierCounts[tier]||0;
+  item.innerHTML=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>${label}<span style="color:var(--text-lo);margin-left:auto">${count}</span>`;
   item.addEventListener('click',()=>applyTierFilter(tier));
   tierLegendEl.appendChild(item);
 });

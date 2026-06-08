@@ -24,13 +24,13 @@
   --champagne-2: #a07c46;
   --champagne-dim:#4a3a22;
 
-  --crimson:     #8c1f1f;
-  --crimson-2:   #c23030;
-  --crimson-dim: #3a1010;
+  --crimson:     #7a1f28;
+  --crimson-2:   #b83040;
+  --crimson-dim: #2e1018;
 
-  --cobalt:      #1a3a6e;
-  --cobalt-2:    #2b5fb3;
-  --cobalt-dim:  #0d1e3a;
+  --cobalt:      #1a3050;
+  --cobalt-2:    #2a5090;
+  --cobalt-dim:  #0d1828;
 
   --text-hi:     #e8e4dc;
   --text-md:     #b8b4c0;
@@ -38,8 +38,8 @@
   --text-xlo:    #3a3748;
 
   /* legacy compat aliases used by JS innerHTML */
-  --red:         #c23030;
-  --blue:        #2b5fb3;
+  --red:         #b83040;
+  --blue:        #2a5090;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -107,47 +107,36 @@ body {
   left: 50%;
   transform: translateX(-50%);
   flex-shrink: 0;
+  height: 100%;
+  align-items: stretch;
 }
 
 .mode-btn {
-  padding: 0 18px;
-  height: 28px;
+  padding: 0 20px;
+  height: 100%;
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
-  border: 1px solid var(--border-2);
-  transition: all 0.18s ease;
+  border: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.18s ease, border-color 0.18s ease;
   color: var(--text-lo);
   background: transparent;
   position: relative;
-}
-
-.mode-btn:first-child {
-  border-radius: 3px 0 0 3px;
-  border-right: none;
-}
-.mode-btn:not(:first-child):not(:last-child) {
-  border-right: none;
-}
-.mode-btn:last-child {
-  border-radius: 0 3px 3px 0;
+  border-radius: 0;
 }
 
 .mode-btn.active {
   color: var(--champagne);
-  background: rgba(201,169,110,0.07);
-  border-color: var(--champagne-dim);
-  border-color: var(--border-2);
+  border-bottom-color: var(--champagne);
 }
-
-/* btn-vs uses base active style */
 
 .mode-btn:hover:not(.active) {
   color: var(--text-md);
-  background: var(--surface-2);
+  border-bottom-color: var(--border-2);
 }
 
 /* Search */
@@ -215,7 +204,7 @@ body {
   border-left: 1px solid var(--border);
   background: var(--surface);
   overflow-y: auto;
-  padding: 20px 18px;
+  padding: 0 18px 20px;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -253,7 +242,23 @@ body {
   margin-bottom: 12px;
   letter-spacing: 0.05em;
 }
-#fighter-wc.is-champ { color: var(--champagne); }
+#fighter-wc.is-champ { color: var(--text-md); }
+.champion-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--champagne);
+  margin-bottom: 10px;
+}
+.champion-badge::before {
+  content: '◆';
+  font-size: 7px;
+}
 
 .stat-row {
   display: flex;
@@ -283,9 +288,9 @@ body {
 
 .stat-bar-wrap {
   width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, #1a1a24 0%, #2a1f0a 45%, #c9a96e 100%);
-  border-radius: 2px;
+  height: 2px;
+  background: var(--border-2);
+  border-radius: 1px;
   margin-top: 3px;
   margin-bottom: 10px;
   overflow: hidden;
@@ -294,11 +299,11 @@ body {
 
 .stat-bar {
   height: 100%;
-  border-radius: 0;
-  background: var(--obsidian);
+  border-radius: 1px;
+  background: var(--text-hi);
   transition: width 0.5s cubic-bezier(.4,0,.2,1);
   position: absolute;
-  right: 0;
+  left: 0;
   top: 0;
 }
 
@@ -369,7 +374,7 @@ body {
 #hint {
   font-family: 'DM Mono', monospace;
   font-size: 9px;
-  color: var(--text-md);
+  color: var(--text-lo);
   text-align: center;
   padding: 12px 0;
   line-height: 1.7;
@@ -380,7 +385,7 @@ body {
 
 #no-selection {
   font-size: 11px;
-  color: var(--text-md);
+  color: var(--text-lo);
   margin-top: 12px;
   line-height: 1.8;
   font-family: 'Barlow', sans-serif;
@@ -409,16 +414,16 @@ body {
   min-height: 56px;
 }
 .vs-picker:hover { border-color: var(--border-2); background: var(--surface-3); }
-.vs-picker.filled-red  { border-color: var(--crimson);  background: linear-gradient(135deg, rgba(140,31,31,0.12), var(--surface-2)); }
-.vs-picker.filled-blue { border-color: var(--cobalt-2); background: linear-gradient(135deg, rgba(26,58,110,0.18), var(--surface-2)); }
+.vs-picker.filled-red  { border-color: var(--crimson);  background: linear-gradient(135deg, rgba(122,31,40,0.12), var(--surface-2)); }
+.vs-picker.filled-blue { border-color: var(--cobalt-2); background: linear-gradient(135deg, rgba(26,48,80,0.18), var(--surface-2)); }
 .vs-picker-label { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.18em; margin-bottom:4px; }
-.vs-picker.filled-red  .vs-picker-label { color:rgba(194,48,48,0.5); }
-.vs-picker.filled-blue .vs-picker-label { color:rgba(43,95,179,0.5); }
+.vs-picker.filled-red  .vs-picker-label { color:rgba(184,48,64,0.5); }
+.vs-picker.filled-blue .vs-picker-label { color:rgba(42,80,144,0.5); }
 .vs-picker-name { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:700; color:var(--text-lo); letter-spacing:0.04em; text-transform:uppercase; line-height:1.1; transition:color 0.18s; }
 .vs-picker.filled .vs-picker-name { color:var(--text-hi); }
 .vs-picker-wc { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); margin-top:2px; }
-.vs-picker.filled-red  .vs-picker-wc { color:rgba(194,48,48,0.5); }
-.vs-picker.filled-blue .vs-picker-wc { color:rgba(43,95,179,0.5); }
+.vs-picker.filled-red  .vs-picker-wc { color:rgba(184,48,64,0.5); }
+.vs-picker.filled-blue .vs-picker-wc { color:rgba(42,80,144,0.5); }
 .vs-divider { text-align:center; font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:500; color:var(--text-lo); }
 
 /* Search dropdown */
@@ -525,9 +530,9 @@ body {
 .fo-label { font-family:'Barlow',sans-serif; font-size:9.5px; color:var(--text-lo); width:76px; flex-shrink:0; }
 .fo-track { flex:1; height:2px; background:var(--border); border-radius:1px; overflow:hidden; }
 .fo-fill { height:100%; border-radius:1px; transition:width 1s cubic-bezier(.4,0,.2,1); }
-.fo-fill.ko  { background:var(--crimson-2); }
-.fo-fill.sub { background:#4a7fd4; }
-.fo-fill.dec { background:#6b6880; }
+.fo-fill.ko  { background:var(--crimson); }
+.fo-fill.sub { background:var(--cobalt); }
+.fo-fill.dec { background:var(--text-lo); }
 .fo-pct { font-family:'DM Mono',monospace; font-size:9.5px; color:var(--text-lo); width:30px; text-align:right; }
 
 /* Similar matchups */
@@ -555,16 +560,15 @@ body {
 }
 #vs-random-btn:hover, #vs-random-btn-bottom:hover { border-color:var(--champagne-dim); color:var(--champagne); }
 
-/* ─── 3-button mode toggle ─── */
-.mode-btn:not(:first-child):not(:last-child){ border-right:none; border-radius:0; }
+/* ─── nav tabs ─── */
 
 .vs-picker.filled-red {
   border-color: var(--crimson);
-  background: linear-gradient(135deg, rgba(140,31,31,0.12), var(--surface-2));
+  background: linear-gradient(135deg, rgba(122,31,40,0.12), var(--surface-2));
 }
 .vs-picker.filled-blue {
   border-color: var(--cobalt-2);
-  background: linear-gradient(135deg, rgba(26,58,110,0.18), var(--surface-2));
+  background: linear-gradient(135deg, rgba(26,48,80,0.18), var(--surface-2));
 }
 
 .vs-picker-label {
@@ -575,8 +579,8 @@ body {
   letter-spacing: 0.18em;
   margin-bottom: 5px;
 }
-.vs-picker.filled-red .vs-picker-label { color: rgba(194,48,48,0.5); }
-.vs-picker.filled-blue .vs-picker-label { color: rgba(43,95,179,0.5); }
+.vs-picker.filled-red .vs-picker-label { color: rgba(184,48,64,0.5); }
+.vs-picker.filled-blue .vs-picker-label { color: rgba(42,80,144,0.5); }
 
 .vs-picker-name {
   font-family: 'Barlow Condensed', sans-serif;
@@ -597,8 +601,8 @@ body {
   margin-top: 3px;
   letter-spacing: 0.04em;
 }
-.vs-picker.filled-red .vs-picker-wc { color: rgba(194,48,48,0.5); }
-.vs-picker.filled-blue .vs-picker-wc { color: rgba(43,95,179,0.5); }
+.vs-picker.filled-red .vs-picker-wc { color: rgba(184,48,64,0.5); }
+.vs-picker.filled-blue .vs-picker-wc { color: rgba(42,80,144,0.5); }
 
 .vs-divider {
   text-align: center;
@@ -698,7 +702,7 @@ body {
 }
 .b-diff-btn.on.easy  { border-color:#2b5a30; color:#4caf50; background:rgba(76,175,80,0.07); }
 .b-diff-btn.on.medium{ border-color:var(--champagne-dim); color:var(--champagne); background:rgba(201,169,110,0.07); }
-.b-diff-btn.on.hard  { border-color:var(--crimson); color:var(--crimson-2); background:rgba(194,48,48,0.07); }
+.b-diff-btn.on.hard  { border-color:var(--crimson); color:var(--crimson-2); background:rgba(184,48,64,0.07); }
 
 #b-budget{ display:none; align-items:baseline; gap:5px; margin-left:auto; }
 #b-budget.show{ display:flex; }
@@ -728,9 +732,9 @@ body {
 
 /* Tier Reference — flex:1 fills remaining height to align with left col bottom */
 #b-tier-ref{
-  flex:1; padding:7px 9px;
-  background:var(--surface-2); border:1px solid var(--border);
-  border-radius:2px; overflow:hidden; min-height:0;
+  flex:1; padding:4px 0 0 0;
+  background:transparent; border:none;
+  overflow:hidden; min-height:0;
   display:flex; flex-direction:column;
 }
 .b-tier-ref-title{
@@ -740,13 +744,19 @@ body {
   border-bottom:1px solid var(--border); flex-shrink:0;
 }
 .b-tier-grid{
-  display:grid; grid-template-columns:1fr 1fr; gap:0 10px;
-  flex:1; min-height:0;
+  display:flex; flex-direction:column;
+  gap:0; flex:1; min-height:0;
 }
-.b-tier-col{ display:flex; flex-direction:column; justify-content:space-between; gap:3px; }
-.b-tier-row{ display:grid; grid-template-columns:26px 1fr; align-items:baseline; gap:3px; }
-.b-tier-lbl{ font-family:'DM Mono',monospace; font-size:7.5px; font-weight:500; }
-.b-tier-desc{ font-family:'Barlow',sans-serif; font-size:7.5px; color:var(--text-md); line-height:1.3; }
+.b-tier-col{ display:contents; }
+.b-tier-row{
+  flex:1; display:grid; grid-template-columns:28px 1fr;
+  align-items:center; gap:4px;
+  border-top:1px solid var(--border);
+  padding:0 4px;
+}
+.b-tier-row:first-child{ border-top:none; }
+.b-tier-lbl{ font-family:'DM Mono',monospace; font-size:7.5px; font-weight:600; color:var(--text-lo); }
+.b-tier-desc{ font-family:'Barlow',sans-serif; font-size:7.5px; color:var(--text-lo); line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 /* Find My Fighter — full width bottom, height auto */
 #b-find-wrap{
@@ -787,10 +797,10 @@ body {
 }
 
 /* 2K-style pip */
-.b-pips{ display:flex; gap:2px; }
+.b-pips{ display:flex; gap:3px; }
 .b-pip{
-  flex:1; height:10px; border-radius:1px;
-  background:var(--border); cursor:pointer;
+  flex:1; height:5px; border-radius:1px;
+  background:var(--surface-3); cursor:pointer;
   transform:skewX(-6deg);
   transition:background 0.06s, box-shadow 0.06s;
 }
@@ -1039,6 +1049,7 @@ body {
       <div class="panel-title">Selected Fighter</div>
       <div id="fighter-name"></div>
       <div id="fighter-wc"></div>
+      <div id="champion-badge" class="champion-badge" style="display:none"></div>
       <div id="fighter-status" style="font-size:10px;color:var(--champagne);margin-bottom:10px;letter-spacing:0.04em;font-family:'DM Mono',monospace;"></div>
       <div class="panel-title">Style Profile</div>
       <div class="stat-row"><span class="stat-label">Sig. Strikes / Round</span><span class="stat-val" id="s-sig"></span></div>
@@ -1058,13 +1069,7 @@ body {
     </div>
     <div id="no-selection">Click any fighter to explore their style profile and find similar competitors.</div>
     <div id="legend"><div class="panel-title">Weight Classes</div></div>
-    <div id="tier-legend" style="margin-bottom:10px">
-      <div class="panel-title">Status</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-md)"><div style="width:8px;height:8px;border-radius:50%;background:#FFD700;flex-shrink:0"></div>Current Champion</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#C0A060;flex-shrink:0"></div>Former Champion</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#7F8FA6;flex-shrink:0"></div>Ranked Top 15</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#2a2a3a;flex-shrink:0"></div>Unranked</div>
-    </div>
+    <div id="tier-legend" style="margin-top:16px;margin-bottom:10px"></div>
     <div id="hint">X: Grappler ↔ Striker<br>Y: Decision ↔ Finisher<br>Z: High-Output ↔ Patient</div>
   </div>
 
@@ -1144,16 +1149,16 @@ body {
               <span id="vs-ml-loading" style="font-size:7.5px;color:var(--text-lo);font-family:'DM Mono',monospace;text-transform:none;letter-spacing:0"></span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
-              <span id="vs-prob-red-pct"  style="font-size:30px;font-weight:700;color:#c23030;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
-              <span id="vs-prob-blue-pct" style="font-size:30px;font-weight:700;color:#2b5fb3;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
+              <span id="vs-prob-red-pct"  style="font-size:30px;font-weight:700;color:#b83040;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
+              <span id="vs-prob-blue-pct" style="font-size:30px;font-weight:700;color:#2a5090;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
             </div>
             <div style="height:5px;background:var(--surface-3);border-radius:2px;overflow:hidden;position:relative;margin-bottom:3px">
-              <div id="vs-prob-bar-red"  style="position:absolute;left:0;top:0;height:100%;width:50%;background:#8c1f1f;transition:width 0.6s ease"></div>
-              <div id="vs-prob-bar-blue" style="position:absolute;right:0;top:0;height:100%;width:50%;background:#1a3a6e;transition:width 0.6s ease"></div>
+              <div id="vs-prob-bar-red"  style="position:absolute;left:0;top:0;height:100%;width:50%;background:#7a1f28;transition:width 0.6s ease"></div>
+              <div id="vs-prob-bar-blue" style="position:absolute;right:0;top:0;height:100%;width:50%;background:#1a3050;transition:width 0.6s ease"></div>
             </div>
             <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-              <span id="vs-prob-red-name"  style="font-size:8.5px;color:rgba(194,48,48,0.55);font-family:'DM Mono',monospace">—</span>
-              <span id="vs-prob-blue-name" style="font-size:8.5px;color:rgba(43,95,179,0.55);font-family:'DM Mono',monospace">—</span>
+              <span id="vs-prob-red-name"  style="font-size:8.5px;color:rgba(184,48,64,0.55);font-family:'DM Mono',monospace">—</span>
+              <span id="vs-prob-blue-name" style="font-size:8.5px;color:rgba(42,80,144,0.55);font-family:'DM Mono',monospace">—</span>
             </div>
             <!-- Finish Probability inside win-col -->
             <div class="fo-title">Finish Probability <span id="vs-round-badge" style="float:right;font-size:8px;color:var(--text-md);font-family:'DM Mono',monospace;letter-spacing:0;text-transform:none"></span></div>
@@ -1180,7 +1185,7 @@ body {
               <span id="vs-conf-label" style="float:right;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase"></span>
             </div>
             <div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden;margin-bottom:8px">
-              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:linear-gradient(90deg,#1a1824,#c9a96e)"></div>
+              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:var(--text-lo)"></div>
             </div>
             <div style="font-size:7.5px;color:var(--text-lo);font-family:'DM Mono',monospace;letter-spacing:0.06em;margin-bottom:5px;text-transform:uppercase">How confidence is computed</div>
             <div id="vs-conf-breakdown" style="font-size:10px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6"></div>
@@ -1271,21 +1276,21 @@ body {
       <div id="dna-legend">
         <div class="dna-legend-row">
           <div class="dna-legend-item">
-            <div class="dna-legend-swatch" style="background:rgba(43,95,179,0.38);border:1px solid rgba(43,95,179,0.55)"></div>
+            <div class="dna-legend-swatch" style="background:rgba(42,80,144,0.38);border:1px solid rgba(42,80,144,0.55)"></div>
             Grappling-dominant fighters (%)
           </div>
           <div class="dna-legend-item">
-            <div class="dna-legend-swatch" style="background:rgba(140,31,31,0.38);border:1px solid rgba(140,31,31,0.55)"></div>
+            <div class="dna-legend-swatch" style="background:rgba(122,31,40,0.38);border:1px solid rgba(122,31,40,0.55)"></div>
             Striking-dominant fighters (%)
           </div>
         </div>
         <div class="dna-legend-row">
           <div class="dna-legend-item">
-            <div class="dna-legend-line" style="background:#4a7fd4"></div>
+            <div class="dna-legend-line" style="background:#2a5090"></div>
             Grappling win rate
           </div>
           <div class="dna-legend-item">
-            <div class="dna-legend-line" style="background:#c23030"></div>
+            <div class="dna-legend-line" style="background:#b83040"></div>
             Striking win rate
           </div>
         </div>
@@ -1347,13 +1352,13 @@ async function boot(){
 const THRESHOLDS = {"sig_per_r":20.3,"td_per_r":0.74,"ctrl_per_r":85.78,"ko_rate":0.5,"sub_rate":0.33,"gas_tank":1.33};
 
 const WC_COLORS = {
-  'Strawweight':'#ff69b4',"Women's Strawweight":'#ff69b4',
-  'Flyweight':'#ff8c00',"Women's Flyweight":'#ff8c00',
-  'Bantamweight':'#ffd700',"Women's Bantamweight":'#ffd700',
-  'Featherweight':'#adff2f',"Women's Featherweight":'#adff2f',
-  'Lightweight':'#00ced1','Welterweight':'#1e90ff',
-  'Middleweight':'#9370db','Light Heavyweight':'#ff4500',
-  'Heavyweight':'#dc143c','Unknown':'#888',
+  'Strawweight':'#7b9ec4',"Women's Strawweight":'#7b9ec4',
+  'Flyweight':'#6a9fa8',"Women's Flyweight":'#6a9fa8',
+  'Bantamweight':'#5a9e8a',"Women's Bantamweight":'#5a9e8a',
+  'Featherweight':'#6a9e6a',"Women's Featherweight":'#6a9e6a',
+  'Lightweight':'#8fa855','Welterweight':'#b8a040',
+  'Middleweight':'#c4824a','Light Heavyweight':'#b85e45',
+  'Heavyweight':'#a03838','Unknown':'#666',
 };
 
 // ── UNIVERSE mode globals ──
@@ -1383,18 +1388,30 @@ function tierOpacity(f){
   return 0.55;
 }
 
-const univTraces = Object.entries(byWC).map(([wc,fighters])=>({
-  type:'scatter3d', mode:'markers', name:wc,
-  x:fighters.map(f=>f.x), y:fighters.map(f=>f.y), z:fighters.map(f=>f.z),
-  text:fighters.map(f=>f.name), customdata:fighters.map(f=>f.name),
-  marker:{
-    size:fighters.map(f=>tierSize(f)),
-    color:fighters.map(f=>tierColor(f)),
-    opacity:fighters.map(f=>tierOpacity(f)),
-    line:{width:0},
-  },
-  hovertemplate:'<b>%{text}</b><extra></extra>',
-}));
+const TIER_ORDER = ['champion','ex_champion','ranked','unranked'];
+let univTraces = [];
+const traceIdx = {};
+let _ti = 0;
+Object.entries(byWC).forEach(([wc, fighters])=>{
+  traceIdx[wc] = {};
+  TIER_ORDER.forEach(tier=>{
+    const group = fighters.filter(f=>(f.tier||'unranked')===tier);
+    if(!group.length) return;
+    traceIdx[wc][tier] = _ti++;
+    univTraces.push({
+      type:'scatter3d', mode:'markers', name:wc+'__'+tier,
+      x:group.map(f=>f.x), y:group.map(f=>f.y), z:group.map(f=>f.z),
+      text:group.map(f=>f.name), customdata:group.map(f=>f.name),
+      marker:{
+        size:group.map(f=>tierSize(f)),
+        color:group.map(f=>tierColor(f)),
+        opacity:group.map(f=>tierOpacity(f)),
+        line:{width:0},
+      },
+      hovertemplate:'<b>%{text}</b><extra></extra>',
+    });
+  });
+});
 
 const hlTrace={
   type:'scatter3d', mode:'markers', x:[],y:[],z:[],text:[],
@@ -1427,9 +1444,17 @@ function selectFighter(name){
   const f=nameToFighter[name]; if(!f)return;
   document.getElementById('fighter-card').style.display='block';
   document.getElementById('no-selection').style.display='none';
+  document.getElementById('sidebar').style.paddingTop='20px';
+    document.getElementById('sidebar').style.overflowY='auto';
   const nameEl=document.getElementById('fighter-name');
   nameEl.textContent=f.name;
-  nameEl.style.color = (f.tier==='champion'||f.tier==='ex_champion') ? 'var(--champagne)' : 'var(--text-hi)';
+  nameEl.style.color = 'var(--text-hi)';
+  const badgeEl = document.getElementById('champion-badge');
+  if(badgeEl){
+    if(f.tier==='champion'){ badgeEl.textContent='CHAMPION'; badgeEl.style.display='inline-flex'; }
+    else if(f.tier==='ex_champion'){ badgeEl.textContent='FORMER CHAMPION'; badgeEl.style.display='inline-flex'; }
+    else { badgeEl.style.display='none'; }
+  }
   const tierBadge=f.tier==='ranked'?' ★':'';
   const wcDisplay=(f.all_wc&&f.all_wc.length>1)?f.all_wc.join(' / '):(f.wc||'Unknown');
   const wcEl=document.getElementById('fighter-wc');
@@ -1443,9 +1468,8 @@ function selectFighter(name){
   function setBar(sid,bid,val,display,max,thr){
     const sv=document.getElementById(sid), bv=document.getElementById(bid);
     sv.textContent=display;
-    const p=Math.min(100,Math.max(0,(val/max)*100));
-    bv.style.width=(100-p)+'%';
-    sv.classList.toggle('elite',val>=thr);
+    bv.style.width=pct(val,max);
+    sv.classList.remove('elite');
     bv.classList.remove('elite');
   }
   setBar('s-sig','b-sig',f.sig_per_r,f.sig_per_r,40,THRESHOLDS.sig_per_r);
@@ -1471,31 +1495,76 @@ const legendEl=document.getElementById('legend');
 const WC_ORDER=['Heavyweight','Light Heavyweight','Middleweight','Welterweight','Lightweight',
   'Featherweight','Bantamweight','Flyweight','Strawweight',
   "Women's Featherweight","Women's Bantamweight","Women's Flyweight","Women's Strawweight"];
-const wcTraceIdx={}; let ti=0;
-Object.keys(byWC).forEach(wc=>{ wcTraceIdx[wc]=ti++; });
-let activeWC=null;
+
+let activeWC=null, activeTier=null;
+
 function applyFilter(wc){
-  activeWC=wc;
-  Object.entries(wcTraceIdx).forEach(([w,i])=>Plotly.restyle('plot',{visible:wc===null?true:(w===wc)},i));
-  document.querySelectorAll('.legend-item').forEach(item=>{
+  activeWC = activeWC===wc ? null : wc;
+  applyFilters();
+  document.querySelectorAll('.legend-item[data-wc]').forEach(item=>{
     const iw=item.dataset.wc;
-    if(wc===null){item.classList.remove('muted','active-filter');}
-    else if(iw===wc){item.classList.remove('muted');item.classList.add('active-filter');}
+    if(activeWC===null){item.classList.remove('muted','active-filter');}
+    else if(iw===activeWC){item.classList.remove('muted');item.classList.add('active-filter');}
     else{item.classList.add('muted');item.classList.remove('active-filter');}
   });
-  allBtn.classList.toggle('active-filter',wc===null);
+  allBtn.classList.toggle('active-filter',activeWC===null);
+}
+
+function applyTierFilter(tier){
+  activeTier = activeTier===tier ? null : tier;
+  applyFilters();
+  document.querySelectorAll('.legend-item[data-tier]').forEach(item=>{
+    const it=item.dataset.tier;
+    if(activeTier===null){item.classList.remove('muted','active-filter');}
+    else if(it===activeTier){item.classList.remove('muted');item.classList.add('active-filter');}
+    else{item.classList.add('muted');item.classList.remove('active-filter');}
+  });
+}
+
+function applyFilters(){
+  const indices = [], visibles = [];
+  Object.entries(traceIdx).forEach(([wc, tierMap])=>{
+    const wcMatch = activeWC===null || wc===activeWC;
+    Object.entries(tierMap).forEach(([tier, idx])=>{
+      const tierMatch = activeTier===null || tier===activeTier;
+      indices.push(idx);
+      visibles.push(wcMatch && tierMatch);
+    });
+  });
+  Plotly.restyle('plot', {visible: visibles}, indices);
 }
 const allBtn=document.createElement('div');
 allBtn.id='legend-all'; allBtn.className='active-filter'; allBtn.textContent='ALL';
-allBtn.addEventListener('click',()=>applyFilter(null));
+allBtn.addEventListener('click',()=>{ activeWC=null; activeTier=null; applyFilters(); document.querySelectorAll('.legend-item').forEach(i=>i.classList.remove('muted','active-filter')); allBtn.classList.add('active-filter'); });
 legendEl.appendChild(allBtn);
 WC_ORDER.forEach(wc=>{
   if(!byWC[wc])return;
   const item=document.createElement('div');
   item.className='legend-item'; item.dataset.wc=wc;
   item.innerHTML=`<div class="legend-dot" style="background:${WC_COLORS[wc]}"></div>${wc} <span style="color:var(--text-lo);margin-left:auto">${byWC[wc].length}</span>`;
-  item.addEventListener('click',()=>applyFilter(activeWC===wc?null:wc));
+  item.addEventListener('click',()=>applyFilter(wc));
   legendEl.appendChild(item);
+});
+
+// ── Tier legend ──
+const TIER_ITEMS=[
+  {tier:'champion',   label:'Current Champion', color:'#FFD700'},
+  {tier:'ex_champion',label:'Former Champion',  color:'#C0A060'},
+  {tier:'ranked',     label:'Ranked Top 15',    color:'#7F8FA6'},
+  {tier:'unranked',   label:'Unranked',         color:'#2a2a3a'},
+];
+const tierLegendEl=document.getElementById('tier-legend');
+const tierTitle=document.createElement('div');
+tierTitle.className='panel-title'; tierTitle.textContent='Status';
+tierLegendEl.appendChild(tierTitle);
+TIER_ITEMS.forEach(({tier,label,color})=>{
+  const item=document.createElement('div');
+  item.className='legend-item';
+  item.dataset.tier=tier;
+  item.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo);cursor:pointer;';
+  item.innerHTML=`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>${label}`;
+  item.addEventListener('click',()=>applyTierFilter(tier));
+  tierLegendEl.appendChild(item);
 });
 
 // ── Universe search ──
@@ -1569,8 +1638,8 @@ function updateVsPlot(){
       type:'scatter3d', mode:'markers+text',
       x:[vsRed.x], y:[vsRed.y], z:[vsRed.z],
       text:[vsRed.name], textposition:'top center',
-      textfont:{color:'#c23030',size:10,family:'Barlow Condensed'},
-      marker:{size:9,color:'#8c1f1f',opacity:1,line:{color:'#c23030',width:1.5},
+      textfont:{color:'#b83040',size:10,family:'Barlow Condensed'},
+      marker:{size:9,color:'#7a1f28',opacity:1,line:{color:'#b83040',width:1.5},
               symbol:'circle'},
       hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
     });
@@ -1581,7 +1650,7 @@ function updateVsPlot(){
       x:[vsBlue.x], y:[vsBlue.y], z:[vsBlue.z],
       text:[vsBlue.name], textposition:'top center',
       textfont:{color:'#9994a0',size:10,family:'Barlow Condensed'},
-      marker:{size:9,color:'#1a3a6e',opacity:1,line:{color:'#9994a0',width:1.5}},
+      marker:{size:9,color:'#1a3050',opacity:1,line:{color:'#9994a0',width:1.5}},
       hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
     });
   }
@@ -1841,8 +1910,8 @@ function buildRadar(r, b) {
     data: {
       labels,
       datasets: [
-        { label: r.name.split(' ').pop(), data: rData, borderColor: '#c23030', backgroundColor: 'rgba(194,48,48,0.1)', borderWidth: 1.5, pointBackgroundColor: '#c23030', pointRadius: 2 },
-        { label: b.name.split(' ').pop(), data: bData, borderColor: '#2b5fb3', backgroundColor: 'rgba(43,95,179,0.1)', borderWidth: 1.5, pointBackgroundColor: '#2b5fb3', pointRadius: 2 },
+        { label: r.name.split(' ').pop(), data: rData, borderColor: '#b83040', backgroundColor: 'rgba(184,48,64,0.1)', borderWidth: 1.5, pointBackgroundColor: '#b83040', pointRadius: 2 },
+        { label: b.name.split(' ').pop(), data: bData, borderColor: '#2a5090', backgroundColor: 'rgba(42,80,144,0.1)', borderWidth: 1.5, pointBackgroundColor: '#2a5090', pointRadius: 2 },
       ],
     },
     options: {
@@ -1921,8 +1990,8 @@ function renderShap(topFeatures) {
   el.innerHTML = topFeatures.map(f => {
     const pct   = Math.round(Math.abs(f.shap) / maxAbs * 100);
     const isRed = f.shap > 0;
-    const color = isRed ? '#8c1f1f' : '#1a3a6e';
-    const accentColor = isRed ? '#c23030' : '#2b5fb3';
+    const color = isRed ? '#7a1f28' : '#1a3050';
+    const accentColor = isRed ? '#b83040' : '#2a5090';
     const dir   = isRed ? '▲ Red favored' : '▲ Blue favored';
     const label = labelMap[f.feature] || f.feature.replace('delta_','').replace(/_/g,' ');
     return `<div>
@@ -1976,10 +2045,10 @@ async function runVsAnalysis() {
       const div = document.createElement('div');
       div.className = 'sm-fight animate-in';
       div.innerHTML = `
-        <div class="sm-names"><span style="color:#c23030">${s.a}</span><span class="sm-vs">vs</span><span style="color:#2b5fb3">${s.bName}</span></div>
+        <div class="sm-names"><span style="color:#b83040">${s.a}</span><span class="sm-vs">vs</span><span style="color:#2a5090">${s.bName}</span></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
           <span class="sm-dist">style similarity: ${Math.round((1-s.dist/9)*100)}% match</span>
-          <span class="sm-winner" style="color:${winner===s.a ? '#c23030' : '#2b5fb3'}">${winner.split(' ').pop()}${finishStr}</span>
+          <span class="sm-winner" style="color:${winner===s.a ? '#b83040' : '#2a5090'}">${winner.split(' ').pop()}${finishStr}</span>
         </div>`;
       div.onclick = () => {
         if (fa && fb) { vsRed=fa; vsBlue=fb; setPickerUI('red',fa); setPickerUI('blue',fb); runVsAnalysis(); }
@@ -2037,8 +2106,8 @@ async function runVsAnalysis() {
 
       // Fight shape (ML-driven)
       const shapeMap = {
-        'KO/TKO':     { verdict:'EXPLOSIVE FIREFIGHT', color:'#c23030' },
-        'Submission': { verdict:'SUBMISSION HUNT',      color:'#4a7fd4' },
+        'KO/TKO':     { verdict:'EXPLOSIVE FIREFIGHT', color:'#b83040' },
+        'Submission': { verdict:'SUBMISSION HUNT',      color:'#2a5090' },
         'Decision':   { verdict:'WAR OF ATTRITION',     color:'#9994a0' },
       };
       const shape = shapeMap[data.method] || { verdict:'CALCULATED BATTLE', color:'#9994a0' };
@@ -2069,11 +2138,7 @@ async function runVsAnalysis() {
             const confLabelEl = document.getElementById('vs-conf-label');
       if (confLabelEl) {
         confLabelEl.textContent = data.confidence_label;
-        const cf = Math.min(1, Math.max(0, data.confidence || 0));
-        const cr = Math.round(26  + (201-26)  * cf);
-        const cg = Math.round(24  + (169-24)  * cf);
-        const cb = Math.round(36  + (110-36)  * cf);
-        confLabelEl.style.color = `rgb(${cr},${cg},${cb})`;
+        confLabelEl.style.color = 'var(--text-lo)';
       }
       const winEdge    = Math.round(Math.abs(data.red_win_prob - 0.5) * 200);
       const methodEdge = Math.round(Math.max(mp.ko, mp.sub, mp.decision) * 100);
@@ -2175,22 +2240,22 @@ function setMode(mode){
 // Left column: Boxing(KO,Acc) + Muay Thai(3) + Wrestling(3)
 // Right column: Boxing(Vol,Def) + JiuJitsu(3) + Physical(Reach) + Find button
 const B_LEFT = [
-  {id:'pct_striking_power',    label:'KO Power',    sec:'Boxing'},
-  {id:'pct_striking_accuracy', label:'Accuracy',    sec:null},
   {id:'pct_leg_kicks',         label:'Leg Kicks',   sec:'Muay Thai'},
   {id:'pct_clinch',            label:'Clinch',      sec:null},
   {id:'pct_body',              label:'Body',        sec:null},
   {id:'pct_td_frequency',      label:'TD Frequency',sec:'Wrestling'},
   {id:'pct_td_accuracy',       label:'TD Accuracy', sec:null},
   {id:'pct_td_defense',        label:'TD Defense',  sec:null},
-];
-const B_RIGHT = [
-  {id:'pct_striking_volume',   label:'Volume',      sec:'Boxing'},
-  {id:'pct_striking_defense',  label:'Defense',     sec:null},
   {id:'pct_submission',        label:'Submission',  sec:'Jiu-Jitsu'},
   {id:'pct_control',           label:'Control',     sec:null},
   {id:'pct_ground_pound',      label:'Grd & Pound', sec:null},
-  {id:'pct_reach',             label:'Reach',       sec:'Physical'},
+];
+const B_RIGHT = [
+  {id:'pct_striking_power',    label:'KO Power',    sec:'Boxing'},
+  {id:'pct_striking_accuracy', label:'Accuracy',    sec:null},
+  {id:'pct_striking_volume',   label:'Volume',      sec:null},
+  {id:'pct_striking_defense',  label:'Defense',     sec:null},
+  {id:'pct_reach',             label:'Reach',       sec:null},
 ];
 
 // Keep B_DEFS for bVals init
@@ -2242,16 +2307,16 @@ function bBuildGrid(){
   }
 
   const TIER_LEFT = [
-    {t:'S',  color:'#FFD700',           desc:'Gods of the sport. The one. The only.'},
-    {t:'A+', color:'#c9a96e',           desc:'Legends of their era. Untouchable at their peak.'},
-    {t:'A',  color:'#c9a96e',           desc:'Dynasty builders. Reigned supreme.'},
-    {t:'B+', color:'var(--champagne)',desc:'Champions who defended. Proved gold is earned, not given.'},
+    {t:'S',   color:'var(--text-lo)', desc:'Gods of the sport. The one. The only.'},
+    {t:'A+',  color:'var(--text-lo)', desc:'Legends of their era. Untouchable at their peak.'},
+    {t:'A',   color:'var(--text-lo)', desc:'Dynasty builders. Reigned supreme.'},
+    {t:'B+',  color:'var(--text-lo)', desc:'Champions who defended. Proved gold is earned.'},
   ];
   const TIER_RIGHT = [
-    {t:'B',  color:'var(--champagne)',desc:'Once a champion, always a champion.'},
-    {t:'C+', color:'#a0a0b0',           desc:'Greatness needs no gold to be proven.'},
-    {t:'C-D',color:'#a0a0b0',           desc:'Historically ranked Top 5 / 10 / 15.'},
-    {t:'E',  color:'#a0a0b0',           desc:'World-class. The UFC is the sharkest tank on earth.'},
+    {t:'B',   color:'var(--text-lo)', desc:'Once a champion, always a champion.'},
+    {t:'C+',  color:'var(--text-lo)', desc:'Greatness needs no gold to be proven.'},
+    {t:'C-D', color:'var(--text-lo)', desc:'Historically ranked Top 5 / 10 / 15.'},
+    {t:'E',   color:'var(--text-lo)', desc:'World-class. The UFC is the sharkest tank.'},
   ];
 
   function makeTierRef(){
@@ -2259,7 +2324,7 @@ function bBuildGrid(){
     panel.id = 'b-tier-ref';
     const title = document.createElement('div');
     title.className = 'b-col-section-title b-tier-ref-title';
-    title.textContent = 'Tier Reference';
+    title.textContent = 'Tier';
     panel.appendChild(title);
     const grid = document.createElement('div');
     grid.className = 'b-tier-grid';
@@ -2318,12 +2383,12 @@ function bFlashPip(featId, targetVal){
   // Briefly show target value then bounce back to current
   const cur = bVals[featId];
   const elite = targetVal >= 8;
-  const flashColor = elite ? 'var(--crimson-2)' : 'var(--champagne)';
+  const flashColor = elite ? 'var(--champagne)' : 'var(--text-lo)';
   for(let i=1;i<=10;i++){
     const pip=document.getElementById(`pip-${featId}-${i}`);
     if(!pip) continue;
-    pip.style.background = i<=targetVal ? flashColor : 'var(--border)';
-    pip.style.boxShadow  = (i<=targetVal&&elite) ? '0 0 4px rgba(194,48,48,0.5)' : 'none';
+    pip.style.background = i<=targetVal ? flashColor : 'var(--surface-3)';
+    pip.style.boxShadow  = 'none';
   }
   const valEl=document.getElementById('val-'+featId);
   if(valEl){ valEl.textContent=targetVal; valEl.style.color=flashColor; }
@@ -2333,21 +2398,20 @@ function bFlashPip(featId, targetVal){
 function bUpdateBox(featId){
   const val   = bVals[featId];
   const elite = val >= 8;
-  const fillColor = elite ? 'var(--crimson-2)' : 'var(--champagne)';
-  const glowColor = elite ? 'rgba(194,48,48,0.45)' : 'rgba(201,169,110,0.3)';
+  const fillColor = elite ? 'var(--champagne)' : 'var(--text-lo)';
   for(let i=1;i<=10;i++){
     const pip=document.getElementById(`pip-${featId}-${i}`);
     if(!pip) continue;
-    pip.style.background = i<=val ? fillColor : 'var(--border)';
-    pip.style.boxShadow  = (i<=val&&elite) ? `0 0 3px ${glowColor}` : 'none';
+    pip.style.background = i<=val ? fillColor : 'var(--surface-3)';
+    pip.style.boxShadow  = 'none';
   }
   const valEl=document.getElementById('val-'+featId);
   if(valEl){
     valEl.textContent=val;
-    valEl.style.color = elite ? 'var(--crimson-2)' : 'var(--champagne)';
+    valEl.style.color = elite ? 'var(--champagne)' : 'var(--text-lo)';
   }
   const box=document.getElementById('attr-'+featId);
-  if(box) box.style.borderColor = elite ? 'rgba(194,48,48,0.35)' : 'var(--border)';
+  if(box) box.style.borderColor = 'var(--border)';
 }
 
 function bRefreshAll(){ B_DEFS.forEach(d=>bUpdateBox(d.id)); bUpdateBudget(); }
@@ -2615,7 +2679,8 @@ async function dnaInit(){
     // Hit-test year column
     if(!hit && _dnaYearly.length){
       const pad = dnaGetPad(canvas);
-      const chartW = canvas.width  - pad.l - pad.r;
+      const rect2 = canvas.getBoundingClientRect();
+      const chartW = rect2.width - pad.l - pad.r;
       const n = _dnaYearly.length;
       const colW = chartW / n;
       const xi = Math.floor((mx - pad.l) / colW);
@@ -2648,7 +2713,7 @@ async function dnaInit(){
           ? (d.winrate_diff > 0 ? '+' : '') + d.winrate_diff.toFixed(1) + '%'
           : '—';
         const diffColor = d.winrate_diff != null
-          ? (d.winrate_diff > 0 ? '#c23030' : '#c9a96e')
+          ? (d.winrate_diff > 0 ? '#b83040' : '#c9a96e')
           : '#4a4858';
         ttName.textContent = d.year + (d.is_partial ? ' *' : '');
         ttBody.innerHTML =
@@ -2734,16 +2799,16 @@ function dnaDraw(canvas, W, H, dpr){
 
     // Striking bar (above mid)
     const sh = barH(d.pct_striking || 0);
-    ctx.fillStyle   = 'rgba(140,31,31,0.38)';
-    ctx.strokeStyle = 'rgba(140,31,31,0.60)';
+    ctx.fillStyle   = 'rgba(122,31,40,0.38)';
+    ctx.strokeStyle = 'rgba(122,31,40,0.60)';
     ctx.lineWidth   = 0.5;
     ctx.fillRect(bx, yMid - sh, bw, sh);
     ctx.strokeRect(bx, yMid - sh, bw, sh);
 
     // Grappling bar (below mid)
     const gh = barH(d.pct_grappling || 0);
-    ctx.fillStyle   = 'rgba(43,95,179,0.38)';
-    ctx.strokeStyle = 'rgba(43,95,179,0.60)';
+    ctx.fillStyle   = 'rgba(42,80,144,0.38)';
+    ctx.strokeStyle = 'rgba(42,80,144,0.60)';
     ctx.fillRect(bx, yMid, bw, gh);
     ctx.strokeRect(bx, yMid, bw, gh);
   });
@@ -2789,13 +2854,13 @@ function dnaDraw(canvas, W, H, dpr){
   const grpPts = yearly.map((d,i)=>
     d.grp_winrate != null ? {x: xPos(i), y: yWR(d.grp_winrate)} : null
   );
-  drawLine(grpPts.filter(Boolean), '#4a7fd4', 2);
+  drawLine(grpPts.filter(Boolean), '#2a5090', 2);
 
   // Striking win rate line (crimson)
   const strPts = yearly.map((d,i)=>
     d.str_winrate != null ? {x: xPos(i), y: yWR(d.str_winrate)} : null
   );
-  drawLine(strPts.filter(Boolean), '#c23030', 2);
+  drawLine(strPts.filter(Boolean), '#b83040', 2);
 
   // ── X axis labels ──
   ctx.fillStyle    = '#4a4858';
