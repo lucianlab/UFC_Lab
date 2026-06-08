@@ -1408,10 +1408,10 @@ const CLASSIC_COLORS = {
   unranked:   '#2a2a3a',
 };
 const NEBULA_COLORS = {
-  champion:   '#a0c4ff',
-  ex_champion:'#ff8fa3',
-  ranked:     '#c77dff',
-  unranked:   '#1a0533',
+  champion:   '#f0f4ff',
+  ex_champion:'#f4a261',
+  ranked:     '#9b72cf',
+  unranked:   '#2d1f5e',
 };
 function tierColor(f){
   const t = f.tier||'unranked';
@@ -1425,6 +1425,12 @@ function tierSize(f){
   return base;
 }
 function tierOpacity(f){
+  if(isNebula){
+    if(f.tier==='champion') return 1.0;
+    if(f.tier==='ex_champion') return 0.75;
+    if(f.tier==='ranked') return 0.5;
+    return 0.15;
+  }
   if(f.tier==='champion') return 1.0;
   if(f.tier==='ex_champion') return 0.85;
   if(f.tier==='ranked') return 0.8;
