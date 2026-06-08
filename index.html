@@ -3422,7 +3422,7 @@ function helixRender(){
     document.body.appendChild(tt);}
   node.on('mouseover',(e,d)=>{
     tt.style.display='block';
-    tt.innerHTML='<strong style="color:#e8e4dc;font-family:'Barlow Condensed',sans-serif;font-size:13px;text-transform:uppercase">'+d.id+'</strong><br>PR Rank <span style="color:#c9a96e">#'+d.pr_rank+'</span><br>Style '+d.style+'<br>W/L '+d.wins_graph+'/'+d.losses_graph;
+    tt.innerHTML='<strong style="color:#e8e4dc;font-family:Barlow Condensed,sans-serif;font-size:13px;text-transform:uppercase">'+d.id+'</strong><br>PR Rank <span style="color:#c9a96e">#'+d.pr_rank+'</span><br>Style '+d.style+'<br>W/L '+d.wins_graph+'/'+d.losses_graph;
   }).on('mousemove',e=>{tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-8)+'px';})
     .on('mouseout',()=>tt.style.display='none');
 
