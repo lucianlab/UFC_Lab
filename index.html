@@ -2542,11 +2542,13 @@ function setMode(mode){
   const vsEl=document.getElementById('vs-mode');
   const bEl=document.getElementById('builder-mode');
   const dnaEl=document.getElementById('dna-mode');
+  const helixEl=document.getElementById('helix-mode');
   const searchWrap=document.getElementById('search-wrap');
   document.getElementById('btn-universe').classList.toggle('active',mode==='universe');
   document.getElementById('btn-vs').classList.toggle('active',mode==='vs');
   document.getElementById('btn-builder').classList.toggle('active',mode==='builder');
   document.getElementById('btn-dna').classList.toggle('active',mode==='dna');
+  document.getElementById('btn-helix').classList.toggle('active',mode==='helix');
   if(mode==='universe'){
     univEl.style.display='block'; sideEl.style.display='flex';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
