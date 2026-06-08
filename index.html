@@ -1400,11 +1400,22 @@ const nameToFighter = {};
 FIGHTERS.forEach(f => nameToFighter[f.name]=f);
 const allNames = FIGHTERS.map(f=>f.name).sort();
 
+let isNebula = false;
+const CLASSIC_COLORS = {
+  champion:   '#FFD700',
+  ex_champion:'#C0A060',
+  ranked:     '#9a9a9a',
+  unranked:   '#2a2a3a',
+};
+const NEBULA_COLORS = {
+  champion:   '#a0c4ff',
+  ex_champion:'#ff8fa3',
+  ranked:     '#c77dff',
+  unranked:   '#1a0533',
+};
 function tierColor(f){
-  if(f.tier==='champion') return '#FFD700';
-  if(f.tier==='ex_champion') return '#C0A060';
-  if(f.tier==='ranked') return '#9a9a9a';
-  return '#2a2a3a';
+  const t = f.tier||'unranked';
+  return isNebula ? (NEBULA_COLORS[t]||'#1a0533') : (CLASSIC_COLORS[t]||'#2a2a3a');
 }
 function tierSize(f){
   const base=Math.min(4+f.n_fights*0.15,9);
