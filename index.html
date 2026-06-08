@@ -1661,13 +1661,23 @@ themeBtn.addEventListener('click',()=>{
   plotEl.style.transition = 'opacity 0.3s';
   plotEl.style.opacity = '0';
   setTimeout(()=>{
-    updateHlColor();
-    rebuildTraces();
-    Plotly.react('plot',[...univTraces,hlTrace],univLayout,{responsive:true,displayModeBar:false});
-    updateTierIcons();
+    try {
+      updateHlColor();
+      rebuildTraces();
+      Plotly.react('plot',[...univTraces,hlTrace],univLayout,{responsive:true,displayModeBar:false});
+      updateTierIcons();
+    } catch(e) {
+      console.error('theme toggle error:', e);
+    }
     plotEl.style.opacity = '1';
   }, 300);
 });
+
+function updateTierIcons(){
+  document.querySelectorAll('#tier-legend .legend-item [data-classic]').forEach(dot=>{
+    dot.style.background = isNebula ? dot.dataset.nebula : dot.dataset.classic;
+  });
+}
 
 // ── Universe search ──
 const searchEl=document.getElementById('search');
