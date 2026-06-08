@@ -3459,29 +3459,66 @@ async function helixShowPanel(name){
   const detailEl=document.getElementById('helix-fighter-detail');
   emptyEl.style.display='none';
   detailEl.style.display='block';
-  detailEl.innerHTML='<div style="color:var(--text-lo);font-family:'DM Mono',monospace;font-size:9px">LOADING...</div>';
+  detailEl.textContent='';
+  const ld=document.createElement('div');
+  ld.style.cssText='color:var(--text-lo);font-family:DM Mono,monospace;font-size:9px;letter-spacing:0.1em';
+  ld.textContent='LOADING...';
+  detailEl.appendChild(ld);
   try{
     const res=await fetch(API_BASE+'/api/helix/fighter/'+encodeURIComponent(name));
     const data=await res.json();
-    const f=data.fighter;
+    const fn=data.fighter;
     const beats=data.beat_chain||[];
     const lost=data.loss_chain||[];
-    const mc=m=>m&&m.includes('KO')?'ko':m&&m.includes('Sub')?'sub':'dec';
-    const ms=m=>m&&m.includes('KO')?'KO':m&&m.includes('Sub')?'SUB':'DEC';
-    const mb=b=>b&&b.bouts&&b.bouts[0]?b.bouts[0].method:'';
-    detailEl.innerHTML=
-      '<div id="helix-fighter-name">'+f.id+'</div>'+
-      '<div id="helix-fighter-meta">'+(f.style||'—')+' · '+(f.stance||'—')+' · '+(f.is_ranked?'★ Ranked':'Unranked')+'</div>'+
-      '<div class="helix-stat-row"><span class="helix-stat-label">PageRank</span><span class="helix-stat-val'+(f.pr>=80?' gold':'')+'"> #'+f.pr_rank+'</span></div>'+
-      '<div class="helix-stat-row"><span class="helix-stat-label">W / L (graph)</span><span class="helix-stat-val">'+f.wins_graph+' / '+f.losses_graph+'</span></div>'+
-      '<div class="helix-stat-row"><span class="helix-stat-label">Community</span><span class="helix-stat-val">#'+f.community+'</span></div>'+
-      '<div class="helix-chain-title">Beat Chain</div>'+
-      (beats.length?beats.slice(0,10).map(b=>'<div class="helix-chain-item" onclick="helixSelectFighter(''+b.opponent.replace(/'/g,"\'")+'')">'+'<span class="helix-chain-name">'+b.opponent+'</span><span class="helix-chain-method '+mc(mb(b))+'">'+ms(mb(b))+'</span></div>').join(''):'<div style="font-size:9px;color:var(--text-lo);padding:4px 0">No recorded victories</div>')+
-      '<div class="helix-chain-title">Lost To</div>'+
-      (lost.length?lost.slice(0,5).map(b=>'<div class="helix-chain-item" onclick="helixSelectFighter(''+b.opponent.replace(/'/g,"\'")+'')">'+'<span class="helix-chain-name">'+b.opponent+'</span><span class="helix-chain-method '+mc(mb(b))+'">'+ms(mb(b))+'</span></div>').join(''):'<div style="font-size:9px;color:var(--text-lo);padding:4px 0">No recorded losses</div>');
-  }catch(e){detailEl.innerHTML='<div style="color:#b83040;font-size:9px">Load failed</div>';}
+    detailEl.textContent='';
+    function mk(tag,cls,txt){
+      const d=document.createElement(tag);
+      if(cls) d.className=cls;
+      if(txt!==undefined) d.textContent=txt;
+      return d;
+    }
+    function row(label,val,gold){
+      const d=mk('div','helix-stat-row');
+      d.appendChild(mk('span','helix-stat-label',label));
+      d.appendChild(mk('span','helix-stat-val'+(gold?' gold':''),val));
+      return d;
+    }
+    function chainItem(opponent,method){
+      const d=mk('div','helix-chain-item');
+      d.addEventListener('click',()=>helixSelectFighter(opponent));
+      const mc=method&&method.includes('KO')?'ko':method&&method.includes('Sub')?'sub':'dec';
+      const ms=method&&method.includes('KO')?'KO':method&&method.includes('Sub')?'SUB':'DEC';
+      d.appendChild(mk('span','helix-chain-name',opponent));
+      d.appendChild(mk('span','helix-chain-method '+mc,ms));
+      return d;
+    }
+    function note(t){
+      const d=mk('div');
+      d.style.cssText='font-size:9px;color:var(--text-lo);padding:4px 0';
+      d.textContent=t; return d;
+    }
+    function getMethod(b){ return b&&b.bouts&&b.bouts[0]?b.bouts[0].method:''; }
+    const tierLabel={'champion':'◆ Champion','former_champion':'Former Champion','ever_ranked':'Ever Ranked','unranked':'Unranked'};
+    const nameEl=mk('div'); nameEl.id='helix-fighter-name'; nameEl.textContent=fn.id;
+    const metaEl=mk('div'); metaEl.id='helix-fighter-meta';
+    metaEl.textContent=(fn.style||'-')+' · '+(fn.stance||'-')+' · '+(tierLabel[fn.tier]||fn.tier||'-');
+    detailEl.appendChild(nameEl);
+    detailEl.appendChild(metaEl);
+    detailEl.appendChild(row('PageRank','#'+fn.pr_rank,fn.tier==='champion'));
+    detailEl.appendChild(row('W / L (graph)',fn.wins_graph+' / '+fn.losses_graph,false));
+    detailEl.appendChild(row('Community','#'+fn.community,false));
+    detailEl.appendChild(mk('div','helix-chain-title','Beat Chain'));
+    if(beats.length) beats.slice(0,10).forEach(b=>detailEl.appendChild(chainItem(b.opponent,getMethod(b))));
+    else detailEl.appendChild(note('No recorded victories'));
+    detailEl.appendChild(mk('div','helix-chain-title','Lost To'));
+    if(lost.length) lost.slice(0,5).forEach(b=>detailEl.appendChild(chainItem(b.opponent,getMethod(b))));
+    else detailEl.appendChild(note('No recorded losses'));
+  }catch(e){
+    detailEl.textContent='';
+    const err=mk('div'); err.style.cssText='color:#b83040;font-size:9px';
+    err.textContent='Load failed'; detailEl.appendChild(err);
+  }
 }
-
 function helixClearPanel(){
   document.getElementById('helix-empty').style.display='flex';
   document.getElementById('helix-fighter-detail').style.display='none';
