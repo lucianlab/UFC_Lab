@@ -1469,8 +1469,8 @@ const hlTrace={
   hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
 };
 function updateHlColor(){
-  hlTrace.marker.color = isNebula ? '#7ef4f4' : '#7a1f28';
-  hlTrace.marker.line.color = isNebula ? '#7ef4f4' : '#b83040';
+  hlTrace.marker.color = isNebula ? 'rgba(255,255,255,0.25)' : '#7a1f28';
+  hlTrace.marker.line.color = isNebula ? '#ffffff' : '#b83040';
 }
 
 const univLayout={
@@ -1590,7 +1590,7 @@ function applyFilters(){
 }
 const allBtn=document.createElement('div');
 allBtn.id='legend-all'; allBtn.className='active-filter'; allBtn.textContent='ALL';
-allBtn.addEventListener('click',()=>{ activeWC=null; activeTier=null; applyFilters(); document.querySelectorAll('.legend-item').forEach(i=>i.classList.remove('muted','active-filter')); allBtn.classList.add('active-filter'); });
+allBtn.addEventListener('click',()=>{ activeWC=null; activeTier=null; applyFilters(); document.querySelectorAll('.legend-item').forEach(i=>i.classList.remove('muted','active-filter')); allBtn.classList.add('active-filter'); document.getElementById('fighter-card').style.display='none'; document.getElementById('no-selection').style.display='block'; document.getElementById('sidebar').style.paddingTop='0'; });
 legendEl.appendChild(allBtn);
 WC_ORDER.forEach(wc=>{
   if(!byWC[wc])return;
