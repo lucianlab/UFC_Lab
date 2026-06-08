@@ -1540,14 +1540,10 @@ body {
       <div class="helix-loading-bar"><div class="helix-loading-fill"></div></div>
     </div>
     <div id="helix-graph-wrap">
-      <div id="helix-controls">
-        <div class="helix-ctrl-btn active" id="helix-btn-ranked" onclick="helixToggleRanked()">Ranked</div>
-        <div class="helix-ctrl-btn" id="helix-btn-all" onclick="helixToggleAll()">+ Unranked</div>
-        <div class="helix-ctrl-btn" id="helix-btn-reset" onclick="helixResetZoom()">Reset</div>
-      </div>
+
       <svg id="helix-svg"></svg>
-      <div id="helix-hint" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-family:DM Mono,monospace;font-size:9px;color:#3a3748;letter-spacing:0.12em;text-align:center;pointer-events:none;white-space:nowrap">
-        SPACE to reset &nbsp;·&nbsp; click node to explore
+      <div id="helix-hint" style="position:absolute;bottom:16px;left:20px;font-family:DM Mono,monospace;font-size:8px;color:#3a3748;letter-spacing:0.10em;pointer-events:none;line-height:1.9">
+        SPACE &nbsp;full graph &nbsp;·&nbsp; CLICK &nbsp;focus &nbsp;·&nbsp; DBL-CLICK &nbsp;<span class="hint-mode">RANKED</span> / ALL
       </div>
     </div>
     <div id="helix-panel">
@@ -1916,9 +1912,12 @@ document.addEventListener('keydown', e=>{
     e.preventDefault();
     const helixActive=document.getElementById('helix-mode').classList.contains('active');
     if(helixActive){
-      // HELIX：回到預設選手
+      // HELIX 空白鍵：回到完整 ranked graph
       document.getElementById('helix-search').value='';
-      helixFocusOn(HELIX_DEFAULT);
+      _helixFocusName=null;
+      _helixSelected=null;
+      helixClearPanel();
+      helixRenderFull();
     } else if(document.getElementById('plot').style.display!=='none'){
       // Universe：重置相機
       Plotly.relayout('plot', {'scene.camera': {eye:{x:1.8,y:0.8,z:1.0}}});
@@ -2560,6 +2559,7 @@ function setMode(mode){
   document.getElementById('btn-builder').classList.toggle('active',mode==='builder');
   document.getElementById('btn-dna').classList.toggle('active',mode==='dna');
   document.getElementById('btn-helix').classList.toggle('active',mode==='helix');
+  if(helixEl) helixEl.classList.remove('active');
   if(mode==='universe'){
     univEl.style.display='block'; sideEl.style.display='flex';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
@@ -2598,7 +2598,6 @@ function setMode(mode){
     if(helixEl) helixEl.classList.add('active');
     searchWrap.style.display='none';
     document.getElementById('header-sub').textContent='HELIX · Style Network & PageRank';
-    document.getElementById('btn-helix').classList.add('active');
     helixInit();
   }
 }
@@ -3330,7 +3329,11 @@ function helixNodeR(d){
 }
 
 async function helixInit(){
-  if(_helixInited&&_helixAllNodes){ helixFocusOn(_helixFocusName); return; }
+  if(_helixInited&&_helixAllNodes){
+    if(_helixFocusName) helixFocusOn(_helixFocusName);
+    else helixRenderFull();
+    return;
+  }
   if(_helixInited) return;
   _helixInited=true;
   try{
@@ -3346,7 +3349,24 @@ async function helixInit(){
     return;
   }
   helixBuildSearch();
-  helixFocusOn(HELIX_DEFAULT);
+  // 存完整 edges 供 helixRenderFull 使用
+  if(_helixData) _helixData._fullEdges = _helixData.edges||[];
+  helixRenderFull();
+
+  // 雙擊空白切換 ranked/all（不點到 node 才觸發）
+  const svgEl2=document.getElementById('helix-svg');
+  svgEl2.addEventListener('dblclick',e=>{
+    if(e.target.tagName==='circle') return;
+    _helixShowAll=!_helixShowAll;
+    const hint=document.getElementById('helix-hint');
+    if(hint){
+      hint.querySelector('.hint-mode').textContent=_helixShowAll?'ALL':'RANKED';
+    }
+    document.getElementById('helix-search').value='';
+    _helixFocusName=null; _helixSelected=null;
+    helixClearPanel();
+    helixRenderFull();
+  });
 }
 
 function helixBuildSearch(){
@@ -3374,6 +3394,20 @@ function helixBuildSearch(){
 }
 
 
+
+// 顯示完整 ranked（或 all）graph
+function helixRenderFull(){
+  if(!_helixAllNodes) return;
+  const loading=document.getElementById('helix-loading');
+  loading.style.display='flex';
+  const nodes=_helixAllNodes.filter(n=>_helixShowAll?true:n.tier!=='unranked');
+  const nodeIds=new Set(nodes.map(n=>n.id));
+  const fullEdges=(_helixData&&_helixData._fullEdges)||(_helixData&&_helixData.edges)||[];
+  const edges=fullEdges.filter(e=>nodeIds.has(e.winner)&&nodeIds.has(e.loser));
+  _helixData=Object.assign({},_helixData,{nodes,edges,_fullEdges:fullEdges});
+  helixRender();
+}
+
 // 以某選手為中心重新渲染 graph（局部鄰居）
 async function helixFocusOn(name){
   _helixFocusName = name;
@@ -3392,9 +3426,9 @@ async function helixFocusOn(name){
     // 把 panel 顯示出來
     helixShowPanel(name);
 
-    // 更新 hint 文字
+    // 更新 hint
     const hint=document.getElementById('helix-hint');
-    if(hint) hint.style.display='none';
+    if(hint) hint.style.display='block';
 
   }catch(e){
     console.error('helixFocusOn failed:',e);
@@ -3599,7 +3633,11 @@ function helixRender(){
     node.attr('cx',d=>d.x).attr('cy',d=>d.y);
     label.attr('x',d=>d.x).attr('y',d=>d.y);
   });
-  setTimeout(()=>{loading.style.display='none';},2500);
+  setTimeout(()=>{
+    loading.style.display='none';
+    const hint=document.getElementById('helix-hint');
+    if(hint) hint.style.display='block';
+  },2500);
   svgEl.on('click',()=>{_helixSelected=null;helixClearPanel();node.attr('stroke',d=>helixNodeStroke(d)).attr('r',d=>helixNodeR(d));});
 }
 
