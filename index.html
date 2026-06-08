@@ -1054,11 +1054,15 @@ body {
   flex-direction: row; overflow: hidden;
 }
 #helix-mode.active { display: flex; }
+
+/* Graph 主畫布區 */
 #helix-graph-wrap {
   flex: 1; min-width: 0; position: relative;
   background: var(--obsidian);
 }
 #helix-graph-wrap svg { width: 100%; height: 100%; }
+
+/* 右側 Panel */
 #helix-panel {
   width: 280px; flex-shrink: 0;
   border-left: 1px solid var(--border);
@@ -1066,6 +1070,8 @@ body {
   display: flex; flex-direction: column;
   overflow: hidden;
 }
+
+/* Panel header（搜尋 + legend）*/
 #helix-panel-head {
   padding: 14px 16px 10px;
   border-bottom: 1px solid var(--border);
@@ -1095,28 +1101,47 @@ body {
   transition: background 0.1s;
 }
 .helix-ac-item:hover { background: var(--surface-3); color: var(--text-hi); }
-.helix-ac-pr { font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text-lo); }
-#helix-legend { display: flex; gap: 10px; flex-wrap: wrap; }
+.helix-ac-pr {
+  font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text-lo);
+}
+
+/* Legend */
+#helix-legend {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
 .helix-leg-item {
   display: flex; align-items: center; gap: 5px;
   font-size: 9px; color: var(--text-lo); font-family: 'Barlow', sans-serif;
 }
-.helix-leg-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-#helix-panel-body { flex: 1; overflow-y: auto; padding: 14px 16px; }
+.helix-leg-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+}
+
+/* Panel body（選手詳情 + beat chain）*/
+#helix-panel-body {
+  flex: 1; overflow-y: auto; padding: 14px 16px;
+}
+
+/* Empty state */
 #helix-empty {
   display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 10px; height: 100%; padding: 20px;
+  justify-content: center; gap: 10px; height: 100%;
+  padding: 20px;
 }
 #helix-empty .helix-empty-icon { font-size: 28px; opacity: 0.08; }
 #helix-empty p {
   font-family: 'DM Mono', monospace; font-size: 9px;
-  color: var(--text-lo); text-align: center; line-height: 1.8; letter-spacing: 0.04em;
+  color: var(--text-lo); text-align: center; line-height: 1.8;
+  letter-spacing: 0.04em;
 }
+
+/* Fighter detail */
 #helix-fighter-detail { display: none; }
 #helix-fighter-name {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 20px; font-weight: 700; color: var(--text-hi);
-  letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.1; margin-bottom: 2px;
+  letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.1;
+  margin-bottom: 2px;
 }
 #helix-fighter-meta {
   font-family: 'DM Mono', monospace; font-size: 9px;
@@ -1124,11 +1149,19 @@ body {
 }
 .helix-stat-row {
   display: flex; justify-content: space-between; align-items: baseline;
-  margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  margin-bottom: 6px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
 }
-.helix-stat-label { font-size: 9px; color: var(--text-lo); font-family: 'Barlow', sans-serif; }
-.helix-stat-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-md); }
+.helix-stat-label {
+  font-size: 9px; color: var(--text-lo); font-family: 'Barlow', sans-serif;
+  letter-spacing: 0.02em;
+}
+.helix-stat-val {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-md);
+}
 .helix-stat-val.gold { color: var(--champagne); }
+
+/* Beat chain */
 .helix-chain-title {
   font-family: 'DM Mono', monospace; font-size: 8px; font-weight: 500;
   color: var(--text-lo); letter-spacing: 0.18em; text-transform: uppercase;
@@ -1140,12 +1173,19 @@ body {
   cursor: pointer; transition: background 0.1s;
 }
 .helix-chain-item:hover { background: var(--surface-2); }
-.helix-chain-name { font-size: 11px; color: var(--text-md); font-family: 'Barlow', sans-serif; }
+.helix-chain-name {
+  font-size: 11px; color: var(--text-md); font-family: 'Barlow', sans-serif;
+  transition: color 0.12s;
+}
 .helix-chain-item:hover .helix-chain-name { color: var(--text-hi); }
-.helix-chain-method { font-family: 'DM Mono', monospace; font-size: 8px; }
+.helix-chain-method {
+  font-family: 'DM Mono', monospace; font-size: 8px;
+}
 .helix-chain-method.ko  { color: var(--crimson-2); }
 .helix-chain-method.sub { color: var(--cobalt-2); }
 .helix-chain-method.dec { color: var(--text-lo); }
+
+/* Overlay controls */
 #helix-controls {
   position: absolute; top: 12px; left: 14px;
   display: flex; gap: 6px; z-index: 10;
@@ -1157,8 +1197,10 @@ body {
   border: 1px solid var(--border-2); background: rgba(9,9,13,0.85);
   color: var(--text-lo); transition: all 0.18s;
 }
-.helix-ctrl-btn:hover { color: var(--text-md); }
+.helix-ctrl-btn:hover { color: var(--text-md); border-color: var(--border-2); }
 .helix-ctrl-btn.active { color: var(--champagne); border-color: var(--champagne-dim); }
+
+/* Loading */
 #helix-loading {
   position: absolute; inset: 0; display: flex;
   align-items: center; justify-content: center;
@@ -1176,7 +1218,10 @@ body {
   height: 100%; background: var(--champagne-dim);
   animation: helixLoad 1.2s ease-in-out infinite;
 }
-@keyframes helixLoad { 0%{left:-100%} 100%{left:100%} }
+@keyframes helixLoad {
+  0%   { left: -100%; }
+  100% { left: 100%; }
+}
 
 </style>
 
@@ -1510,14 +1555,16 @@ body {
         </div>
         <div id="helix-legend">
           <div class="helix-leg-item"><div class="helix-leg-dot" style="background:#FFD700"></div>Champion</div>
-          <div class="helix-leg-item"><div class="helix-leg-dot" style="background:#C0A060"></div>Former</div>
-          <div class="helix-leg-item"><div class="helix-leg-dot" style="background:#9a9a9a"></div>Ranked</div>
+          <div class="helix-leg-item"><div class="helix-leg-dot" style="background:#C0A060"></div>Former Champ</div>
+          <div class="helix-leg-item"><div class="helix-leg-dot" style="background:#9a9a9a"></div>Ever Ranked</div>
           <div class="helix-leg-item"><div class="helix-leg-dot" style="background:#2a2a3a;border:1px solid #3a3a4a"></div>Unranked</div>
+          <div class="helix-leg-item"><div style="width:20px;height:2px;background:rgba(184,48,64,0.7);margin-right:2px"></div>KO</div>
+          <div class="helix-leg-item"><div style="width:20px;height:2px;background:rgba(42,80,144,0.7);margin-right:2px"></div>Sub</div>
         </div>
       </div>
       <div id="helix-panel-body">
         <div id="helix-empty">
-          <div class="helix-empty-icon">&#x2B21;</div>
+          <div class="helix-empty-icon">o</div>
           <p>Click any node to explore<br>their beat chain and<br>network influence</p>
         </div>
         <div id="helix-fighter-detail"></div>
@@ -2500,7 +2547,6 @@ function setMode(mode){
   document.getElementById('btn-vs').classList.toggle('active',mode==='vs');
   document.getElementById('btn-builder').classList.toggle('active',mode==='builder');
   document.getElementById('btn-dna').classList.toggle('active',mode==='dna');
-  document.getElementById('btn-helix').classList.toggle('active',mode==='helix');
   if(mode==='universe'){
     univEl.style.display='block'; sideEl.style.display='flex';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
@@ -2529,16 +2575,17 @@ function setMode(mode){
   } else if(mode==='dna'){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.add('active');
-    const hxEl=document.getElementById('helix-mode'); if(hxEl) hxEl.classList.remove('active');
+    if(helixEl) helixEl.classList.remove('active');
     searchWrap.style.display='none';
     document.getElementById('header-sub').textContent='META · Striking vs Grappling';
     dnaInit();
   } else if(mode==='helix'){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
-    const hxEl2=document.getElementById('helix-mode'); if(hxEl2) hxEl2.classList.add('active');
+    if(helixEl) helixEl.classList.add('active');
     searchWrap.style.display='none';
     document.getElementById('header-sub').textContent='HELIX · Style Network & PageRank';
+    document.getElementById('btn-helix').classList.add('active');
     helixInit();
   }
 }
@@ -3245,28 +3292,29 @@ function dnaDraw(canvas, W, H, dpr){
 }
 
 
-// ══════════════════════════════════════════════════════
-//  HELIX MODE
-// ══════════════════════════════════════════════════════
-let _helixInited=false, _helixData=null, _helixShowAll=false, _helixSelected=null;
+// HELIX MODE
+let _helixInited=false,_helixData=null,_helixShowAll=false,_helixSelected=null;
 
 function helixNodeColor(d){
-  if(d.pr>=80) return '#FFD700';
-  if(d.pr>=40) return '#C0A060';
-  if(d.is_ranked) return '#9a9a9a';
+  if(d.tier==='champion')        return '#FFD700';
+  if(d.tier==='former_champion') return '#C0A060';
+  if(d.tier==='ever_ranked')     return '#9a9a9a';
   return '#2a2a3a';
 }
 function helixNodeStroke(d){
-  if(d.id===_helixSelected) return '#c9a96e';
-  if(d.pr>=80) return 'rgba(255,215,0,0.5)';
-  if(d.pr>=40) return 'rgba(192,160,96,0.3)';
-  if(d.is_ranked) return 'rgba(154,154,154,0.2)';
+  if(d.id===_helixSelected)      return '#c9a96e';
+  if(d.tier==='champion')        return 'rgba(255,215,0,0.55)';
+  if(d.tier==='former_champion') return 'rgba(192,160,96,0.35)';
+  if(d.tier==='ever_ranked')     return 'rgba(154,154,154,0.15)';
   return 'transparent';
 }
-function helixNodeR(d){ return 3+(d.pr/100)*11+(d.id===_helixSelected?2:0); }
+function helixNodeR(d){
+  const base=3+(d.pr/100)*11;
+  return d.id===_helixSelected ? base+2 : base;
+}
 
 async function helixInit(){
-  if(_helixInited&&_helixData){ helixRender(); return; }
+  if(_helixInited&&_helixData){helixRender();return;}
   if(_helixInited) return;
   _helixInited=true;
   try{
@@ -3275,9 +3323,7 @@ async function helixInit(){
     _helixData=await res.json();
   }catch(e){
     console.error('HELIX load failed:',e);
-    const ld=document.getElementById('helix-loading');
-    ld.textContent='Failed to load graph data';
-    ld.style.color='#b83040';
+    document.getElementById('helix-loading').innerHTML='<span style="color:#b83040">Failed to load graph</span>';
     return;
   }
   helixBuildSearch();
@@ -3291,46 +3337,54 @@ function helixBuildSearch(){
   const ac=document.getElementById('helix-ac');
   inp.addEventListener('input',()=>{
     const q=inp.value.toLowerCase().trim();
-    ac.innerHTML=''; ac.style.display='none';
-    if(!q) return;
+    ac.innerHTML='';
+    if(!q){ac.style.display='none';return;}
     const matches=nodes.filter(n=>n.id.toLowerCase().includes(q)).sort((a,b)=>b.pr-a.pr).slice(0,8);
-    if(!matches.length) return;
+    if(!matches.length){ac.style.display='none';return;}
     matches.forEach(n=>{
-      const div=document.createElement('div'); div.className='helix-ac-item';
-      const sp1=document.createElement('span'); sp1.textContent=n.id;
-      const sp2=document.createElement('span'); sp2.className='helix-ac-pr'; sp2.textContent='PR #'+n.pr_rank;
-      div.appendChild(sp1); div.appendChild(sp2);
-      div.onclick=()=>{ inp.value=n.id; ac.style.display='none'; helixSelectFighter(n.id); };
+      const div=document.createElement('div');
+      div.className='helix-ac-item';
+      div.innerHTML='<span>'+n.id+'</span><span class="helix-ac-pr">PR #'+n.pr_rank+'</span>';
+      div.onclick=()=>{inp.value=n.id;ac.style.display='none';helixSelectFighter(n.id);};
       ac.appendChild(div);
     });
     ac.style.display='block';
   });
-  document.addEventListener('click',e=>{ if(!inp.contains(e.target)) ac.style.display='none'; });
+  document.addEventListener('click',e=>{if(!inp.contains(e.target))ac.style.display='none';});
 }
 
 function helixRender(){
   const loading=document.getElementById('helix-loading');
   if(!_helixData) return;
-  let nodes=(_helixData.nodes||[]).filter(n=>_helixShowAll?true:n.is_ranked);
+  let nodes=(_helixData.nodes||[]).filter(n=>_helixShowAll?true:n.tier!=='unranked');
   const nodeIds=new Set(nodes.map(n=>n.id));
-  const edges=(_helixData.edges||[]).filter(e=>nodeIds.has(e.winner)&&nodeIds.has(e.loser));
+  let edges=(_helixData.edges||[]).filter(e=>nodeIds.has(e.winner)&&nodeIds.has(e.loser));
   nodes=nodes.map(n=>({...n}));
   const nodeMap=Object.fromEntries(nodes.map(n=>[n.id,n]));
   const links=edges.map(e=>({
-    source:nodeMap[e.winner], target:nodeMap[e.loser],
-    weight:e.weight, count:e.count,
+    source:nodeMap[e.winner],target:nodeMap[e.loser],
+    weight:e.weight,count:e.count,
     method:e.bouts&&e.bouts[0]?e.bouts[0].method:''
   })).filter(l=>l.source&&l.target);
 
   const wrap=document.getElementById('helix-graph-wrap');
-  const W=wrap.clientWidth||900, H=wrap.clientHeight||700;
+  const W=wrap.clientWidth||900,H=wrap.clientHeight||700;
   const svgEl=d3.select('#helix-svg').attr('viewBox','0 0 '+W+' '+H).style('background','#09090d');
   svgEl.selectAll('*').remove();
 
-  svgEl.append('defs').append('marker')
-    .attr('id','helix-arrow').attr('viewBox','0 -4 8 8')
-    .attr('refX',14).attr('refY',0).attr('markerWidth',4).attr('markerHeight',4).attr('orient','auto')
-    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','rgba(201,169,110,0.2)');
+  const defs=svgEl.append('defs');
+  // KO arrow — red accent
+  defs.append('marker').attr('id','arrow-ko').attr('viewBox','0 -4 8 8')
+    .attr('refX',16).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
+    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','rgba(184,48,64,0.7)');
+  // Sub arrow — blue accent
+  defs.append('marker').attr('id','arrow-sub').attr('viewBox','0 -4 8 8')
+    .attr('refX',16).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
+    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','rgba(42,80,144,0.7)');
+  // Dec arrow — grey
+  defs.append('marker').attr('id','arrow-dec').attr('viewBox','0 -4 8 8')
+    .attr('refX',16).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
+    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','rgba(100,100,120,0.5)');
 
   const g=svgEl.append('g');
   const zoom=d3.zoom().scaleExtent([0.15,8]).on('zoom',e=>g.attr('transform',e.transform));
@@ -3344,41 +3398,38 @@ function helixRender(){
     .force('collision',d3.forceCollide().radius(d=>helixNodeR(d)+3));
 
   const link=g.append('g').selectAll('line').data(links).join('line')
-    .attr('stroke',d=>d.method.includes('KO')?'rgba(122,31,40,0.3)':d.method.includes('Sub')?'rgba(26,48,80,0.35)':'rgba(31,31,44,0.3)')
-    .attr('stroke-width',d=>Math.min(2,0.4+d.weight*0.25))
-    .attr('marker-end','url(#helix-arrow)');
+    .attr('stroke',d=>d.method.includes('KO')?'rgba(184,48,64,0.45)':d.method.includes('Sub')?'rgba(42,80,144,0.45)':'rgba(80,80,100,0.25)')
+    .attr('stroke-width',d=>Math.min(2.5,0.6+d.weight*0.3))
+    .attr('marker-end',d=>d.method.includes('KO')?'url(#arrow-ko)':d.method.includes('Sub')?'url(#arrow-sub)':'url(#arrow-dec)');
 
   const node=g.append('g').selectAll('circle').data(nodes).join('circle')
     .attr('r',d=>helixNodeR(d))
     .attr('fill',d=>helixNodeColor(d))
     .attr('stroke',d=>helixNodeStroke(d))
     .attr('stroke-width',1)
-    .attr('opacity',d=>d.is_ranked?0.9:0.4)
+    .attr('opacity',d=>d.tier==='unranked'?0.35:0.9)
     .style('cursor','pointer')
-    .on('click',(event,d)=>{ event.stopPropagation(); helixSelectFighter(d.id); })
+    .on('click',(event,d)=>{event.stopPropagation();helixSelectFighter(d.id);})
     .call(d3.drag()
-      .on('start',(e,d)=>{ if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
-      .on('drag', (e,d)=>{ d.fx=e.x; d.fy=e.y; })
-      .on('end',  (e,d)=>{ if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
+      .on('start',(e,d)=>{if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;})
+      .on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y;})
+      .on('end',(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null;}));
 
+  // Tooltip
   let tt=document.getElementById('helix-tt');
-  if(!tt){
-    tt=document.createElement('div'); tt.id='helix-tt';
-    tt.style.cssText='position:fixed;pointer-events:none;background:rgba(14,14,20,0.95);border:1px solid #1f1f2c;border-radius:3px;padding:7px 10px;font-family:DM Mono,monospace;font-size:10px;color:#b8b4c0;display:none;z-index:9999;max-width:200px;line-height:1.6';
-    document.body.appendChild(tt);
-  }
-  node
-    .on('mouseover',(e,d)=>{
-      tt.style.display='block';
-      tt.innerHTML='<strong style="color:#e8e4dc;font-size:13px;text-transform:uppercase;font-family:Barlow Condensed,sans-serif">'+d.id+'</strong><br>PR Rank <span style="color:#c9a96e">#'+d.pr_rank+'</span><br>'+d.style+'<br>W/L '+d.wins_graph+'/'+d.losses_graph;
-    })
-    .on('mousemove',e=>{ tt.style.left=(e.clientX+14)+'px'; tt.style.top=(e.clientY-8)+'px'; })
-    .on('mouseout',()=>{ tt.style.display='none'; });
+  if(!tt){tt=document.createElement('div');tt.id='helix-tt';
+    tt.style.cssText='position:fixed;pointer-events:none;background:rgba(14,14,20,0.95);border:1px solid #1f1f2c;border-radius:3px;padding:7px 10px;font-family:"DM Mono",monospace;font-size:10px;color:#b8b4c0;display:none;z-index:9999;max-width:200px;line-height:1.6';
+    document.body.appendChild(tt);}
+  node.on('mouseover',(e,d)=>{
+    tt.style.display='block';
+    tt.innerHTML='<strong style="color:#e8e4dc;font-family:'Barlow Condensed',sans-serif;font-size:13px;text-transform:uppercase">'+d.id+'</strong><br>PR Rank <span style="color:#c9a96e">#'+d.pr_rank+'</span><br>Style '+d.style+'<br>W/L '+d.wins_graph+'/'+d.losses_graph;
+  }).on('mousemove',e=>{tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-8)+'px';})
+    .on('mouseout',()=>tt.style.display='none');
 
   const label=g.append('g').selectAll('text')
     .data(nodes.filter(n=>n.pr>=55))
     .join('text')
-    .attr('font-family','Barlow Condensed,sans-serif')
+    .attr('font-family','"Barlow Condensed",sans-serif')
     .attr('font-size',d=>d.pr>=75?10:8)
     .attr('fill',d=>d.pr>=80?'#c9a96e':'#6e6a7c')
     .attr('text-anchor','middle').attr('dy','2em').attr('pointer-events','none')
@@ -3389,13 +3440,8 @@ function helixRender(){
     node.attr('cx',d=>d.x).attr('cy',d=>d.y);
     label.attr('x',d=>d.x).attr('y',d=>d.y);
   });
-  setTimeout(()=>{ loading.style.display='none'; }, 2500);
-
-  svgEl.on('click',()=>{
-    _helixSelected=null;
-    helixClearPanel();
-    node.attr('stroke',d=>helixNodeStroke(d)).attr('r',d=>helixNodeR(d));
-  });
+  setTimeout(()=>{loading.style.display='none';},2500);
+  svgEl.on('click',()=>{_helixSelected=null;helixClearPanel();node.attr('stroke',d=>helixNodeStroke(d)).attr('r',d=>helixNodeR(d));});
 }
 
 function helixSelectFighter(name){
@@ -3404,7 +3450,7 @@ function helixSelectFighter(name){
     .attr('stroke',d=>helixNodeStroke(d))
     .attr('stroke-width',d=>d.id===name?2:1)
     .attr('r',d=>helixNodeR(d))
-    .attr('opacity',d=>d.id===name?1:d.is_ranked?0.9:0.4);
+    .attr('opacity',d=>d.id===name?1:d.tier==='unranked'?0.35:0.9);
   helixShowPanel(name);
 }
 
@@ -3413,81 +3459,36 @@ async function helixShowPanel(name){
   const detailEl=document.getElementById('helix-fighter-detail');
   emptyEl.style.display='none';
   detailEl.style.display='block';
-  detailEl.textContent='';
-
-  const ld=document.createElement('div');
-  ld.style.cssText='color:var(--text-lo);font-family:DM Mono,monospace;font-size:9px;letter-spacing:0.1em';
-  ld.textContent='LOADING...';
-  detailEl.appendChild(ld);
-
+  detailEl.innerHTML='<div style="color:var(--text-lo);font-family:'DM Mono',monospace;font-size:9px">LOADING...</div>';
   try{
     const res=await fetch(API_BASE+'/api/helix/fighter/'+encodeURIComponent(name));
     const data=await res.json();
-    const fn=data.fighter;
+    const f=data.fighter;
     const beats=data.beat_chain||[];
     const lost=data.loss_chain||[];
-    detailEl.textContent='';
-
-    function el(tag,cls,txt){
-      const d=document.createElement(tag);
-      if(cls) d.className=cls;
-      if(txt!==undefined) d.textContent=txt;
-      return d;
-    }
-    function row(label,val,gold){
-      const d=el('div','helix-stat-row');
-      d.appendChild(el('span','helix-stat-label',label));
-      const v=el('span','helix-stat-val'+(gold?' gold':''),val);
-      d.appendChild(v); return d;
-    }
-    function emptyNote(t){
-      const d=el('div'); d.style.cssText='font-size:9px;color:var(--text-lo);padding:4px 0';
-      d.textContent=t; return d;
-    }
-    function chainItem(opponent, method){
-      const d=el('div','helix-chain-item');
-      d.addEventListener('click',()=>helixSelectFighter(opponent));
-      d.appendChild(el('span','helix-chain-name',opponent));
-      const mc=method&&method.includes('KO')?'ko':method&&method.includes('Sub')?'sub':'dec';
-      const ms=method&&method.includes('KO')?'KO':method&&method.includes('Sub')?'SUB':'DEC';
-      const m=el('span','helix-chain-method '+mc,ms);
-      d.appendChild(m); return d;
-    }
-    function getMethod(b){ return b&&b.bouts&&b.bouts[0]?b.bouts[0].method:''; }
-
-    const nameEl=el('div');nameEl.id='helix-fighter-name';nameEl.textContent=fn.id;
-    const metaEl=el('div');metaEl.id='helix-fighter-meta';
-    metaEl.textContent=(fn.style||'-')+' · '+(fn.stance||'-')+' · '+(fn.is_ranked?'★ Ranked':'Unranked');
-
-    detailEl.appendChild(nameEl);
-    detailEl.appendChild(metaEl);
-    detailEl.appendChild(row('PageRank','#'+fn.pr_rank,fn.pr>=80));
-    detailEl.appendChild(row('W / L (graph)',fn.wins_graph+' / '+fn.losses_graph,false));
-    detailEl.appendChild(row('Community','#'+fn.community,false));
-
-    detailEl.appendChild(el('div','helix-chain-title','Beat Chain'));
-    if(beats.length) beats.slice(0,10).forEach(b=>detailEl.appendChild(chainItem(b.opponent,getMethod(b))));
-    else detailEl.appendChild(emptyNote('No recorded victories'));
-
-    detailEl.appendChild(el('div','helix-chain-title','Lost To'));
-    if(lost.length) lost.slice(0,5).forEach(b=>detailEl.appendChild(chainItem(b.opponent,getMethod(b))));
-    else detailEl.appendChild(emptyNote('No recorded losses'));
-
-  }catch(e){
-    detailEl.textContent='';
-    const err=el('div'); err.style.cssText='color:#b83040;font-size:9px';
-    err.textContent='Load failed'; detailEl.appendChild(err);
-  }
+    const mc=m=>m&&m.includes('KO')?'ko':m&&m.includes('Sub')?'sub':'dec';
+    const ms=m=>m&&m.includes('KO')?'KO':m&&m.includes('Sub')?'SUB':'DEC';
+    const mb=b=>b&&b.bouts&&b.bouts[0]?b.bouts[0].method:'';
+    detailEl.innerHTML=
+      '<div id="helix-fighter-name">'+f.id+'</div>'+
+      '<div id="helix-fighter-meta">'+(f.style||'—')+' · '+(f.stance||'—')+' · '+(f.is_ranked?'★ Ranked':'Unranked')+'</div>'+
+      '<div class="helix-stat-row"><span class="helix-stat-label">PageRank</span><span class="helix-stat-val'+(f.pr>=80?' gold':'')+'"> #'+f.pr_rank+'</span></div>'+
+      '<div class="helix-stat-row"><span class="helix-stat-label">W / L (graph)</span><span class="helix-stat-val">'+f.wins_graph+' / '+f.losses_graph+'</span></div>'+
+      '<div class="helix-stat-row"><span class="helix-stat-label">Community</span><span class="helix-stat-val">#'+f.community+'</span></div>'+
+      '<div class="helix-chain-title">Beat Chain</div>'+
+      (beats.length?beats.slice(0,10).map(b=>'<div class="helix-chain-item" onclick="helixSelectFighter(''+b.opponent.replace(/'/g,"\'")+'')">'+'<span class="helix-chain-name">'+b.opponent+'</span><span class="helix-chain-method '+mc(mb(b))+'">'+ms(mb(b))+'</span></div>').join(''):'<div style="font-size:9px;color:var(--text-lo);padding:4px 0">No recorded victories</div>')+
+      '<div class="helix-chain-title">Lost To</div>'+
+      (lost.length?lost.slice(0,5).map(b=>'<div class="helix-chain-item" onclick="helixSelectFighter(''+b.opponent.replace(/'/g,"\'")+'')">'+'<span class="helix-chain-name">'+b.opponent+'</span><span class="helix-chain-method '+mc(mb(b))+'">'+ms(mb(b))+'</span></div>').join(''):'<div style="font-size:9px;color:var(--text-lo);padding:4px 0">No recorded losses</div>');
+  }catch(e){detailEl.innerHTML='<div style="color:#b83040;font-size:9px">Load failed</div>';}
 }
 
 function helixClearPanel(){
   document.getElementById('helix-empty').style.display='flex';
   document.getElementById('helix-fighter-detail').style.display='none';
-  document.getElementById('helix-fighter-detail').textContent='';
 }
 
 function helixToggleRanked(){
-  _helixShowAll=false; _helixInited=false; _helixData=null;
+  _helixShowAll=false;_helixInited=false;_helixData=null;
   document.getElementById('helix-btn-ranked').classList.add('active');
   document.getElementById('helix-btn-all').classList.remove('active');
   document.getElementById('helix-loading').style.display='flex';
@@ -3499,9 +3500,7 @@ function helixToggleAll(){
   document.getElementById('helix-btn-ranked').classList.remove('active');
   document.getElementById('helix-btn-all').classList.add('active');
   document.getElementById('helix-loading').style.display='flex';
-  fetch(API_BASE+'/api/helix/graph?ranked_only=false')
-    .then(r=>r.json())
-    .then(data=>{ _helixData=data; _helixInited=true; helixRender(); });
+  fetch(API_BASE+'/api/helix/graph?ranked_only=false').then(r=>r.json()).then(data=>{_helixData=data;_helixInited=true;helixRender();});
 }
 
 function helixResetZoom(){
