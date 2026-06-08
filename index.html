@@ -1605,16 +1605,16 @@ WC_ORDER.forEach(wc=>{
 const tierCounts={};
 FIGHTERS.forEach(f=>{ const t=f.tier||'unranked'; tierCounts[t]=(tierCounts[t]||0)+1; });
 const TIER_ITEMS=[
-  {tier:'champion',   label:'Current Champion', color:'#FFD700'},
-  {tier:'ex_champion',label:'Former Champion',  color:'#C0A060'},
-  {tier:'ranked',     label:'Ranked Top 15',    color:'#9a9a9a'},
-  {tier:'unranked',   label:'Unranked',         color:'#2a2a3a'},
+  {tier:'champion',   label:'Current Champion', color:'#FFD700', nebulaColor:'#e8f0ff'},
+  {tier:'ex_champion',label:'Former Champion',  color:'#C0A060', nebulaColor:'#e8c56a'},
+  {tier:'ranked',     label:'Ranked Top 15',    color:'#9a9a9a', nebulaColor:'#b08adf'},
+  {tier:'unranked',   label:'Unranked',         color:'#2a2a3a', nebulaColor:'#1e1440'},
 ];
 const tierLegendEl=document.getElementById('tier-legend');
 const tierTitle=document.createElement('div');
 tierTitle.className='panel-title'; tierTitle.textContent='Status';
 tierLegendEl.appendChild(tierTitle);
-TIER_ITEMS.forEach(({tier,label,color})=>{
+TIER_ITEMS.forEach(({tier,label,color,nebulaColor})=>{
   const item=document.createElement('div');
   item.className='legend-item';
   item.dataset.tier=tier;
@@ -1688,6 +1688,14 @@ function updateTierIcons(){
     dot.style.background = isNebula ? dot.dataset.nebula : dot.dataset.classic;
   });
 }
+
+// ── Space key reset camera ──
+document.addEventListener('keydown', e=>{
+  if(e.code==='Space' && document.getElementById('plot').style.display!=='none'){
+    e.preventDefault();
+    Plotly.relayout('plot', {'scene.camera': {eye:{x:1.8,y:0.8,z:1.0}}});
+  }
+});
 
 // ── Universe search ──
 const searchEl=document.getElementById('search');
