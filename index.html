@@ -96,24 +96,24 @@ body {
   font-size: 10px;
   color: var(--text-lo);
   letter-spacing: 0.06em;
-  margin-top: 6px;
+  margin-top: 4px;
   line-height: 1;
+  height: 12px;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 /* Mode toggle — horizontally centered on the page */
 #mode-toggle {
   display: flex;
   gap: 0;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  flex-shrink: 0;
+  flex: 1;
   height: 100%;
   align-items: stretch;
 }
 
 .mode-btn {
-  width: 130px;
+  flex: 1;
   height: 100%;
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 11px;
@@ -129,6 +129,8 @@ body {
   position: relative;
   border-radius: 0;
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .mode-btn.active {
@@ -144,8 +146,9 @@ body {
 /* Search */
 #search-wrap {
   position: relative;
-  margin-left: auto;
-  flex-shrink: 0;
+  padding: 14px 0 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 10px;
 }
 
 #search {
@@ -1310,10 +1313,6 @@ body {
     <button class="mode-btn" id="btn-helix" onclick="setMode('helix')">Bout Graph</button>
   </div>
 
-  <div id="search-wrap">
-    <input id="search" type="text" placeholder="Search fighter…" autocomplete="off">
-    <div id="autocomplete"></div>
-  </div>
 </div>
 
 <div id="main" style="position:relative;">
@@ -1324,6 +1323,10 @@ body {
     <div id="theme-label">CLASSIC</div>
   </div>
   <div id="sidebar">
+    <div id="search-wrap">
+      <input id="search" type="text" placeholder="Search fighter…" autocomplete="off">
+      <div id="autocomplete"></div>
+    </div>
     <div id="fighter-card">
       <div class="panel-title">Selected Fighter</div>
       <div id="fighter-name"></div>
@@ -2665,12 +2668,12 @@ function setMode(mode){
   if(mode==='universe'){
     univEl.style.display='block'; sideEl.style.display='flex';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
-    searchWrap.style.display='block';
+    // search in sidebar, controlled by sideEl;
     document.getElementById('header-sub').textContent=FIGHTERS.length.toLocaleString()+' fighters · 3-axis style space';
   } else if(mode==='vs'){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.add('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
-    searchWrap.style.display='none';
+    // search in sidebar, controlled by sideEl;
     document.getElementById('header-sub').textContent='Matchup Engine · ML Fight Prediction';
     if(!vsRed && !vsBlue) {
       const defaultRed  = nameToFighter['Conor McGregor']  || FIGHTERS[0];
@@ -2684,21 +2687,21 @@ function setMode(mode){
   } else if(mode==='builder'){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.remove('active'); bEl.classList.add('active'); dnaEl.classList.remove('active');
-    searchWrap.style.display='none';
+    // search in sidebar, controlled by sideEl;
     document.getElementById('header-sub').textContent='Fighter DNA · Style Archetype Finder';
     bInit();
   } else if(mode==='dna'){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.add('active');
     if(helixEl) helixEl.classList.remove('active');
-    searchWrap.style.display='none';
+    // search in sidebar, controlled by sideEl;
     document.getElementById('header-sub').textContent='Meta Evolution · Striking vs Grappling';
     dnaInit();
   } else if(mode==='helix'){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
     if(helixEl) helixEl.classList.add('active');
-    searchWrap.style.display='none';
+    // search in sidebar, controlled by sideEl;
     document.getElementById('header-sub').textContent='Bout Graph · Fight Network & PageRank';
     // sync theme state
     const hBtn2=document.getElementById('helix-theme-toggle');
