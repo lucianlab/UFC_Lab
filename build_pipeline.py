@@ -283,6 +283,19 @@ def get_archetype(x, y, z):
 data['archetype'] = data.apply(lambda r: get_archetype(r['x'], r['y'], r['z']), axis=1)
 
 print("=== 8. 輸出 ===")
+# 補充 fighters_all.csv 的 wins/losses/draws
+_fa_paths = ["data/clean/fighters_all.csv","data/fighters_all.csv","fighters_all.csv"]
+_fa = None
+for _p in _fa_paths:
+    try:
+        _fa = pd.read_csv(_p)[['name','wins','losses','draws']]
+        print(f"  fighters_all: {len(_fa)} 人")
+        break
+    except: pass
+if _fa is not None:
+    data = data.merge(_fa, on='name', how='left')
+else:
+    data['wins'] = None; data['losses'] = None; data['draws'] = None
 os.makedirs(os.path.dirname(OUT_VECTORS), exist_ok=True)
 os.makedirs(os.path.dirname(OUT_JSON) or '.', exist_ok=True)
 
@@ -312,6 +325,9 @@ for _, r in data.iterrows():
         "gas_tank": num(r['gas_tank'], 3) if pd.notna(r['gas_tank']) else 1.0,
         "tier": r['tier'],
         "archetype": r['archetype'],
+        "wins": int(r['wins']) if pd.notna(r.get('wins',None)) else None,
+        "losses": int(r['losses']) if pd.notna(r.get('losses',None)) else None,
+        "draws": int(r['draws']) if pd.notna(r.get('draws',None)) else None,
         "str_def": num(r['str_def'], 3),
         "td_def": num(r['td_def'], 3),
     })
