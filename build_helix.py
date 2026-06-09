@@ -30,6 +30,7 @@ print("\n[1] 讀取 fights_all_rounds.csv ...")
 fights_raw = pd.read_csv(FIGHTS_CSV)
 print(f"    原始 rows: {len(fights_raw):,}")
 fights_raw = fights_raw[fights_raw["won"].notna() & fights_raw["winner"].notna()]
+fights_raw = fights_raw[fights_raw["event"].str.startswith("UFC", na=False)]
 fights_raw["date"] = pd.to_datetime(fights_raw["date"], errors="coerce")
 fights_raw = fights_raw[fights_raw["date"].dt.year >= MIN_YEAR]
 print(f"    {MIN_YEAR} 後 rows: {len(fights_raw):,}")
