@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UFC Fighter Universe</title>
+<title>UFC Lab</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@400;500&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -113,7 +113,7 @@ body {
 }
 
 .mode-btn {
-  padding: 0 20px;
+  width: 130px;
   height: 100%;
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 11px;
@@ -128,6 +128,7 @@ body {
   background: transparent;
   position: relative;
   border-radius: 0;
+  text-align: center;
 }
 
 .mode-btn.active {
@@ -1297,16 +1298,16 @@ body {
 
 <div id="header">
   <div class="header-brand">
-    <h1>UFC Fighter Universe</h1>
+    <h1>UFC Lab</h1>
     <span id="header-sub">3-axis style space</span>
   </div>
 
   <div id="mode-toggle">
-    <button class="mode-btn active" id="btn-universe" onclick="setMode('universe')">Universe</button>
-    <button class="mode-btn" id="btn-vs" onclick="setMode('vs')">VS Mode</button>
-    <button class="mode-btn" id="btn-builder" onclick="setMode('builder')">Blueprint</button>
-    <button class="mode-btn" id="btn-dna" onclick="setMode('dna')">META</button>
-    <button class="mode-btn" id="btn-helix" onclick="setMode('helix')">Helix</button>
+    <button class="mode-btn active" id="btn-universe" onclick="setMode('universe')">Style Map</button>
+    <button class="mode-btn" id="btn-vs" onclick="setMode('vs')">Matchup Engine</button>
+    <button class="mode-btn" id="btn-builder" onclick="setMode('builder')">Fighter DNA</button>
+    <button class="mode-btn" id="btn-dna" onclick="setMode('dna')">Meta Evolution</button>
+    <button class="mode-btn" id="btn-helix" onclick="setMode('helix')">Bout Graph</button>
   </div>
 
   <div id="search-wrap">
@@ -2670,7 +2671,7 @@ function setMode(mode){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.add('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
     searchWrap.style.display='none';
-    document.getElementById('header-sub').textContent='Style Matchup Analyser';
+    document.getElementById('header-sub').textContent='Matchup Engine · ML Fight Prediction';
     if(!vsRed && !vsBlue) {
       const defaultRed  = nameToFighter['Conor McGregor']  || FIGHTERS[0];
       const defaultBlue = nameToFighter['Max Holloway'] || FIGHTERS[1];
@@ -2684,21 +2685,21 @@ function setMode(mode){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.remove('active'); bEl.classList.add('active'); dnaEl.classList.remove('active');
     searchWrap.style.display='none';
-    document.getElementById('header-sub').textContent='Blueprint — Fighter Archetypes';
+    document.getElementById('header-sub').textContent='Fighter DNA · Style Archetype Finder';
     bInit();
   } else if(mode==='dna'){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.add('active');
     if(helixEl) helixEl.classList.remove('active');
     searchWrap.style.display='none';
-    document.getElementById('header-sub').textContent='META · Striking vs Grappling';
+    document.getElementById('header-sub').textContent='Meta Evolution · Striking vs Grappling';
     dnaInit();
   } else if(mode==='helix'){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
     if(helixEl) helixEl.classList.add('active');
     searchWrap.style.display='none';
-    document.getElementById('header-sub').textContent='HELIX · Style Network & PageRank';
+    document.getElementById('header-sub').textContent='Bout Graph · Fight Network & PageRank';
     // sync theme state
     const hBtn2=document.getElementById('helix-theme-toggle');
     const hLbl2=document.getElementById('helix-theme-label');
