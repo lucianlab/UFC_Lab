@@ -1135,6 +1135,39 @@ body {
   letter-spacing: 0.04em;
 }
 
+/* PR Ranking */
+#helix-pr-ranking { display: none; }
+.helix-pr-title {
+  font-family: 'DM Mono', monospace; font-size: 8px; font-weight: 500;
+  color: var(--text-lo); letter-spacing: 0.18em; text-transform: uppercase;
+  margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid var(--border);
+}
+.helix-pr-item {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 5px 0; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.1s;
+}
+.helix-pr-item:hover { background: var(--surface-2); }
+.helix-pr-num {
+  font-family: 'DM Mono', monospace; font-size: 8px;
+  color: var(--text-lo); width: 22px; flex-shrink: 0; text-align: right;
+}
+.helix-pr-name {
+  font-family: 'Barlow', sans-serif; font-size: 11px;
+  color: var(--text-md); flex: 1; transition: color 0.12s;
+}
+.helix-pr-item:hover .helix-pr-name { color: var(--text-hi); }
+.helix-pr-score {
+  font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text-lo);
+}
+.helix-pr-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+}
+.helix-pr-hint {
+  font-family: 'DM Mono', monospace; font-size: 7px; color: var(--text-lo);
+  text-align: center; margin-top: 8px; letter-spacing: 0.1em;
+}
+
 /* Fighter detail */
 #helix-fighter-detail { display: none; }
 #helix-fighter-name {
@@ -1562,16 +1595,17 @@ body {
         </div>
         <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
           <div onclick="helixGoFull()" style="font-family:DM Mono,monospace;font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-lo);cursor:pointer;padding:5px 0;transition:color 0.15s" onmouseover="this.style.color='var(--champagne)'" onmouseout="this.style.color='var(--text-lo)'">&#x2B21; Full Graph</div>
-          <div id="helix-comm-picker" style="margin-top:8px;display:none">
-            <div style="font-family:DM Mono,monospace;font-size:7px;color:var(--text-lo);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:4px">Community</div>
-            <div id="helix-comm-track" style="font-family:Barlow Condensed,sans-serif;font-size:13px;color:var(--text-md);cursor:pointer;padding:3px 0;letter-spacing:0.04em;user-select:none;transition:color 0.15s" onmouseover="this.style.color='var(--champagne)'" onmouseout="this.style.color='var(--text-md)'" onclick="helixEnterCommunity()">—</div>
-          </div>
         </div>
       </div>
       <div id="helix-panel-body">
         <div id="helix-empty">
           <div class="helix-empty-icon">o</div>
           <p>Click any node to explore<br>their beat chain and<br>network influence</p>
+        </div>
+        <div id="helix-pr-ranking">
+          <div class="helix-pr-title">PR Ranking</div>
+          <div id="helix-pr-list"></div>
+          <div class="helix-pr-hint">scroll to browse</div>
         </div>
         <div id="helix-fighter-detail"></div>
       </div>
@@ -1920,13 +1954,10 @@ document.addEventListener('keydown', e=>{
     const helixActive=document.getElementById('helix-mode').classList.contains('active');
     if(helixActive){
       if(_helixMode==='local'){
+        // local 模式：切換 ranked / all
         _helixShowAll = !_helixShowAll;
         helixUpdateHint();
         helixRenderLocal();
-      } else if(_helixMode==='community'){
-        _helixShowAll = !_helixShowAll;
-        helixUpdateHint();
-        helixRenderCommunity();
       }
       // full 模式：space 無效
     } else if(document.getElementById('plot').style.display!=='none'){
@@ -3367,7 +3398,6 @@ async function helixInit(){
     return;
   }
   helixBuildSearch();
-  helixBuildCommPicker();
   helixFocusOn(HELIX_DEFAULT);
 }
 
@@ -3397,185 +3427,82 @@ function helixBuildSearch(){
 }
 
 
-// ── Community Picker ──
-let _helixCommList = [];  // [{id, leader, count}, ...]
-let _helixCommIdx  = 0;
-let _helixCommId   = null;
+// ── PR Ranking (full graph mode) ──
+let _helixPROffset = 0;
+const HELIX_PR_WINDOW = 10;
 
-function helixBuildCommPicker(){
-  if(!_helixAllNodes) return;
-  const TIER_W = {'champion':3,'former_champion':3,'ever_ranked':2,'unranked':1};
+function helixShowPRRanking(){
+  const rankingEl = document.getElementById('helix-pr-ranking');
+  const emptyEl   = document.getElementById('helix-empty');
+  const detailEl  = document.getElementById('helix-fighter-detail');
+  if(emptyEl)   emptyEl.style.display   = 'none';
+  if(detailEl)  detailEl.style.display  = 'none';
+  if(rankingEl) rankingEl.style.display = 'block';
 
-  // 按 community 分組
-  const groups = {};
-  _helixAllNodes.forEach(n=>{
-    const c = n.community;
-    if(c==null||c<0) return;
-    if(!groups[c]) groups[c]=[];
-    groups[c].push(n);
-  });
+  _helixPROffset = 0;
+  helixRenderPRList();
 
-  // 每個 community 找代表（ranked 優先，PR 最高）
-  _helixCommList = Object.entries(groups)
-    .map(([id, members])=>{
-      const ranked = members.filter(n=>n.tier!=='unranked');
-      if(!ranked.length) return null;
-      ranked.sort((a,b)=>{
-        const tw=(TIER_W[b.tier]||0)-(TIER_W[a.tier]||0);
-        return tw!==0?tw:b.pr-a.pr;
-      });
-      return { id:parseInt(id), leader:ranked[0].id, count:ranked.length };
-    })
-    .filter(Boolean)
-    .sort((a,b)=>b.count-a.count);  // 大 community 排前面
-
-  if(!_helixCommList.length) return;
-
-  // 顯示 picker
-  const picker = document.getElementById('helix-comm-picker');
-  if(picker) picker.style.display='block';
-
-  // 初始顯示第一個
-  _helixCommIdx = 0;
-  helixUpdateCommTrack();
-
-  // 滾輪切換
-  const track = document.getElementById('helix-comm-track');
-  if(track){
-    track.addEventListener('wheel', e=>{
+  // 滾輪切換視窗
+  const list = document.getElementById('helix-pr-list');
+  if(list){
+    list.onwheel = null;  // 先清掉舊的
+    list.addEventListener('wheel', e=>{
       e.preventDefault();
-      e.stopPropagation();
-      if(e.deltaY > 0){
-        _helixCommIdx = (_helixCommIdx+1) % _helixCommList.length;
-      } else {
-        _helixCommIdx = (_helixCommIdx-1+_helixCommList.length) % _helixCommList.length;
-      }
-      helixUpdateCommTrack();
+      if(!_helixAllNodes) return;
+      const ranked = _helixAllNodes.filter(n=>n.tier!=='unranked')
+                                   .sort((a,b)=>a.pr_rank-b.pr_rank);
+      const max = Math.max(0, ranked.length - HELIX_PR_WINDOW);
+      if(e.deltaY > 0) _helixPROffset = Math.min(_helixPROffset+1, max);
+      else             _helixPROffset = Math.max(_helixPROffset-1, 0);
+      helixRenderPRList();
     }, {passive:false});
   }
 }
 
-function helixUpdateCommTrack(){
-  const track = document.getElementById('helix-comm-track');
-  if(!track || !_helixCommList.length) return;
-  const comm = _helixCommList[_helixCommIdx];
-  // 顯示代表人物的姓（最後一個名字）
-  track.textContent = comm.leader.split(' ').slice(-1)[0] + ' (' + comm.count + ')';
-  track.title = comm.leader;  // hover 顯示全名
+function helixHidePRRanking(){
+  const rankingEl = document.getElementById('helix-pr-ranking');
+  if(rankingEl) rankingEl.style.display = 'none';
 }
 
-function helixEnterCommunity(){
-  if(!_helixCommList.length) return;
-  const comm = _helixCommList[_helixCommIdx];
-  helixShowCommunity(comm.id);
-}
+function helixRenderPRList(){
+  const list = document.getElementById('helix-pr-list');
+  if(!list || !_helixAllNodes) return;
+  const TIER_COLOR = {'champion':'#FFD700','former_champion':'#C0A060','ever_ranked':'#9a9a9a','unranked':'#2a2a3a'};
+  const ranked = _helixAllNodes.filter(n=>n.tier!=='unranked')
+                               .sort((a,b)=>a.pr_rank-b.pr_rank);
+  const slice = ranked.slice(_helixPROffset, _helixPROffset + HELIX_PR_WINDOW);
+  list.textContent = '';
+  slice.forEach(n=>{
+    const row = document.createElement('div'); row.className='helix-pr-item';
+    row.addEventListener('click',()=>helixFocusOn(n.id));
 
-function helixShowCommunity(commId){
-  _helixMode   = 'community';
-  _helixCommId = commId;
-  _helixShowAll = false;
-  _helixSelected = null;
-  helixClearPanel();
-  helixUpdateHint();
+    const num  = document.createElement('div'); num.className='helix-pr-num';
+    num.textContent = '#'+(n.pr_rank);
 
-  const loading = document.getElementById('helix-loading');
-  loading.style.display = 'flex';
+    const dot  = document.createElement('div'); dot.className='helix-pr-dot';
+    dot.style.background = TIER_COLOR[n.tier]||'#9a9a9a';
 
-  helixRenderCommunity();
-}
+    const name = document.createElement('div'); name.className='helix-pr-name';
+    name.textContent = n.id;
 
-function helixRenderCommunity(){
-  if(!_helixAllNodes) return;
-  const commId = _helixCommId;
+    const score = document.createElement('div'); score.className='helix-pr-score';
+    score.textContent = n.pr.toFixed(1);
 
-  // 過濾該 community 的成員
-  let nodes = _helixAllNodes.filter(n=>
-    n.community===commId &&
-    (_helixShowAll ? true : n.tier!=='unranked')
-  );
-  const nodeIds = new Set(nodes.map(n=>n.id));
-  const edges   = _helixAllEdges.filter(e=>nodeIds.has(e.winner)&&nodeIds.has(e.loser));
-  nodes = nodes.map(n=>({...n}));
-  const nodeMap = Object.fromEntries(nodes.map(n=>[n.id,n]));
-  const links   = edges.map(e=>({
-    source:nodeMap[e.winner], target:nodeMap[e.loser],
-    weight:e.weight, count:e.count,
-    method:e.bouts&&e.bouts[0]?e.bouts[0].method:''
-  })).filter(l=>l.source&&l.target);
-
-  const wrap = document.getElementById('helix-graph-wrap');
-  const W = wrap.clientWidth||900, H = wrap.clientHeight||700;
-  const svgEl = d3.select('#helix-svg').attr('viewBox','0 0 '+W+' '+H).style('background','#09090d');
-  svgEl.selectAll('*').remove();
-
-  helixAddArrows(svgEl,'c');
-  const g = svgEl.append('g');
-  helixSetZoom(svgEl, g);
-
-  const sim = d3.forceSimulation(nodes)
-    .force('link',d3.forceLink(links).id(d=>d.id).distance(d=>60-d.weight*7).strength(0.55))
-    .force('charge',d3.forceManyBody().strength(d=>-80-d.pr*0.6))
-    .force('center',d3.forceCenter(W/2,H/2))
-    .force('collision',d3.forceCollide().radius(d=>helixNodeR(d,null)+4))
-    .alphaMin(0.005);
-
-  const link = helixDrawLinks(g, links, 'c');
-
-  const node = g.append('g').selectAll('circle').data(nodes).join('circle')
-    .attr('r',d=>helixNodeR(d,null))
-    .attr('fill',d=>helixNodeColor(d))
-    .attr('stroke',d=>helixNodeStroke(d,null))
-    .attr('stroke-width',1)
-    .attr('opacity',d=>d.tier==='unranked'?0.5:0.88)
-    .style('cursor','pointer')
-    .on('click',(event,d)=>{ event.stopPropagation(); _helixSelected=d.id; helixShowPanel(d.id); })
-    .on('dblclick',(event,d)=>{ event.stopPropagation(); helixFocusOn(d.id); })
-    .call(d3.drag()
-      .on('start',(e,d)=>{ if(!e.active)sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
-      .on('drag', (e,d)=>{ d.fx=e.x; d.fy=e.y; })
-      .on('end',  (e,d)=>{ if(!e.active)sim.alphaTarget(0); d.fx=null; d.fy=null; }));
-
-  helixAddTooltip(node, null);
-
-  // Labels for all nodes (community is small enough)
-  const labels = g.append('g').selectAll('text').data(nodes).join('text')
-    .attr('font-family','Barlow Condensed,sans-serif')
-    .attr('font-size',d=>d.pr>=60?10:8)
-    .attr('fill',d=>d.pr>=80?'#c9a96e':d.tier==='unranked'?'#3a3748':'#6e6a7c')
-    .attr('text-anchor','middle').attr('dy','2em').attr('pointer-events','none')
-    .text(d=>d.id.split(' ').pop());
-
-  sim.on('tick',()=>{
-    link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
-    node.attr('cx',d=>d.x).attr('cy',d=>d.y);
-    labels.attr('x',d=>d.x).attr('y',d=>d.y);
+    row.appendChild(num);
+    row.appendChild(dot);
+    row.appendChild(name);
+    row.appendChild(score);
+    list.appendChild(row);
   });
-
-  sim.on('end',()=>{
-    // zoom-to-fit
-    const pad=50;
-    const xs=nodes.map(n=>n.x).filter(v=>v!=null&&isFinite(v));
-    const ys=nodes.map(n=>n.y).filter(v=>v!=null&&isFinite(v));
-    if(xs.length){
-      const x0=Math.min(...xs)-pad, x1=Math.max(...xs)+pad;
-      const y0=Math.min(...ys)-pad, y1=Math.max(...ys)+pad;
-      const scale=Math.min(0.92,Math.min(W/(x1-x0),H/(y1-y0)));
-      const tx=(W-scale*(x0+x1))/2, ty=(H-scale*(y0+y1))/2;
-      window._helixSvgEl.transition().duration(400)
-        .call(window._helixZoom.transform,d3.zoomIdentity.translate(tx,ty).scale(scale));
-    }
-    document.getElementById('helix-loading').style.display='none';
-  });
-  setTimeout(()=>{ document.getElementById('helix-loading').style.display='none'; },4000);
-  svgEl.on('click',()=>{ const tt=document.getElementById('helix-tt'); if(tt)tt.style.display='none'; });
 }
 
 // ── LOCAL MODE: focus on fighter ──
 async function helixFocusOn(name){
   _helixMode   = 'local';
   _helixCenter = name;
-  _helixShowAll = false;  // 每次 focus 重設為 ranked only
+  _helixShowAll = false;
   _helixSelected = name;
+  helixHidePRRanking();
 
   const loading = document.getElementById('helix-loading');
   loading.style.display = 'flex';
@@ -3690,8 +3617,8 @@ function helixGoFull(){
   _helixCenter  = null;
   _helixShowAll = false;
   _helixSelected = null;
-  helixClearPanel();
   helixUpdateHint();
+  helixShowPRRanking();
   helixRenderFull();
 }
 
@@ -3829,7 +3756,7 @@ function helixAddTooltip(node, centerName){
 function helixUpdateHint(){
   const hint = document.getElementById('helix-hint');
   if(!hint) return;
-  if(_helixMode==='local'||_helixMode==='community'){
+  if(_helixMode==='local'){
     hint.style.display='block';
     const modeSpan = hint.querySelector('.hint-mode');
     if(modeSpan) modeSpan.textContent = _helixShowAll ? 'ALL' : 'RANKED';
@@ -3894,7 +3821,7 @@ async function helixShowPanel(name){
     (function(){
       const comm = fn.community;
       const allN = window._helixAllNodes||[];
-      const TIER_W = {'champion':3,'former_champion':3,'ever_ranked':2,'unranked':1};
+      const TIER_W = {'champion':4,'former_champion':3,'ever_ranked':2,'unranked':1};
       const peers = allN.filter(n=>n.community===comm);
       peers.sort((a,b)=>{
         const tw = (TIER_W[b.tier]||0)-(TIER_W[a.tier]||0);
@@ -3933,7 +3860,7 @@ function helixClearPanel(){
   window.bPipClick=bPipClick;
   window.bSubmit=bSubmit;
   window.helixGoFull=helixGoFull;
-  window.helixEnterCommunity=helixEnterCommunity;
+  window.helixShowPRRanking=helixShowPRRanking;
   // expose for community lookup
   Object.defineProperty(window,'_helixAllNodes',{get:()=>_helixAllNodes});
 }
