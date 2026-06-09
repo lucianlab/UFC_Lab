@@ -58,27 +58,34 @@ body {
 
 /* ─── HEADER ─── */
 #header {
-  padding: 0 28px;
+  padding: 0;
   height: 64px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 0;
   flex-shrink: 0;
   position: relative;
   z-index: 50;
 }
 
-/* Title block */
+/* Title block — fixed width so divider never moves */
 .header-brand {
+  width: 240px;
+  flex-shrink: 0;
+  flex-grow: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 0 24px;
+  border-right: 1px solid var(--border);
+}
+.brand-text {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-right: 28px;
-  border-right: 1px solid var(--border);
-  height: 100%;
-  flex-shrink: 0;
 }
 
 #header h1 {
@@ -1301,8 +1308,21 @@ body {
 
 <div id="header">
   <div class="header-brand">
-    <h1>UFC Lab</h1>
-    <span id="header-sub">3-axis style space</span>
+    <svg width="34" height="34" viewBox="0 0 280 280" style="flex-shrink:0">
+      <polygon points="94,26 186,26 254,94 254,186 186,254 94,254 26,186 26,94"
+        stroke="#c9a96e" stroke-width="6" fill="none" stroke-linejoin="round"/>
+      <polygon points="94,26 94,159 140,140" fill="#c9a96e"/>
+      <polygon points="94,159 186,254 94,254" fill="#c9a96e"/>
+      <line stroke="#ffffff" stroke-width="6" stroke-linecap="round" x1="94" y1="26" x2="94" y2="254"/>
+      <line stroke="#ffffff" stroke-width="6" stroke-linecap="round" x1="94" y1="254" x2="186" y2="254"/>
+      <line stroke="#ffffff" stroke-width="6" stroke-linecap="round" x1="94" y1="26" x2="186" y2="254"/>
+      <line stroke="#ffffff" stroke-width="6" stroke-linecap="round" x1="26" y1="186" x2="254" y2="94"/>
+      <line stroke="#ffffff" stroke-width="6" stroke-linecap="round" x1="186" y1="254" x2="94" y2="159"/>
+    </svg>
+    <div class="brand-text">
+      <h1>UFC Lab</h1>
+      <span id="header-sub">3-axis style space</span>
+    </div>
   </div>
 
   <div id="mode-toggle">
