@@ -212,6 +212,21 @@ body {
 }
 #theme-toggle:hover { opacity: 1; }
 #theme-toggle.nebula { color: #c77dff; opacity: 0.7; }
+#helix-theme-toggle {
+  position: absolute; top: 12px; right: 14px;
+  font-size: 16px; color: var(--text-lo); cursor: pointer;
+  z-index: 10; opacity: 0.35; transition: opacity 0.2s, color 0.2s;
+  user-select: none; line-height: 1;
+}
+#helix-theme-toggle:hover { opacity: 1; }
+#helix-theme-toggle.nebula { color: #c77dff; opacity: 0.7; }
+#helix-theme-label {
+  position: absolute; bottom: 14px; left: 16px;
+  font-family: 'Cormorant Garamond', serif; font-size: 10px;
+  letter-spacing: 0.22em; color: var(--text-hi);
+  opacity: 0.12; z-index: 10; user-select: none;
+  pointer-events: none; transition: opacity 0.4s;
+}
 
 #theme-label {
   position: absolute;
@@ -1585,6 +1600,8 @@ body {
       <div id="helix-hint" style="position:absolute;bottom:16px;left:20px;font-family:DM Mono,monospace;font-size:8px;color:#3a3748;letter-spacing:0.10em;pointer-events:none;line-height:1.9;display:none">
         SPACE &nbsp;<span class="hint-mode">RANKED</span> / ALL
       </div>
+      <div id="helix-theme-toggle" title="Switch theme">&#x22C9;</div>
+      <div id="helix-theme-label">CLASSIC</div>
     </div>
     <div id="helix-panel">
       <div id="helix-panel-head">
@@ -1934,8 +1951,8 @@ const themeBtn  = document.getElementById('theme-toggle');
 const themeLabel= document.getElementById('theme-label');
 const plotEl    = document.getElementById('plot');
 
-themeBtn.addEventListener('click',()=>{
-  isNebula = !isNebula;
+function applyTheme(){
+  // Universe
   themeBtn.classList.toggle('nebula', isNebula);
   themeLabel.textContent = isNebula ? 'STAR' : 'CLASSIC';
   plotEl.style.transition = 'opacity 0.3s';
@@ -1947,11 +1964,22 @@ themeBtn.addEventListener('click',()=>{
       Plotly.react('plot',[...univTraces,hlTrace],univLayout,{responsive:true,displayModeBar:false});
       updateTierIcons();
       applyFilters();
-    } catch(e) {
-      console.error('theme toggle error:', e);
-    }
+    } catch(e) { console.error('theme toggle error:', e); }
     plotEl.style.opacity = '1';
   }, 300);
+  // HELIX sync
+  const hBtn   = document.getElementById('helix-theme-toggle');
+  const hLabel = document.getElementById('helix-theme-label');
+  if(hBtn)   hBtn.classList.toggle('nebula', isNebula);
+  if(hLabel) hLabel.textContent = isNebula ? 'STAR' : 'CLASSIC';
+  // Re-render HELIX if active
+  const helixActive = document.getElementById('helix-mode').classList.contains('active');
+  if(helixActive) helixRefreshTheme();
+}
+
+themeBtn.addEventListener('click',()=>{
+  isNebula = !isNebula;
+  applyTheme();
 });
 
 function updateTierIcons(){
@@ -3373,15 +3401,43 @@ let _helixLocalEdgesRaw = null; // local 模式原始 edges
 const HELIX_DEFAULT = 'Charles Oliveira';
 
 // ── Color / size helpers ──
+function helixEdgeColor(method){
+  if(isNebula){
+    if(method&&method.includes('KO'))  return 'rgba(220,80,180,0.45)';
+    if(method&&method.includes('Sub')) return 'rgba(80,180,220,0.45)';
+    return 'rgba(100,60,160,0.3)';
+  }
+  if(method&&method.includes('KO'))  return 'rgba(184,48,64,0.45)';
+  if(method&&method.includes('Sub')) return 'rgba(42,80,144,0.45)';
+  return 'rgba(80,80,100,0.25)';
+}
+function helixArrowColor(method){
+  if(isNebula){
+    if(method&&method.includes('KO'))  return 'rgba(220,80,180,0.7)';
+    if(method&&method.includes('Sub')) return 'rgba(80,180,220,0.7)';
+    return 'rgba(100,60,160,0.5)';
+  }
+  if(method&&method.includes('KO'))  return 'rgba(184,48,64,0.7)';
+  if(method&&method.includes('Sub')) return 'rgba(42,80,144,0.7)';
+  return 'rgba(100,100,120,0.5)';
+}
+
 function helixNodeColor(d){
-  if(d.tier==='champion')        return '#FFD700';
-  if(d.tier==='former_champion') return '#C0A060';
-  if(d.tier==='ever_ranked')     return '#9a9a9a';
-  return '#2a2a3a';
+  const t = d.tier==='ever_ranked' ? 'ranked' :
+            d.tier==='former_champion' ? 'ex_champion' :
+            d.tier||'unranked';
+  const colors = isNebula ? NEBULA_COLORS : CLASSIC_COLORS;
+  return colors[t] || (isNebula ? '#1e1440' : '#2a2a3a');
 }
 function helixNodeStroke(d, centerName){
-  if(d.id===_helixSelected)      return '#c9a96e';
-  if(centerName && d.id===centerName) return '#c9a96e';
+  if(d.id===_helixSelected)           return isNebula ? '#e8f0ff' : '#c9a96e';
+  if(centerName && d.id===centerName) return isNebula ? '#e8f0ff' : '#c9a96e';
+  if(isNebula){
+    if(d.tier==='champion')        return 'rgba(232,240,255,0.6)';
+    if(d.tier==='former_champion') return 'rgba(232,197,106,0.4)';
+    if(d.tier==='ever_ranked')     return 'rgba(176,138,223,0.25)';
+    return 'transparent';
+  }
   if(d.tier==='champion')        return 'rgba(255,215,0,0.55)';
   if(d.tier==='former_champion') return 'rgba(192,160,96,0.35)';
   if(d.tier==='ever_ranked')     return 'rgba(154,154,154,0.15)';
@@ -3844,7 +3900,7 @@ function helixRenderFull(){
 // ── Shared helpers ──
 function helixAddArrows(svgEl, suffix){
   const defs = svgEl.append('defs');
-  [['ko'+suffix,'rgba(184,48,64,0.7)'],['sub'+suffix,'rgba(42,80,144,0.7)'],['dec'+suffix,'rgba(100,100,120,0.5)']].forEach(([id,fill])=>{
+  [['ko'+suffix, helixArrowColor('KO')],['sub'+suffix, helixArrowColor('Sub')],['dec'+suffix, helixArrowColor('')]].forEach(([id,fill])=>{
     defs.append('marker').attr('id','arrow-'+id).attr('viewBox','0 -4 8 8')
       .attr('refX',16).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
       .append('path').attr('d','M0,-4L8,0L0,4').attr('fill',fill);
@@ -3857,7 +3913,7 @@ function helixSetZoom(svgEl, g){
 }
 function helixDrawLinks(g, links, suffix){
   return g.append('g').selectAll('line').data(links).join('line')
-    .attr('stroke',d=>d.method.includes('KO')?'rgba(184,48,64,0.45)':d.method.includes('Sub')?'rgba(42,80,144,0.45)':'rgba(80,80,100,0.25)')
+    .attr('stroke',d=>helixEdgeColor(d.method))
     .attr('stroke-width',d=>Math.min(2.5,0.6+d.weight*0.3))
     .attr('marker-end',d=>d.method.includes('KO')?'url(#arrow-ko'+suffix+')':d.method.includes('Sub')?'url(#arrow-sub'+suffix+')':'url(#arrow-dec'+suffix+')');
 }
@@ -3977,6 +4033,24 @@ function helixClearPanel(){
   document.getElementById('helix-empty').style.display='flex';
   document.getElementById('helix-fighter-detail').style.display='none';
   document.getElementById('helix-fighter-detail').textContent='';
+}
+
+
+// HELIX theme toggle（連動 Universe）
+const helixThemeBtn   = document.getElementById('helix-theme-toggle');
+const helixThemeLabel = document.getElementById('helix-theme-label');
+if(helixThemeBtn){
+  helixThemeBtn.addEventListener('click',()=>{
+    isNebula = !isNebula;
+    applyTheme();
+  });
+}
+
+function helixRefreshTheme(){
+  // 重新渲染目前的 HELIX 視圖
+  if(_helixMode==='local'&&_helixLocalRaw)         helixRenderLocal();
+  else if(_helixMode==='community'&&_helixCommId!=null) helixRenderCommunity();
+  else if(_helixMode==='full')                      helixRenderFull();
 }
 
   window.setMode=setMode;
