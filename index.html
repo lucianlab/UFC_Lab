@@ -221,7 +221,7 @@ body {
 #helix-theme-toggle:hover { opacity: 1; }
 #helix-theme-toggle.nebula { color: #c77dff; opacity: 0.7; }
 #helix-theme-label {
-  position: absolute; bottom: 14px; left: 16px;
+  position: absolute; bottom: 14px; right: 16px;
   font-family: 'Cormorant Garamond', serif; font-size: 10px;
   letter-spacing: 0.22em; color: var(--text-hi);
   opacity: 0.12; z-index: 10; user-select: none;
@@ -1600,7 +1600,7 @@ body {
       <div id="helix-hint" style="position:absolute;bottom:16px;left:20px;font-family:DM Mono,monospace;font-size:8px;color:#3a3748;letter-spacing:0.10em;pointer-events:none;line-height:1.9;display:none">
         SPACE &nbsp;<span class="hint-mode">RANKED</span> / ALL
       </div>
-      <div id="helix-theme-toggle" title="Switch theme">&#x22C9;</div>
+      <div id="helix-theme-toggle" title="Switch theme">⊹</div>
       <div id="helix-theme-label">CLASSIC</div>
     </div>
     <div id="helix-panel">
@@ -1610,13 +1610,13 @@ body {
           <div id="helix-ac"></div>
         </div>
         <div id="helix-legend">
-          <div class="helix-leg-item"><div class="helix-leg-dot" style="background:#FFD700"></div>Champion</div>
-          <div class="helix-leg-item"><div class="helix-leg-dot" style="background:#C0A060"></div>Former Champ</div>
-          <div class="helix-leg-item"><div class="helix-leg-dot" style="background:#9a9a9a"></div>Ever Ranked</div>
-          <div class="helix-leg-item"><div class="helix-leg-dot" style="background:#2a2a3a;border:1px solid #3a3a4a"></div>Unranked</div>
-          <div class="helix-leg-item"><div style="width:20px;height:2px;background:rgba(184,48,64,0.7);margin-right:2px"></div>KO</div>
-          <div class="helix-leg-item"><div style="width:20px;height:2px;background:rgba(42,80,144,0.7);margin-right:2px"></div>Sub</div>
-          <div class="helix-leg-item"><div style="width:20px;height:2px;background:rgba(80,80,100,0.6);margin-right:2px"></div>Dec</div>
+          <div class="helix-leg-item"><div class="helix-leg-dot" id="hleg-champ" data-classic="#FFD700" data-nebula="#e8f0ff" style="background:#FFD700"></div>Champion</div>
+          <div class="helix-leg-item"><div class="helix-leg-dot" id="hleg-former" data-classic="#C0A060" data-nebula="#e8c56a" style="background:#C0A060"></div>Former Champ</div>
+          <div class="helix-leg-item"><div class="helix-leg-dot" id="hleg-ranked" data-classic="#9a9a9a" data-nebula="#b08adf" style="background:#9a9a9a"></div>Ever Ranked</div>
+          <div class="helix-leg-item"><div class="helix-leg-dot" id="hleg-unrank" data-classic="#2a2a3a" data-nebula="#1e1440" style="background:#2a2a3a;border:1px solid #3a3a4a"></div>Unranked</div>
+          <div class="helix-leg-item"><div id="hleg-ko" data-classic="rgba(184,48,64,0.7)" data-nebula="rgba(220,80,180,0.7)" style="width:20px;height:2px;background:rgba(184,48,64,0.7);margin-right:2px"></div>KO</div>
+          <div class="helix-leg-item"><div id="hleg-sub" data-classic="rgba(42,80,144,0.7)" data-nebula="rgba(80,180,220,0.7)" style="width:20px;height:2px;background:rgba(42,80,144,0.7);margin-right:2px"></div>Sub</div>
+          <div class="helix-leg-item"><div id="hleg-dec" data-classic="rgba(80,80,100,0.6)" data-nebula="rgba(100,60,160,0.5)" style="width:20px;height:2px;background:rgba(80,80,100,0.6);margin-right:2px"></div>Dec</div>
         </div>
         <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
           <div onclick="helixGoFull()" style="font-family:DM Mono,monospace;font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-lo);cursor:pointer;padding:5px 0;transition:color 0.15s" onmouseover="this.style.color='var(--champagne)'" onmouseout="this.style.color='var(--text-lo)'">&#x2B21; Full Graph</div>
@@ -2681,6 +2681,11 @@ function setMode(mode){
     if(helixEl) helixEl.classList.add('active');
     searchWrap.style.display='none';
     document.getElementById('header-sub').textContent='HELIX · Style Network & PageRank';
+    // sync theme state
+    const hBtn2=document.getElementById('helix-theme-toggle');
+    const hLbl2=document.getElementById('helix-theme-label');
+    if(hBtn2) hBtn2.classList.toggle('nebula', isNebula);
+    if(hLbl2) hLbl2.textContent = isNebula ? 'STAR' : 'CLASSIC';
     helixInit();
   }
 }
@@ -4046,11 +4051,30 @@ if(helixThemeBtn){
   });
 }
 
+function helixUpdateLegend(){
+  const ids = {
+    'hleg-champ':  true,
+    'hleg-former': true,
+    'hleg-ranked': true,
+    'hleg-unrank': true,
+    'hleg-ko':     false,
+    'hleg-sub':    false,
+    'hleg-dec':    false,
+  };
+  Object.keys(ids).forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    const val = isNebula ? el.dataset.nebula : el.dataset.classic;
+    el.style.background = val;
+  });
+}
+
 function helixRefreshTheme(){
+  helixUpdateLegend();
   // 重新渲染目前的 HELIX 視圖
-  if(_helixMode==='local'&&_helixLocalRaw)         helixRenderLocal();
+  if(_helixMode==='local'&&_helixLocalRaw)              helixRenderLocal();
   else if(_helixMode==='community'&&_helixCommId!=null) helixRenderCommunity();
-  else if(_helixMode==='full')                      helixRenderFull();
+  else if(_helixMode==='full')                          helixRenderFull();
 }
 
   window.setMode=setMode;
