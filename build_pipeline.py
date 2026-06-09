@@ -240,31 +240,71 @@ for wc, grp in Zsim.groupby('wc'):
 data['similar'] = data['name'].map(similar_map)
 
 # ══════════════════════════════════════════════════════════════════════════
-print("=== 7. Tier（冠軍 / 前冠軍 / 排名）===")
+print("=== 7. Tier（冠軍 / 前冠軍 / 曾排名 / 未排名）===")
 champ_hist = pd.read_csv(CHAMP, encoding='utf-8-sig')
-rank = pd.read_csv(RANK, encoding='utf-8-sig')
+rank = pd.read_csv(RANK, encoding='utf-8-sig')  # 現役排名（冠軍判斷用）
+
+# 歷史排名（曾出現在排名的選手）
+RANK_HIST_CANDIDATES = [
+    "data/clean/rankings_history.csv",
+    "data/raw/rankings_history.csv",
+    "rankings_history.csv",
+]
+rank_hist_path = None
+for p in RANK_HIST_CANDIDATES:
+    if __import__('os').path.exists(p):
+        rank_hist_path = p
+        break
+if rank_hist_path:
+    rank_hist = pd.read_csv(rank_hist_path)
+    print(f"  歷史排名: {rank_hist_path} ({len(rank_hist):,} rows)")
+else:
+    rank_hist = rank  # fallback: 用現役排名
+    print("  WARNING: rankings_history.csv 找不到，用現役排名代替")
 
 import unicodedata as _ud
 def _norm(s):
     return _ud.normalize('NFKD', str(s)).encode('ascii','ignore').decode().strip().lower()
 
+# 現任冠軍
 current = set(_norm(n) for n in rank.loc[rank['is_champion'].astype(str).str.strip().str.lower() == 'yes', 'fighter'].dropna())
 if 'incumbent' in champ_hist.columns:
     inc = champ_hist['incumbent'].astype(str).str.lower().isin(['true','1'])
     current |= set(_norm(n) for n in champ_hist.loc[inc, 'champion'].dropna())
-ever    = set(_norm(n) for n in champ_hist['champion'].dropna())
-ex      = ever - current
-ranked  = set(_norm(n) for n in rank['fighter'].dropna()) - current - ex
+
+# 前冠軍
+ever = set(_norm(n) for n in champ_hist['champion'].dropna())
+ex   = ever - current
+
+# 曾排名（歷史排名去除冠軍）
+ever_ranked = set(_norm(n) for n in rank_hist['fighter'].dropna()) - current - ex
 
 def tier_of(name):
     n = _norm(name)
-    if n in current: return 'champion'
-    if n in ex:      return 'ex_champion'
-    if n in ranked:  return 'ranked'
+    if n in current:     return 'champion'
+    if n in ex:          return 'ex_champion'
+    if n in ever_ranked: return 'ranked'
     return ''
 data['tier'] = data['name'].map(tier_of)
+print("  tier 分布:", {k: int((data['tier']==k).sum()) for k in ['champion','ex_champion','ranked','']})
 
 # ══════════════════════════════════════════════════════════════════════════
+
+# ── Archetype（八象限命名，X+=Grappler X-=Striker Y+=Finisher Y-=Decision Z+=High-Output Z-=Patient）──
+ARCHETYPE = {
+    (1,1,1): 'Submission Hunter',   # Grappler · Finisher · High-Output
+    (1,1,0): 'Trap Hunter',         # Grappler · Finisher · Patient
+    (1,0,1): 'Chain Controller',    # Grappler · Decision · High-Output
+    (1,0,0): 'Position Controller', # Grappler · Decision · Patient
+    (0,1,1): 'Pressure Swarm',      # Striker  · Finisher · High-Output
+    (0,1,0): 'Power Sniper',        # Striker  · Finisher · Patient
+    (0,0,1): 'Pace Setter',         # Striker  · Decision · High-Output
+    (0,0,0): 'Range Technician',    # Striker  · Decision · Patient
+}
+def get_archetype(x, y, z):
+    return ARCHETYPE[(1 if x>0 else 0, 1 if y>0 else 0, 1 if z>0 else 0)]
+data['archetype'] = data.apply(lambda r: get_archetype(r['x'], r['y'], r['z']), axis=1)
+
 print("=== 8. 輸出 ===")
 os.makedirs(os.path.dirname(OUT_VECTORS), exist_ok=True)
 os.makedirs(os.path.dirname(OUT_JSON) or '.', exist_ok=True)
@@ -294,6 +334,7 @@ for _, r in data.iterrows():
         "ctrl_per_r": num(r['ctrl_per_r'], 1),
         "gas_tank": num(r['gas_tank'], 3) if pd.notna(r['gas_tank']) else 1.0,
         "tier": r['tier'],
+        "archetype": r['archetype'],
         "str_def": num(r['str_def'], 3),
         "td_def": num(r['td_def'], 3),
     })
