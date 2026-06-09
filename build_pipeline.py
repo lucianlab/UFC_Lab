@@ -240,50 +240,27 @@ for wc, grp in Zsim.groupby('wc'):
 data['similar'] = data['name'].map(similar_map)
 
 # ══════════════════════════════════════════════════════════════════════════
-print("=== 7. Tier（冠軍 / 前冠軍 / 曾排名 / 未排名）===")
+print("=== 7. Tier（冠軍 / 前冠軍 / 現役排名）===")
 champ_hist = pd.read_csv(CHAMP, encoding='utf-8-sig')
-rank = pd.read_csv(RANK, encoding='utf-8-sig')  # 現役排名（冠軍判斷用）
-
-# 歷史排名（曾出現在排名的選手）
-RANK_HIST_CANDIDATES = [
-    "data/clean/rankings_history.csv",
-    "data/raw/rankings_history.csv",
-    "rankings_history.csv",
-]
-rank_hist_path = None
-for p in RANK_HIST_CANDIDATES:
-    if __import__('os').path.exists(p):
-        rank_hist_path = p
-        break
-if rank_hist_path:
-    rank_hist = pd.read_csv(rank_hist_path)
-    print(f"  歷史排名: {rank_hist_path} ({len(rank_hist):,} rows)")
-else:
-    rank_hist = rank  # fallback: 用現役排名
-    print("  WARNING: rankings_history.csv 找不到，用現役排名代替")
+rank = pd.read_csv(RANK, encoding='utf-8-sig')
 
 import unicodedata as _ud
 def _norm(s):
     return _ud.normalize('NFKD', str(s)).encode('ascii','ignore').decode().strip().lower()
 
-# 現任冠軍
 current = set(_norm(n) for n in rank.loc[rank['is_champion'].astype(str).str.strip().str.lower() == 'yes', 'fighter'].dropna())
 if 'incumbent' in champ_hist.columns:
     inc = champ_hist['incumbent'].astype(str).str.lower().isin(['true','1'])
     current |= set(_norm(n) for n in champ_hist.loc[inc, 'champion'].dropna())
-
-# 前冠軍
-ever = set(_norm(n) for n in champ_hist['champion'].dropna())
-ex   = ever - current
-
-# 曾排名（歷史排名去除冠軍）
-ever_ranked = set(_norm(n) for n in rank_hist['fighter'].dropna()) - current - ex
+ever   = set(_norm(n) for n in champ_hist['champion'].dropna())
+ex     = ever - current
+ranked = set(_norm(n) for n in rank['fighter'].dropna()) - current - ex
 
 def tier_of(name):
     n = _norm(name)
-    if n in current:     return 'champion'
-    if n in ex:          return 'ex_champion'
-    if n in ever_ranked: return 'ranked'
+    if n in current: return 'champion'
+    if n in ex:      return 'ex_champion'
+    if n in ranked:  return 'ranked'
     return ''
 data['tier'] = data['name'].map(tier_of)
 print("  tier 分布:", {k: int((data['tier']==k).sum()) for k in ['champion','ex_champion','ranked','']})
