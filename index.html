@@ -3404,7 +3404,7 @@ let _helixCommId   = null;
 
 function helixBuildCommPicker(){
   if(!_helixAllNodes) return;
-  const TIER_W = {'champion':4,'former_champion':3,'ever_ranked':2,'unranked':1};
+  const TIER_W = {'champion':3,'former_champion':3,'ever_ranked':2,'unranked':1};
 
   // 按 community 分組
   const groups = {};
@@ -3894,7 +3894,7 @@ async function helixShowPanel(name){
     (function(){
       const comm = fn.community;
       const allN = window._helixAllNodes||[];
-      const TIER_W = {'champion':4,'former_champion':3,'ever_ranked':2,'unranked':1};
+      const TIER_W = {'champion':3,'former_champion':3,'ever_ranked':2,'unranked':1};
       const peers = allN.filter(n=>n.community===comm);
       peers.sort((a,b)=>{
         const tw = (TIER_W[b.tier]||0)-(TIER_W[a.tier]||0);
