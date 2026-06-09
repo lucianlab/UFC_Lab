@@ -1937,7 +1937,7 @@ const plotEl    = document.getElementById('plot');
 themeBtn.addEventListener('click',()=>{
   isNebula = !isNebula;
   themeBtn.classList.toggle('nebula', isNebula);
-  themeLabel.textContent = isNebula ? 'NEBULA' : 'CLASSIC';
+  themeLabel.textContent = isNebula ? 'STAR' : 'CLASSIC';
   plotEl.style.transition = 'opacity 0.3s';
   plotEl.style.opacity = '0';
   setTimeout(()=>{
@@ -1946,6 +1946,7 @@ themeBtn.addEventListener('click',()=>{
       rebuildTraces();
       Plotly.react('plot',[...univTraces,hlTrace],univLayout,{responsive:true,displayModeBar:false});
       updateTierIcons();
+      applyFilters();
     } catch(e) {
       console.error('theme toggle error:', e);
     }
