@@ -13,12 +13,6 @@
    UFC FIGHTER UNIVERSE v7 — Luxury Data Laboratory
    Palette: Obsidian · Champagne · Crimson · Slate
 ═══════════════════════════════════════════════════════ */
-/* ─── Custom Scrollbar ─── */
-::-webkit-scrollbar { width: 2px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--text-lo); border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-md); }
-
 :root {
   --obsidian:    #09090d;
   --surface:     #0e0e14;
@@ -264,7 +258,7 @@ body {
 
 /* ─── UNIVERSE SIDEBAR ─── */
 #sidebar {
-  width: 280px;
+  width: 272px;
   flex-shrink: 0;
   border-left: 1px solid var(--border);
   background: var(--surface);
@@ -464,6 +458,22 @@ body {
   flex-direction: column; overflow: hidden;
 }
 #vs-mode.active { display: flex; }
+
+/* ─── Matchup entrance effects ─── */
+@keyframes glow-red {
+  0%   { box-shadow: inset 0 0 0 0 rgba(184,48,64,0); }
+  35%  { box-shadow: inset 0 0 18px 2px rgba(184,48,64,0.45); }
+  100% { box-shadow: inset 0 0 0 0 rgba(184,48,64,0); }
+}
+@keyframes glow-blue {
+  0%   { box-shadow: inset 0 0 0 0 rgba(42,80,144,0); }
+  35%  { box-shadow: inset 0 0 18px 2px rgba(42,80,144,0.45); }
+  100% { box-shadow: inset 0 0 0 0 rgba(42,80,144,0); }
+}
+.glow-red  { animation: glow-red  0.55s ease-out forwards; }
+.glow-blue { animation: glow-blue 0.55s ease-out forwards; }
+
+/* Win bar transition set dynamically in JS */
 
 /* Pickers bar */
 #vs-pickers {
@@ -1350,7 +1360,6 @@ body {
   <div id="plot">
     <div id="theme-toggle" title="Switch theme">⊹</div>
     <div id="theme-label">CLASSIC</div>
-    <div id="universe-hint" style="position:absolute;bottom:16px;right:20px;font-family:'DM Mono',monospace;font-size:8px;color:#3a3748;letter-spacing:0.10em;pointer-events:none;text-align:right">SPACE &nbsp;reset view</div>
   </div>
   <div id="sidebar">
     <div id="search-wrap">
@@ -2204,6 +2213,10 @@ function selectVsFighter(side, name){
   // Update picker UI
   const picker=document.getElementById(`picker-${side}`);
   picker.classList.add('filled',`filled-${side}`);
+  // Entrance glow — remove first to allow re-trigger
+  picker.classList.remove('glow-red','glow-blue');
+  void picker.offsetWidth;
+  picker.classList.add(side==='red'?'glow-red':'glow-blue');
   document.getElementById(`picker-${side}-name`).textContent=f.name;
   const wld2=(f.wins!=null)?`${f.wins}-${f.losses??0}-${f.draws??0}`:`${f.n_fights} fights`;
   document.getElementById(`picker-${side}-wc`).textContent=`${f.wc||''} · ${wld2}`;
@@ -2575,8 +2588,16 @@ async function runVsAnalysis() {
       const bPct = Math.round(data.blue_win_prob * 100);
       document.getElementById('vs-prob-red-pct').textContent  = rPct + '%';
       document.getElementById('vs-prob-blue-pct').textContent = bPct + '%';
-      document.getElementById('vs-prob-bar-red').style.width  = rPct + '%';
-      document.getElementById('vs-prob-bar-blue').style.width = bPct + '%';
+      const barRed  = document.getElementById('vs-prob-bar-red');
+      const barBlue = document.getElementById('vs-prob-bar-blue');
+      const curRed  = parseFloat(barRed.style.width) || 50;
+      const delta   = Math.abs(rPct - curRed);
+      const dur     = Math.max(0.15, (delta / 50)).toFixed(2) + 's';
+      const ease    = 'cubic-bezier(0.25,0.46,0.45,0.94)';
+      barRed.style.transition  = 'width ' + dur + ' ' + ease;
+      barBlue.style.transition = 'width ' + dur + ' ' + ease;
+      barRed.style.width  = rPct + '%';
+      barBlue.style.width = bPct + '%';
 
       // Finish probability (ML)
       const mp = data.method_probs;
