@@ -13,6 +13,12 @@
    UFC FIGHTER UNIVERSE v7 — Luxury Data Laboratory
    Palette: Obsidian · Champagne · Crimson · Slate
 ═══════════════════════════════════════════════════════ */
+/* ─── Custom Scrollbar ─── */
+::-webkit-scrollbar { width: 1px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-lo); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-md); }
+
 :root {
   --obsidian:    #09090d;
   --surface:     #0e0e14;
@@ -1360,6 +1366,7 @@ body {
   <div id="plot">
     <div id="theme-toggle" title="Switch theme">⊹</div>
     <div id="theme-label">CLASSIC</div>
+    <div id="universe-hint" style="position:absolute;bottom:16px;right:20px;font-family:'DM Mono',monospace;font-size:8px;color:#3a3748;letter-spacing:0.10em;pointer-events:none;text-align:right">SPACE &nbsp;reset view</div>
   </div>
   <div id="sidebar">
     <div id="search-wrap">
