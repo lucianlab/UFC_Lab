@@ -1657,7 +1657,7 @@ body {
           <div class="helix-leg-item"><div id="hleg-sub" data-classic="rgba(42,80,144,0.7)" data-nebula="rgba(80,180,220,0.7)" style="width:20px;height:2px;background:rgba(42,80,144,0.7);margin-right:2px"></div>Sub</div>
           <div class="helix-leg-item"><div id="hleg-dec" data-classic="rgba(80,80,100,0.6)" data-nebula="rgba(100,60,160,0.5)" style="width:20px;height:2px;background:rgba(80,80,100,0.6);margin-right:2px"></div>Dec</div>
         </div>
-        <div style="padding-top:8px;border-top:1px solid var(--border)">
+        <div style="margin-top:10px;padding-top:0;border-top:1px solid var(--border)">
           <div class="helix-action-btn" onclick="helixGoFull()">Full Graph</div>
           <div id="helix-comm-picker" style="display:none">
             <div class="helix-action-btn" onclick="helixEnterCommunity()" style="justify-content:flex-start">
@@ -1827,7 +1827,7 @@ function selectFighter(name){
   const f=nameToFighter[name]; if(!f)return;
   document.getElementById('fighter-card').style.display='block';
   document.getElementById('no-selection').style.display='none';
-  document.getElementById('sidebar').style.paddingTop='20px';
+  document.getElementById('fighter-card').style.marginTop='20px';
     document.getElementById('sidebar').style.overflowY='auto';
   const nameEl=document.getElementById('fighter-name');
   nameEl.textContent=f.name;
@@ -1919,7 +1919,7 @@ function applyFilters(){
 }
 const allBtn=document.createElement('div');
 allBtn.id='legend-all'; allBtn.className='active-filter'; allBtn.textContent='ALL';
-allBtn.addEventListener('click',()=>{ activeWC=null; activeTier=null; applyFilters(); document.querySelectorAll('.legend-item').forEach(i=>i.classList.remove('muted','active-filter')); allBtn.classList.add('active-filter'); document.getElementById('fighter-card').style.display='none'; document.getElementById('no-selection').style.display='block'; document.getElementById('sidebar').style.paddingTop='0'; });
+allBtn.addEventListener('click',()=>{ activeWC=null; activeTier=null; applyFilters(); document.querySelectorAll('.legend-item').forEach(i=>i.classList.remove('muted','active-filter')); allBtn.classList.add('active-filter'); document.getElementById('fighter-card').style.display='none'; document.getElementById('no-selection').style.display='block'; document.getElementById('fighter-card').style.marginTop='0'; });
 legendEl.appendChild(allBtn);
 WC_ORDER.forEach(wc=>{
   if(!byWC[wc])return;
