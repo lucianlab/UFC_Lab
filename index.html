@@ -200,6 +200,13 @@ body {
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
 }
 
+.ac-item.ac-highlighted,
+.vs-ac-item.ac-highlighted,
+.helix-ac-item.ac-highlighted {
+  background: var(--surface-3);
+  color: var(--text-hi);
+}
+
 .ac-item {
   padding: 8px 14px;
   font-family: 'Barlow', sans-serif;
@@ -2094,6 +2101,7 @@ searchEl.addEventListener('input',()=>{
   acEl.style.display='block';
 });
 document.addEventListener('click',e=>{ if(!searchEl.contains(e.target))acEl.style.display='none'; });
+setupKeyNav(searchEl, acEl);
 
 
 // ══════════════════════════════════════════
@@ -2200,18 +2208,28 @@ function openVsPicker(side){
 }
 
 function renderVsAc(side, q){
-  const ac=document.getElementById(`vs-ac-${side}`);
+  const ac=document.getElementById('vs-ac-'+side);
   const matches=q?allNames.filter(n=>n.toLowerCase().includes(q.toLowerCase())).slice(0,12):allNames.slice(0,12);
-  ac.innerHTML=matches.map(n=>{
+  ac.innerHTML='';
+  matches.forEach(n=>{
     const f=nameToFighter[n];
-    return `<div class="vs-ac-item" onclick="selectVsFighter('${side}','${n.replace(/'/g,"\\'")}')">
-      <span>${n}</span><span class="vs-ac-wc">${f?f.wc:''}</span>
-    </div>`;
-  }).join('');
+    const div=document.createElement('div'); div.className='vs-ac-item';
+    const s1=document.createElement('span'); s1.textContent=n;
+    const s2=document.createElement('span'); s2.className='vs-ac-wc'; s2.textContent=f?f.wc:'';
+    div.appendChild(s1); div.appendChild(s2);
+    div.addEventListener('click',()=>selectVsFighter(side,n));
+    ac.appendChild(div);
+  });
 }
 
-document.getElementById('vs-input-red').addEventListener('input',e=>renderVsAc('red',e.target.value));
-document.getElementById('vs-input-blue').addEventListener('input',e=>renderVsAc('blue',e.target.value));
+const vsInpRed  = document.getElementById('vs-input-red');
+const vsInpBlue = document.getElementById('vs-input-blue');
+const vsAcRed   = document.getElementById('vs-ac-red');
+const vsAcBlue  = document.getElementById('vs-ac-blue');
+vsInpRed.addEventListener('input',  e=>renderVsAc('red',  e.target.value));
+vsInpBlue.addEventListener('input', e=>renderVsAc('blue', e.target.value));
+setupKeyNav(vsInpRed,  vsAcRed);
+setupKeyNav(vsInpBlue, vsAcBlue);
 
 function selectVsFighter(side, name){
   const f=nameToFighter[name]; if(!f)return;
@@ -3579,6 +3597,7 @@ function helixBuildSearch(){
     ac.style.display='block';
   });
   document.addEventListener('click',e=>{ if(!inp.contains(e.target)) ac.style.display='none'; });
+  setupKeyNav(inp, ac);
 }
 
 
@@ -4172,6 +4191,52 @@ function helixRefreshTheme(){
   if(_helixMode==='local'&&_helixLocalRaw)              helixRenderLocal();
   else if(_helixMode==='community'&&_helixCommId!=null) helixRenderCommunity();
   else if(_helixMode==='full')                          helixRenderFull();
+}
+
+
+// ── Keyboard navigation for all search autocompletes ──
+function setupKeyNav(inputEl, acEl){
+  let _idx = -1;
+
+  function items(){ return Array.from(acEl.querySelectorAll('.ac-item,.vs-ac-item,.helix-ac-item')); }
+
+  function highlight(n){
+    const all = items();
+    all.forEach(el=>el.classList.remove('ac-highlighted'));
+    if(n>=0 && n<all.length){
+      all[n].classList.add('ac-highlighted');
+      all[n].scrollIntoView({block:'nearest'});
+    }
+    _idx = n;
+  }
+
+  // Reset index when user types
+  inputEl.addEventListener('input', ()=>{ _idx=-1; });
+
+  inputEl.addEventListener('keydown', e=>{
+    const all = items();
+    if(!all.length && e.key!=='Escape') return;
+    if(e.key==='ArrowDown'){
+      e.preventDefault();
+      highlight(Math.min(_idx+1, all.length-1));
+    } else if(e.key==='ArrowUp'){
+      e.preventDefault();
+      highlight(Math.max(_idx-1, 0));
+    } else if(e.key==='Enter'){
+      e.preventDefault();
+      const target = _idx>=0 ? all[_idx] : all[0];
+      if(target) target.click();
+    } else if(e.key==='Escape'){
+      acEl.style.display='none';
+      _idx=-1;
+    }
+  });
+
+  // Sync mouse hover → keyboard index
+  acEl.addEventListener('mouseover', e=>{
+    const item = e.target.closest('.ac-item,.vs-ac-item,.helix-ac-item');
+    if(item){ highlight(items().indexOf(item)); }
+  });
 }
 
   window.setMode=setMode;
