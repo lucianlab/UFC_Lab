@@ -625,7 +625,7 @@ body {
 
 /* Fight Shape */
 .fight-shape-title { font-family:'DM Mono',monospace; font-size:7.5px; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.18em; margin-bottom:4px; }
-.fight-shape-verdict { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; line-height:1; margin-bottom:3px; }
+.fight-shape-verdict { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; line-height:1; margin-bottom:4px; }
 .fight-shape-sub { font-size:10px; color:var(--text-lo); line-height:1.5; font-family:'Barlow',sans-serif; }
 .sd-row { display:flex; align-items:center; gap:6px; }
 .sd-track { flex:1; height:2px; background:var(--border); border-radius:1px; overflow:hidden; }
@@ -1490,9 +1490,9 @@ body {
             <div class="fight-shape-title">Fight Shape</div>
             <div class="fight-shape-verdict" id="fight-shape-verdict">—</div>
             <div class="fight-shape-sub" id="fight-shape-sub"></div>
-            <div id="vs-narrative" style="margin-top:6px;font-size:9px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.55;border-top:1px solid var(--border);padding-top:6px;max-height:3.6em;overflow:hidden"></div>
-            <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">
-              <div style="font-family:'DM Mono',monospace;font-size:7.5px;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.18em;margin-bottom:4px">Style Distance</div>
+            <div id="vs-narrative" style="margin-top:6px;font-size:9px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.55;border-top:1px solid var(--border);padding-top:6px;max-height:4.2em;overflow:hidden;transition:opacity 0.3s"></div>
+            <div style="margin-top:8px;padding-top:7px;border-top:1px solid var(--border)">
+              <div style="font-family:'DM Mono',monospace;font-size:7.5px;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.18em;margin-bottom:5px">Style Distance</div>
               <div class="sd-row">
                 <span class="sd-label">Identical</span>
                 <div class="sd-track"><div class="sd-fill" id="sd-fill" style="width:0%"></div></div>
@@ -1546,11 +1546,7 @@ body {
             <div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden;margin-bottom:8px">
               <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:var(--text-lo)"></div>
             </div>
-            <div id="vs-conf-breakdown" style="font-size:9px;color:var(--text-lo);font-family:'DM Mono',monospace;line-height:1.8;letter-spacing:0.03em;margin-bottom:8px"></div>
-            <div style="padding-top:7px;border-top:1px solid var(--border);font-size:9px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6">
-              3 × XGBoost · 6,180 UFC bouts (2013–2026) · TimeSeriesSplit CV<br>
-              Each prediction symmetrized: both directions averaged — eliminating corner bias.
-            </div>
+            <div id="vs-conf-breakdown" style="font-size:9px;color:var(--text-lo);font-family:'DM Mono',monospace;line-height:1.8;letter-spacing:0.03em"></div>
           </div>
 
           <!-- TR2-R: Similar Fights -->
@@ -2714,7 +2710,38 @@ async function runVsAnalysis() {
 
       // Narrative
       const narrativeEl = document.getElementById('vs-narrative');
-      if (narrativeEl) narrativeEl.textContent = buildNarrative(r, b, data.red_win_prob, data.method, data.pred_round, shape.verdict);
+      // 先顯示 template narrative
+      const templateText = buildNarrative(r, b, data.red_win_prob, data.method, data.pred_round, shape.verdict);
+      if(narrativeEl) narrativeEl.textContent = templateText;
+
+      // Async 呼叫 Gemini 潤飾（不阻塞主流程）
+      (async ()=>{
+        try{
+          const nr = await fetch(API_BASE + '/api/vs_narrative', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+              red:              r.name,
+              blue:             b.name,
+              red_win_prob:     data.red_win_prob,
+              method:           data.method,
+              pred_round:       data.pred_round,
+              confidence_label: data.confidence_label,
+              top_features:     data.top_features||[]
+            })
+          });
+          if(nr.ok){
+            const nd = await nr.json();
+            if(nd.narrative && nd.narrative.trim() && narrativeEl){
+              narrativeEl.style.opacity='0';
+              setTimeout(()=>{
+                narrativeEl.textContent = nd.narrative;
+                narrativeEl.style.opacity='1';
+              }, 200);
+            }
+          }
+        }catch(e){ /* Gemini unavailable, keep template */ }
+      })();
 
       // Confidence
       const confPct = Math.round(data.confidence * 100);
