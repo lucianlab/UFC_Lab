@@ -512,7 +512,28 @@ body {
 .vs-picker-wc { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); margin-top:2px; }
 .vs-picker.filled-red  .vs-picker-wc { color:rgba(184,48,64,0.5); }
 .vs-picker.filled-blue .vs-picker-wc { color:rgba(42,80,144,0.5); }
-.vs-divider { text-align:center; font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:500; color:var(--text-lo); }
+.vs-divider {
+  text-align:center; font-family:'Cormorant Garamond',serif;
+  font-size:18px; font-weight:500; color:var(--text-lo);
+  cursor:default; transition:color 0.15s;
+  user-select:none;
+}
+.vs-divider.swappable { cursor:pointer; color:var(--text-md); }
+
+/* Verdict strip */
+#vs-verdict-strip {
+  display: none;
+  padding: 5px 24px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--text-lo);
+  text-align: center;
+  flex-shrink: 0;
+  background: var(--surface);
+}
+#vs-verdict-strip.show { display: block; }
 
 /* Search dropdown */
 .vs-search-wrap { position:absolute; top:100%; left:0; right:0; z-index:300; display:none; margin-top:2px; }
@@ -604,7 +625,7 @@ body {
 
 /* Fight Shape */
 .fight-shape-title { font-family:'DM Mono',monospace; font-size:7.5px; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.18em; margin-bottom:4px; }
-.fight-shape-verdict { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; line-height:1; margin-bottom:4px; }
+.fight-shape-verdict { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; line-height:1; margin-bottom:3px; }
 .fight-shape-sub { font-size:10px; color:var(--text-lo); line-height:1.5; font-family:'Barlow',sans-serif; }
 .sd-row { display:flex; align-items:center; gap:6px; }
 .sd-track { flex:1; height:2px; background:var(--border); border-radius:1px; overflow:hidden; }
@@ -1437,6 +1458,9 @@ body {
       </div>
     </div>
 
+    <!-- Verdict strip -->
+    <div id="vs-verdict-strip" id="vs-verdict-strip"></div>
+
     <!-- Body -->
     <div id="vs-body">
 
@@ -1466,9 +1490,9 @@ body {
             <div class="fight-shape-title">Fight Shape</div>
             <div class="fight-shape-verdict" id="fight-shape-verdict">—</div>
             <div class="fight-shape-sub" id="fight-shape-sub"></div>
-            <div id="vs-narrative" style="margin-top:7px;font-size:10px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6;border-top:1px solid var(--border);padding-top:7px"></div>
-            <div style="margin-top:8px;padding-top:7px;border-top:1px solid var(--border)">
-              <div style="font-family:'DM Mono',monospace;font-size:7.5px;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.18em;margin-bottom:5px">Style Distance</div>
+            <div id="vs-narrative" style="margin-top:6px;font-size:9px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.55;border-top:1px solid var(--border);padding-top:6px;max-height:3.6em;overflow:hidden"></div>
+            <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">
+              <div style="font-family:'DM Mono',monospace;font-size:7.5px;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.18em;margin-bottom:4px">Style Distance</div>
               <div class="sd-row">
                 <span class="sd-label">Identical</span>
                 <div class="sd-track"><div class="sd-fill" id="sd-fill" style="width:0%"></div></div>
@@ -1522,14 +1546,10 @@ body {
             <div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden;margin-bottom:8px">
               <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:var(--text-lo)"></div>
             </div>
-            <div style="font-size:7.5px;color:var(--text-lo);font-family:'DM Mono',monospace;letter-spacing:0.06em;margin-bottom:5px;text-transform:uppercase">How confidence is computed</div>
-            <div id="vs-conf-breakdown" style="font-size:10px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6"></div>
-            <div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">
-              <div style="font-size:7.5px;color:var(--text-lo);font-family:'DM Mono',monospace;letter-spacing:0.06em;margin-bottom:4px;text-transform:uppercase">Model Stack</div>
-              <div style="font-size:10px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6">
-                3 × XGBoost classifiers trained on 6,180 UFC bouts (2013–2026) with TimeSeriesSplit CV.
-                Each prediction is <em style="color:var(--text-lo)">symmetrized</em>: run in both directions, averaged — eliminating red/blue corner bias.
-              </div>
+            <div id="vs-conf-breakdown" style="font-size:9px;color:var(--text-lo);font-family:'DM Mono',monospace;line-height:1.8;letter-spacing:0.03em;margin-bottom:8px"></div>
+            <div style="padding-top:7px;border-top:1px solid var(--border);font-size:9px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6">
+              3 × XGBoost · 6,180 UFC bouts (2013–2026) · TimeSeriesSplit CV<br>
+              Each prediction symmetrized: both directions averaged — eliminating corner bias.
             </div>
           </div>
 
@@ -2537,6 +2557,18 @@ function renderShap(topFeatures) {
   }).join('');
 }
 
+
+function animateCount(el, from, to, durationMs){
+  const start = performance.now();
+  function tick(now){
+    const t = Math.min((now-start)/durationMs, 1);
+    const ease = t<0.5 ? 2*t*t : -1+(4-2*t)*t;
+    el.textContent = Math.round(from+(to-from)*ease) + '%';
+    if(t<1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
 async function runVsAnalysis() {
   if (!vsRed || !vsBlue) return;
   const r = vsRed, b = vsBlue;
@@ -2611,8 +2643,13 @@ async function runVsAnalysis() {
       // Win probability
       const rPct = Math.round(data.red_win_prob * 100);
       const bPct = Math.round(data.blue_win_prob * 100);
-      document.getElementById('vs-prob-red-pct').textContent  = rPct + '%';
-      document.getElementById('vs-prob-blue-pct').textContent = bPct + '%';
+      const _redPctEl  = document.getElementById('vs-prob-red-pct');
+      const _bluePctEl = document.getElementById('vs-prob-blue-pct');
+      const _prevRed   = parseInt(_redPctEl.textContent)  || 50;
+      const _prevBlue  = parseInt(_bluePctEl.textContent) || 50;
+      const _aniDur    = Math.max(200, Math.abs(rPct - _prevRed) * 20);
+      animateCount(_redPctEl,  _prevRed,  rPct,  _aniDur);
+      animateCount(_bluePctEl, _prevBlue, bPct,  _aniDur);
       const barRed  = document.getElementById('vs-prob-bar-red');
       const barBlue = document.getElementById('vs-prob-bar-blue');
       const curRed  = parseFloat(barRed.style.width) || 50;
@@ -2654,6 +2691,18 @@ async function runVsAnalysis() {
       shapeEl.textContent = shape.verdict;
       shapeEl.style.color = shape.color;
 
+      // Verdict strip
+      const _winner    = rPct >= bPct ? r : b;
+      const _winPct    = rPct >= bPct ? rPct : bPct;
+      const _mShort    = data.method==='KO/TKO' ? 'KO' : data.method==='Submission' ? 'SUB' : 'DEC';
+      const _rNames    = ['','R1','R2','R3','R4','R5'];
+      const _rPart     = data.method!=='Decision' ? ' · ' + (_rNames[data.pred_round]||'') : '';
+      const _vStrip    = document.getElementById('vs-verdict-strip');
+      if(_vStrip){
+        _vStrip.textContent = _winner.name.split(' ').pop() + ' wins ' + _winPct + '%  ·  ' + _mShort + _rPart;
+        _vStrip.classList.add('show');
+      }
+
       // Fight shape sub-text
       const subLines = [];
       if (data.cross_wc) subLines.push('Cross-weight class hypothetical.');
@@ -2683,10 +2732,8 @@ async function runVsAnalysis() {
       const methodEdge = Math.round(Math.max(mp.ko, mp.sub, mp.decision) * 100);
       const confBreak  = document.getElementById('vs-conf-breakdown');
       if (confBreak) confBreak.innerHTML =
-        `<span style="color:var(--text-lo)">Win signal:</span> ${winEdge}% certainty (50% = coin-flip, 100% = certain)<br>` +
-        `<span style="color:var(--text-lo)">Method signal:</span> ${methodEdge}% confidence in ${data.method}<br>` +
-        `<span style="color:var(--text-lo)">Round signal:</span> peak probability on R${data.pred_round}<br>` +
-        `<span style="color:var(--text-lo);font-size:9px">Weighted 50/30/20 across three models</span>`;
+        `Win ${winEdge}% &nbsp;·&nbsp; Method ${methodEdge}% &nbsp;·&nbsp; Round — (${data.method}, R${data.pred_round})<br>` +
+        `Weighted &nbsp;50 / 30 / 20 &nbsp;across 3 XGBoost models`;
 
       // SHAP
       renderShap(data.top_features);
@@ -4239,6 +4286,36 @@ function setupKeyNav(inputEl, acEl){
   });
 }
 
+
+function swapVsFighters(){
+  if(!vsRed || !vsBlue) return;
+  const tmp = vsRed; vsRed = vsBlue; vsBlue = tmp;
+  setPickerUI('red',  vsRed);
+  setPickerUI('blue', vsBlue);
+  const pr = document.getElementById('picker-red');
+  const pb = document.getElementById('picker-blue');
+  pr.classList.remove('glow-red','glow-blue'); void pr.offsetWidth; pr.classList.add('glow-red');
+  pb.classList.remove('glow-red','glow-blue'); void pb.offsetWidth; pb.classList.add('glow-blue');
+  runVsAnalysis();
+}
+
+// VS divider: hover → ⇄, click → swap
+(function(){
+  const vd = document.querySelector('.vs-divider');
+  if(!vd) return;
+  vd.addEventListener('mouseenter', ()=>{
+    vd.textContent = '⇄';
+    vd.classList.add('swappable');
+  });
+  vd.addEventListener('mouseleave', ()=>{
+    vd.textContent = 'VS';
+    vd.classList.remove('swappable');
+  });
+  vd.addEventListener('click', ()=>{
+    if(vsRed && vsBlue) swapVsFighters();
+  });
+})();
+
   window.setMode=setMode;
   window.openVsPicker=openVsPicker;
   window.loadRandomMatchup=loadRandomMatchup;
@@ -4250,6 +4327,7 @@ function setupKeyNav(inputEl, acEl){
   window.bSubmit=bSubmit;
   window.helixGoFull=helixGoFull;
   window.helixTogglePR=helixTogglePR;
+  window.swapVsFighters=swapVsFighters;
   window.helixShowPRRanking=helixShowPRRanking;
   window.helixEnterCommunity=helixEnterCommunity;
   // expose for community lookup
