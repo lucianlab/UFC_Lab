@@ -853,8 +853,7 @@ Write 2 concise sentences (max 30 words each) analyzing the tactical matchup and
         )
         text = response.text.strip()
         # 確保不超過兩句
-        sentences = [s.strip() for s in text.replace("
-", " ").split(".") if s.strip()]
+        sentences = [s.strip() for s in text.replace("\n", " ").split(".") if s.strip()]
         result = ". ".join(sentences[:2]) + ("." if sentences else "")
         return {"narrative": result}
 
