@@ -96,7 +96,7 @@ print(f"      {len(agg)} 選手")
 fighter_cols = ['fighter', 'wc', 'tier_label', 'ever_champion',
                 'win_rate', 'n_rounds', 'meta_score_pct',
                 'striking_signal', 'grappling_signal']
-agg[fighter_cols].to_csv('dna_fighters.csv', index=False)
+agg[fighter_cols].to_csv('data/dna_fighters.csv', index=False)
 print(f"      → dna_fighters.csv")
 
 # ══════════════════════════════════════════════════════

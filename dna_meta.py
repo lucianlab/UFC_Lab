@@ -188,8 +188,8 @@ if has_champ:
 # ── 輸出 ──
 output_cols = ['fighter', 'wc', 'tier_label', 'ever_champion', 'win_rate',
                'n_rounds', 'meta_score_pct', 'striking_score', 'grappling_score', 'style_label']
-agg[output_cols].to_csv('dna_meta_fighters.csv', index=False)
-yearly_agg.to_csv('dna_meta_yearly.csv', index=False)
+agg[output_cols].to_csv('data/dna_meta_fighters.csv', index=False)
+yearly_agg.to_csv('data/dna_meta_yearly.csv', index=False)
 
 print(f"\n\n輸出：")
 print(f"  dna_meta_fighters.csv — 每個選手的二元分數")

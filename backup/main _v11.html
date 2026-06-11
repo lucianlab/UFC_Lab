@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@400;500&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <style>
 /* ═══════════════════════════════════════════════════════
    UFC FIGHTER UNIVERSE v7 — Luxury Data Laboratory
@@ -24,22 +25,22 @@
   --champagne-2: #a07c46;
   --champagne-dim:#4a3a22;
 
-  --crimson:     #8c1f1f;
-  --crimson-2:   #c23030;
-  --crimson-dim: #3a1010;
+  --crimson:     #7a1f28;
+  --crimson-2:   #b83040;
+  --crimson-dim: #2e1018;
 
-  --cobalt:      #1a3a6e;
-  --cobalt-2:    #2b5fb3;
-  --cobalt-dim:  #0d1e3a;
+  --cobalt:      #1a3050;
+  --cobalt-2:    #2a5090;
+  --cobalt-dim:  #0d1828;
 
   --text-hi:     #e8e4dc;
-  --text-md:     #9994a0;
-  --text-lo:     #4a4858;
-  --text-xlo:    #272535;
+  --text-md:     #b8b4c0;
+  --text-lo:     #6e6a7c;
+  --text-xlo:    #3a3748;
 
   /* legacy compat aliases used by JS innerHTML */
-  --red:         #c23030;
-  --blue:        #2b5fb3;
+  --red:         #b83040;
+  --blue:        #2a5090;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -107,47 +108,36 @@ body {
   left: 50%;
   transform: translateX(-50%);
   flex-shrink: 0;
+  height: 100%;
+  align-items: stretch;
 }
 
 .mode-btn {
-  padding: 0 18px;
-  height: 28px;
+  padding: 0 20px;
+  height: 100%;
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
-  border: 1px solid var(--border-2);
-  transition: all 0.18s ease;
+  border: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.18s ease, border-color 0.18s ease;
   color: var(--text-lo);
   background: transparent;
   position: relative;
-}
-
-.mode-btn:first-child {
-  border-radius: 3px 0 0 3px;
-  border-right: none;
-}
-.mode-btn:not(:first-child):not(:last-child) {
-  border-right: none;
-}
-.mode-btn:last-child {
-  border-radius: 0 3px 3px 0;
+  border-radius: 0;
 }
 
 .mode-btn.active {
   color: var(--champagne);
-  background: rgba(201,169,110,0.07);
-  border-color: var(--champagne-dim);
-  border-color: var(--border-2);
+  border-bottom-color: var(--champagne);
 }
-
-/* btn-vs uses base active style */
 
 .mode-btn:hover:not(.active) {
   color: var(--text-md);
-  background: var(--surface-2);
+  border-bottom-color: var(--border-2);
 }
 
 /* Search */
@@ -206,7 +196,36 @@ body {
 
 /* ─── MAIN LAYOUT ─── */
 #main { display: flex; flex: 1; overflow: hidden; position: relative; }
-#plot { flex: 1; min-width: 0; }
+#plot { flex: 1; min-width: 0; position: relative; }
+
+#theme-toggle {
+  position: absolute;
+  top: 12px; right: 14px;
+  font-size: 16px;
+  color: var(--text-lo);
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0.35;
+  transition: opacity 0.2s, color 0.2s;
+  user-select: none;
+  line-height: 1;
+}
+#theme-toggle:hover { opacity: 1; }
+#theme-toggle.nebula { color: #c77dff; opacity: 0.7; }
+
+#theme-label {
+  position: absolute;
+  bottom: 14px; left: 16px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--text-hi);
+  opacity: 0.12;
+  z-index: 10;
+  user-select: none;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
 
 /* ─── UNIVERSE SIDEBAR ─── */
 #sidebar {
@@ -215,7 +234,7 @@ body {
   border-left: 1px solid var(--border);
   background: var(--surface);
   overflow-y: auto;
-  padding: 20px 18px;
+  padding: 0 18px 20px;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -253,7 +272,23 @@ body {
   margin-bottom: 12px;
   letter-spacing: 0.05em;
 }
-#fighter-wc.is-champ { color: var(--champagne); }
+#fighter-wc.is-champ { color: var(--text-md); }
+.champion-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--champagne);
+  margin-bottom: 10px;
+}
+.champion-badge::before {
+  content: '◆';
+  font-size: 7px;
+}
 
 .stat-row {
   display: flex;
@@ -283,22 +318,23 @@ body {
 
 .stat-bar-wrap {
   width: 100%;
-  height: 1px;
-  background: var(--border);
+  height: 2px;
+  background: var(--border-2);
   border-radius: 1px;
   margin-top: 3px;
   margin-bottom: 10px;
+  overflow: hidden;
+  position: relative;
 }
 
 .stat-bar {
-  height: 1px;
+  height: 100%;
   border-radius: 1px;
-  background: var(--cobalt-2);
+  background: var(--text-hi);
   transition: width 0.5s cubic-bezier(.4,0,.2,1);
-}
-
-.stat-bar.elite {
-  background: var(--crimson-2);
+  position: absolute;
+  left: 0;
+  top: 0;
 }
 
 #similar-list { list-style: none; margin-top: 4px; }
@@ -368,7 +404,7 @@ body {
 #hint {
   font-family: 'DM Mono', monospace;
   font-size: 9px;
-  color: var(--text-md);
+  color: var(--text-lo);
   text-align: center;
   padding: 12px 0;
   line-height: 1.7;
@@ -379,7 +415,7 @@ body {
 
 #no-selection {
   font-size: 11px;
-  color: var(--text-md);
+  color: var(--text-lo);
   margin-top: 12px;
   line-height: 1.8;
   font-family: 'Barlow', sans-serif;
@@ -408,16 +444,16 @@ body {
   min-height: 56px;
 }
 .vs-picker:hover { border-color: var(--border-2); background: var(--surface-3); }
-.vs-picker.filled-red  { border-color: var(--crimson);  background: linear-gradient(135deg, rgba(140,31,31,0.12), var(--surface-2)); }
-.vs-picker.filled-blue { border-color: var(--cobalt-2); background: linear-gradient(135deg, rgba(26,58,110,0.18), var(--surface-2)); }
+.vs-picker.filled-red  { border-color: var(--crimson);  background: linear-gradient(135deg, rgba(122,31,40,0.12), var(--surface-2)); }
+.vs-picker.filled-blue { border-color: var(--cobalt-2); background: linear-gradient(135deg, rgba(26,48,80,0.18), var(--surface-2)); }
 .vs-picker-label { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.18em; margin-bottom:4px; }
-.vs-picker.filled-red  .vs-picker-label { color:rgba(194,48,48,0.5); }
-.vs-picker.filled-blue .vs-picker-label { color:rgba(43,95,179,0.5); }
+.vs-picker.filled-red  .vs-picker-label { color:rgba(184,48,64,0.5); }
+.vs-picker.filled-blue .vs-picker-label { color:rgba(42,80,144,0.5); }
 .vs-picker-name { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:700; color:var(--text-lo); letter-spacing:0.04em; text-transform:uppercase; line-height:1.1; transition:color 0.18s; }
 .vs-picker.filled .vs-picker-name { color:var(--text-hi); }
 .vs-picker-wc { font-family:'DM Mono',monospace; font-size:8px; color:var(--text-lo); margin-top:2px; }
-.vs-picker.filled-red  .vs-picker-wc { color:rgba(194,48,48,0.5); }
-.vs-picker.filled-blue .vs-picker-wc { color:rgba(43,95,179,0.5); }
+.vs-picker.filled-red  .vs-picker-wc { color:rgba(184,48,64,0.5); }
+.vs-picker.filled-blue .vs-picker-wc { color:rgba(42,80,144,0.5); }
 .vs-divider { text-align:center; font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:500; color:var(--text-lo); }
 
 /* Search dropdown */
@@ -524,9 +560,9 @@ body {
 .fo-label { font-family:'Barlow',sans-serif; font-size:9.5px; color:var(--text-lo); width:76px; flex-shrink:0; }
 .fo-track { flex:1; height:2px; background:var(--border); border-radius:1px; overflow:hidden; }
 .fo-fill { height:100%; border-radius:1px; transition:width 1s cubic-bezier(.4,0,.2,1); }
-.fo-fill.ko  { background:var(--crimson-2); }
-.fo-fill.sub { background:#4a7fd4; }
-.fo-fill.dec { background:#6b6880; }
+.fo-fill.ko  { background:var(--crimson); }
+.fo-fill.sub { background:var(--cobalt); }
+.fo-fill.dec { background:var(--text-lo); }
 .fo-pct { font-family:'DM Mono',monospace; font-size:9.5px; color:var(--text-lo); width:30px; text-align:right; }
 
 /* Similar matchups */
@@ -554,16 +590,15 @@ body {
 }
 #vs-random-btn:hover, #vs-random-btn-bottom:hover { border-color:var(--champagne-dim); color:var(--champagne); }
 
-/* ─── 3-button mode toggle ─── */
-.mode-btn:not(:first-child):not(:last-child){ border-right:none; border-radius:0; }
+/* ─── nav tabs ─── */
 
 .vs-picker.filled-red {
   border-color: var(--crimson);
-  background: linear-gradient(135deg, rgba(140,31,31,0.12), var(--surface-2));
+  background: linear-gradient(135deg, rgba(122,31,40,0.12), var(--surface-2));
 }
 .vs-picker.filled-blue {
   border-color: var(--cobalt-2);
-  background: linear-gradient(135deg, rgba(26,58,110,0.18), var(--surface-2));
+  background: linear-gradient(135deg, rgba(26,48,80,0.18), var(--surface-2));
 }
 
 .vs-picker-label {
@@ -574,8 +609,8 @@ body {
   letter-spacing: 0.18em;
   margin-bottom: 5px;
 }
-.vs-picker.filled-red .vs-picker-label { color: rgba(194,48,48,0.5); }
-.vs-picker.filled-blue .vs-picker-label { color: rgba(43,95,179,0.5); }
+.vs-picker.filled-red .vs-picker-label { color: rgba(184,48,64,0.5); }
+.vs-picker.filled-blue .vs-picker-label { color: rgba(42,80,144,0.5); }
 
 .vs-picker-name {
   font-family: 'Barlow Condensed', sans-serif;
@@ -596,8 +631,8 @@ body {
   margin-top: 3px;
   letter-spacing: 0.04em;
 }
-.vs-picker.filled-red .vs-picker-wc { color: rgba(194,48,48,0.5); }
-.vs-picker.filled-blue .vs-picker-wc { color: rgba(43,95,179,0.5); }
+.vs-picker.filled-red .vs-picker-wc { color: rgba(184,48,64,0.5); }
+.vs-picker.filled-blue .vs-picker-wc { color: rgba(42,80,144,0.5); }
 
 .vs-divider {
   text-align: center;
@@ -697,7 +732,7 @@ body {
 }
 .b-diff-btn.on.easy  { border-color:#2b5a30; color:#4caf50; background:rgba(76,175,80,0.07); }
 .b-diff-btn.on.medium{ border-color:var(--champagne-dim); color:var(--champagne); background:rgba(201,169,110,0.07); }
-.b-diff-btn.on.hard  { border-color:var(--crimson); color:var(--crimson-2); background:rgba(194,48,48,0.07); }
+.b-diff-btn.on.hard  { border-color:var(--crimson); color:var(--crimson-2); background:rgba(184,48,64,0.07); }
 
 #b-budget{ display:none; align-items:baseline; gap:5px; margin-left:auto; }
 #b-budget.show{ display:flex; }
@@ -727,9 +762,9 @@ body {
 
 /* Tier Reference — flex:1 fills remaining height to align with left col bottom */
 #b-tier-ref{
-  flex:1; padding:7px 9px;
-  background:var(--surface-2); border:1px solid var(--border);
-  border-radius:2px; overflow:hidden; min-height:0;
+  flex:1; padding:4px 0 0 0;
+  background:transparent; border:none;
+  overflow:hidden; min-height:0;
   display:flex; flex-direction:column;
 }
 .b-tier-ref-title{
@@ -739,13 +774,19 @@ body {
   border-bottom:1px solid var(--border); flex-shrink:0;
 }
 .b-tier-grid{
-  display:grid; grid-template-columns:1fr 1fr; gap:0 10px;
-  flex:1; min-height:0;
+  display:flex; flex-direction:column;
+  gap:0; flex:1; min-height:0;
 }
-.b-tier-col{ display:flex; flex-direction:column; justify-content:space-between; gap:3px; }
-.b-tier-row{ display:grid; grid-template-columns:26px 1fr; align-items:baseline; gap:3px; }
-.b-tier-lbl{ font-family:'DM Mono',monospace; font-size:7.5px; font-weight:500; }
-.b-tier-desc{ font-family:'Barlow',sans-serif; font-size:7.5px; color:var(--text-md); line-height:1.3; }
+.b-tier-col{ display:contents; }
+.b-tier-row{
+  flex:1; display:grid; grid-template-columns:28px 1fr;
+  align-items:center; gap:4px;
+  border-top:1px solid var(--border);
+  padding:0 4px;
+}
+.b-tier-row:first-child{ border-top:none; }
+.b-tier-lbl{ font-family:'DM Mono',monospace; font-size:7.5px; font-weight:600; color:var(--text-lo); }
+.b-tier-desc{ font-family:'Barlow',sans-serif; font-size:7.5px; color:var(--text-lo); line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 /* Find My Fighter — full width bottom, height auto */
 #b-find-wrap{
@@ -786,10 +827,10 @@ body {
 }
 
 /* 2K-style pip */
-.b-pips{ display:flex; gap:2px; }
+.b-pips{ display:flex; gap:3px; }
 .b-pip{
-  flex:1; height:10px; border-radius:1px;
-  background:var(--border); cursor:pointer;
+  flex:1; height:5px; border-radius:1px;
+  background:var(--surface-3); cursor:pointer;
   transform:skewX(-6deg);
   transition:background 0.06s, box-shadow 0.06s;
 }
@@ -1005,6 +1046,183 @@ body {
   margin-right: 10px;
 }
 
+
+/* ─── HELIX MODE ─── */
+#helix-mode {
+  display: none; position: absolute; inset: 0;
+  background: var(--obsidian); z-index: 5;
+  flex-direction: row; overflow: hidden;
+}
+#helix-mode.active { display: flex; }
+
+/* Graph 主畫布區 */
+#helix-graph-wrap {
+  flex: 1; min-width: 0; position: relative;
+  background: var(--obsidian);
+}
+#helix-graph-wrap svg { width: 100%; height: 100%; }
+
+/* 右側 Panel */
+#helix-panel {
+  width: 280px; flex-shrink: 0;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* Panel header（搜尋 + legend）*/
+#helix-panel-head {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+#helix-search-wrap { position: relative; margin-bottom: 10px; }
+#helix-search {
+  width: 100%;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  color: var(--text-hi); padding: 6px 12px; border-radius: 3px;
+  font-family: 'Barlow', sans-serif; font-size: 11px; outline: none;
+  transition: border-color 0.15s;
+}
+#helix-search::placeholder { color: var(--text-lo); }
+#helix-search:focus { border-color: var(--champagne-dim); }
+#helix-ac {
+  position: absolute; top: calc(100% + 2px); left: 0; right: 0;
+  background: var(--surface-2); border: 1px solid var(--border-2);
+  border-radius: 0 0 3px 3px; max-height: 180px; overflow-y: auto;
+  z-index: 200; display: none;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.helix-ac-item {
+  padding: 7px 12px; font-size: 11px; cursor: pointer;
+  color: var(--text-md); font-family: 'Barlow', sans-serif;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: background 0.1s;
+}
+.helix-ac-item:hover { background: var(--surface-3); color: var(--text-hi); }
+.helix-ac-pr {
+  font-family: 'DM Mono', monospace; font-size: 8px; color: var(--text-lo);
+}
+
+/* Legend */
+#helix-legend {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.helix-leg-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 9px; color: var(--text-lo); font-family: 'Barlow', sans-serif;
+}
+.helix-leg-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+}
+
+/* Panel body（選手詳情 + beat chain）*/
+#helix-panel-body {
+  flex: 1; overflow-y: auto; padding: 14px 16px;
+}
+
+/* Empty state */
+#helix-empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 10px; height: 100%;
+  padding: 20px;
+}
+#helix-empty .helix-empty-icon { font-size: 28px; opacity: 0.08; }
+#helix-empty p {
+  font-family: 'DM Mono', monospace; font-size: 9px;
+  color: var(--text-lo); text-align: center; line-height: 1.8;
+  letter-spacing: 0.04em;
+}
+
+/* Fighter detail */
+#helix-fighter-detail { display: none; }
+#helix-fighter-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px; font-weight: 700; color: var(--text-hi);
+  letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.1;
+  margin-bottom: 2px;
+}
+#helix-fighter-meta {
+  font-family: 'DM Mono', monospace; font-size: 9px;
+  color: var(--text-lo); margin-bottom: 12px; letter-spacing: 0.04em;
+}
+.helix-stat-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 6px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.helix-stat-label {
+  font-size: 9px; color: var(--text-lo); font-family: 'Barlow', sans-serif;
+  letter-spacing: 0.02em;
+}
+.helix-stat-val {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-md);
+}
+.helix-stat-val.gold { color: var(--champagne); }
+
+/* Beat chain */
+.helix-chain-title {
+  font-family: 'DM Mono', monospace; font-size: 8px; font-weight: 500;
+  color: var(--text-lo); letter-spacing: 0.18em; text-transform: uppercase;
+  margin: 12px 0 6px; padding-bottom: 5px; border-bottom: 1px solid var(--border);
+}
+.helix-chain-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 5px 0; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.1s;
+}
+.helix-chain-item:hover { background: var(--surface-2); }
+.helix-chain-name {
+  font-size: 11px; color: var(--text-md); font-family: 'Barlow', sans-serif;
+  transition: color 0.12s;
+}
+.helix-chain-item:hover .helix-chain-name { color: var(--text-hi); }
+.helix-chain-method {
+  font-family: 'DM Mono', monospace; font-size: 8px;
+}
+.helix-chain-method.ko  { color: var(--crimson-2); }
+.helix-chain-method.sub { color: var(--cobalt-2); }
+.helix-chain-method.dec { color: var(--text-lo); }
+
+/* Overlay controls */
+#helix-controls {
+  position: absolute; top: 12px; left: 14px;
+  display: flex; gap: 6px; z-index: 10;
+}
+.helix-ctrl-btn {
+  font-family: 'DM Mono', monospace; font-size: 8px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 2px; cursor: pointer;
+  border: 1px solid var(--border-2); background: rgba(9,9,13,0.85);
+  color: var(--text-lo); transition: all 0.18s;
+}
+.helix-ctrl-btn:hover { color: var(--text-md); border-color: var(--border-2); }
+.helix-ctrl-btn.active { color: var(--champagne); border-color: var(--champagne-dim); }
+
+/* Loading */
+#helix-loading {
+  position: absolute; inset: 0; display: flex;
+  align-items: center; justify-content: center;
+  background: var(--obsidian); z-index: 20;
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  color: var(--text-lo); letter-spacing: 0.12em;
+  flex-direction: column; gap: 10px;
+}
+.helix-loading-bar {
+  width: 120px; height: 1px; background: var(--border-2);
+  position: relative; overflow: hidden;
+}
+.helix-loading-fill {
+  position: absolute; top: 0; left: -100%; width: 100%;
+  height: 100%; background: var(--champagne-dim);
+  animation: helixLoad 1.2s ease-in-out infinite;
+}
+@keyframes helixLoad {
+  0%   { left: -100%; }
+  100% { left: 100%; }
+}
+
 </style>
 
 </head>
@@ -1021,6 +1239,7 @@ body {
     <button class="mode-btn" id="btn-vs" onclick="setMode('vs')">VS Mode</button>
     <button class="mode-btn" id="btn-builder" onclick="setMode('builder')">Blueprint</button>
     <button class="mode-btn" id="btn-dna" onclick="setMode('dna')">META</button>
+    <button class="mode-btn" id="btn-helix" onclick="setMode('helix')">Helix</button>
   </div>
 
   <div id="search-wrap">
@@ -1032,12 +1251,16 @@ body {
 <div id="main" style="position:relative;">
 
   <!-- UNIVERSE MODE -->
-  <div id="plot"></div>
+  <div id="plot">
+    <div id="theme-toggle" title="Switch theme">⊹</div>
+    <div id="theme-label">CLASSIC</div>
+  </div>
   <div id="sidebar">
     <div id="fighter-card">
       <div class="panel-title">Selected Fighter</div>
       <div id="fighter-name"></div>
       <div id="fighter-wc"></div>
+      <div id="champion-badge" class="champion-badge" style="display:none"></div>
       <div id="fighter-status" style="font-size:10px;color:var(--champagne);margin-bottom:10px;letter-spacing:0.04em;font-family:'DM Mono',monospace;"></div>
       <div class="panel-title">Style Profile</div>
       <div class="stat-row"><span class="stat-label">Sig. Strikes / Round</span><span class="stat-val" id="s-sig"></span></div>
@@ -1057,13 +1280,7 @@ body {
     </div>
     <div id="no-selection">Click any fighter to explore their style profile and find similar competitors.</div>
     <div id="legend"><div class="panel-title">Weight Classes</div></div>
-    <div id="tier-legend" style="margin-bottom:10px">
-      <div class="panel-title">Status</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-md)"><div style="width:8px;height:8px;border-radius:50%;background:#FFD700;flex-shrink:0"></div>Current Champion</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#C0A060;flex-shrink:0"></div>Former Champion</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#7F8FA6;flex-shrink:0"></div>Ranked Top 15</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo)"><div style="width:8px;height:8px;border-radius:50%;background:#2a2a3a;flex-shrink:0"></div>Unranked</div>
-    </div>
+    <div id="tier-legend" style="margin-top:16px;margin-bottom:10px"></div>
     <div id="hint">X: Grappler ↔ Striker<br>Y: Decision ↔ Finisher<br>Z: High-Output ↔ Patient</div>
   </div>
 
@@ -1143,16 +1360,16 @@ body {
               <span id="vs-ml-loading" style="font-size:7.5px;color:var(--text-lo);font-family:'DM Mono',monospace;text-transform:none;letter-spacing:0"></span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
-              <span id="vs-prob-red-pct"  style="font-size:30px;font-weight:700;color:#c23030;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
-              <span id="vs-prob-blue-pct" style="font-size:30px;font-weight:700;color:#2b5fb3;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
+              <span id="vs-prob-red-pct"  style="font-size:30px;font-weight:700;color:#b83040;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
+              <span id="vs-prob-blue-pct" style="font-size:30px;font-weight:700;color:#2a5090;font-family:'Barlow Condensed',sans-serif;line-height:1">—</span>
             </div>
             <div style="height:5px;background:var(--surface-3);border-radius:2px;overflow:hidden;position:relative;margin-bottom:3px">
-              <div id="vs-prob-bar-red"  style="position:absolute;left:0;top:0;height:100%;width:50%;background:#8c1f1f;transition:width 0.6s ease"></div>
-              <div id="vs-prob-bar-blue" style="position:absolute;right:0;top:0;height:100%;width:50%;background:#1a3a6e;transition:width 0.6s ease"></div>
+              <div id="vs-prob-bar-red"  style="position:absolute;left:0;top:0;height:100%;width:50%;background:#7a1f28;transition:width 0.6s ease"></div>
+              <div id="vs-prob-bar-blue" style="position:absolute;right:0;top:0;height:100%;width:50%;background:#1a3050;transition:width 0.6s ease"></div>
             </div>
             <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-              <span id="vs-prob-red-name"  style="font-size:8.5px;color:rgba(194,48,48,0.55);font-family:'DM Mono',monospace">—</span>
-              <span id="vs-prob-blue-name" style="font-size:8.5px;color:rgba(43,95,179,0.55);font-family:'DM Mono',monospace">—</span>
+              <span id="vs-prob-red-name"  style="font-size:8.5px;color:rgba(184,48,64,0.55);font-family:'DM Mono',monospace">—</span>
+              <span id="vs-prob-blue-name" style="font-size:8.5px;color:rgba(42,80,144,0.55);font-family:'DM Mono',monospace">—</span>
             </div>
             <!-- Finish Probability inside win-col -->
             <div class="fo-title">Finish Probability <span id="vs-round-badge" style="float:right;font-size:8px;color:var(--text-md);font-family:'DM Mono',monospace;letter-spacing:0;text-transform:none"></span></div>
@@ -1179,7 +1396,7 @@ body {
               <span id="vs-conf-label" style="float:right;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase"></span>
             </div>
             <div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden;margin-bottom:8px">
-              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:linear-gradient(90deg,#1a1824,#c9a96e)"></div>
+              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:var(--text-lo)"></div>
             </div>
             <div style="font-size:7.5px;color:var(--text-lo);font-family:'DM Mono',monospace;letter-spacing:0.06em;margin-bottom:5px;text-transform:uppercase">How confidence is computed</div>
             <div id="vs-conf-breakdown" style="font-size:10px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6"></div>
@@ -1270,21 +1487,21 @@ body {
       <div id="dna-legend">
         <div class="dna-legend-row">
           <div class="dna-legend-item">
-            <div class="dna-legend-swatch" style="background:rgba(43,95,179,0.38);border:1px solid rgba(43,95,179,0.55)"></div>
+            <div class="dna-legend-swatch" style="background:rgba(42,80,144,0.38);border:1px solid rgba(42,80,144,0.55)"></div>
             Grappling-dominant fighters (%)
           </div>
           <div class="dna-legend-item">
-            <div class="dna-legend-swatch" style="background:rgba(140,31,31,0.38);border:1px solid rgba(140,31,31,0.55)"></div>
+            <div class="dna-legend-swatch" style="background:rgba(122,31,40,0.38);border:1px solid rgba(122,31,40,0.55)"></div>
             Striking-dominant fighters (%)
           </div>
         </div>
         <div class="dna-legend-row">
           <div class="dna-legend-item">
-            <div class="dna-legend-line" style="background:#4a7fd4"></div>
+            <div class="dna-legend-line" style="background:#2a5090"></div>
             Grappling win rate
           </div>
           <div class="dna-legend-item">
-            <div class="dna-legend-line" style="background:#c23030"></div>
+            <div class="dna-legend-line" style="background:#b83040"></div>
             Striking win rate
           </div>
         </div>
@@ -1316,6 +1533,47 @@ body {
     </div>
 
   </div><!-- end #dna-mode -->
+  <!-- HELIX MODE -->
+  <div id="helix-mode">
+    <div id="helix-loading">
+      <span>INITIALISING HELIX</span>
+      <div class="helix-loading-bar"><div class="helix-loading-fill"></div></div>
+    </div>
+    <div id="helix-graph-wrap">
+
+      <svg id="helix-svg"></svg>
+      <div id="helix-hint" style="position:absolute;bottom:16px;left:20px;font-family:DM Mono,monospace;font-size:8px;color:#3a3748;letter-spacing:0.10em;pointer-events:none;line-height:1.9;display:none">
+        SPACE &nbsp;<span class="hint-mode">RANKED</span> / ALL
+      </div>
+    </div>
+    <div id="helix-panel">
+      <div id="helix-panel-head">
+        <div id="helix-search-wrap">
+          <input id="helix-search" type="text" placeholder="Search fighter..." autocomplete="off">
+          <div id="helix-ac"></div>
+        </div>
+        <div id="helix-legend">
+          <div class="helix-leg-item"><div class="helix-leg-dot" style="background:#FFD700"></div>Champion</div>
+          <div class="helix-leg-item"><div class="helix-leg-dot" style="background:#C0A060"></div>Former Champ</div>
+          <div class="helix-leg-item"><div class="helix-leg-dot" style="background:#9a9a9a"></div>Ever Ranked</div>
+          <div class="helix-leg-item"><div class="helix-leg-dot" style="background:#2a2a3a;border:1px solid #3a3a4a"></div>Unranked</div>
+          <div class="helix-leg-item"><div style="width:20px;height:2px;background:rgba(184,48,64,0.7);margin-right:2px"></div>KO</div>
+          <div class="helix-leg-item"><div style="width:20px;height:2px;background:rgba(42,80,144,0.7);margin-right:2px"></div>Sub</div>
+        </div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+          <div onclick="helixGoFull()" style="font-family:DM Mono,monospace;font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-lo);cursor:pointer;padding:5px 0;transition:color 0.15s" onmouseover="this.style.color='var(--champagne)'" onmouseout="this.style.color='var(--text-lo)'">&#x2B21; Full Graph</div>
+        </div>
+      </div>
+      <div id="helix-panel-body">
+        <div id="helix-empty">
+          <div class="helix-empty-icon">o</div>
+          <p>Click any node to explore<br>their beat chain and<br>network influence</p>
+        </div>
+        <div id="helix-fighter-detail"></div>
+      </div>
+    </div>
+  </div><!-- end #helix-mode -->
+
 
   <!-- Tooltip -->
   <div id="dna-tooltip">
@@ -1346,13 +1604,13 @@ async function boot(){
 const THRESHOLDS = {"sig_per_r":20.3,"td_per_r":0.74,"ctrl_per_r":85.78,"ko_rate":0.5,"sub_rate":0.33,"gas_tank":1.33};
 
 const WC_COLORS = {
-  'Strawweight':'#ff69b4',"Women's Strawweight":'#ff69b4',
-  'Flyweight':'#ff8c00',"Women's Flyweight":'#ff8c00',
-  'Bantamweight':'#ffd700',"Women's Bantamweight":'#ffd700',
-  'Featherweight':'#adff2f',"Women's Featherweight":'#adff2f',
-  'Lightweight':'#00ced1','Welterweight':'#1e90ff',
-  'Middleweight':'#9370db','Light Heavyweight':'#ff4500',
-  'Heavyweight':'#dc143c','Unknown':'#888',
+  'Strawweight':'#7b9ec4',"Women's Strawweight":'#7b9ec4',
+  'Flyweight':'#6a9fa8',"Women's Flyweight":'#6a9fa8',
+  'Bantamweight':'#5a9e8a',"Women's Bantamweight":'#5a9e8a',
+  'Featherweight':'#6a9e6a',"Women's Featherweight":'#6a9e6a',
+  'Lightweight':'#8fa855','Welterweight':'#b8a040',
+  'Middleweight':'#c4824a','Light Heavyweight':'#b85e45',
+  'Heavyweight':'#a03838','Unknown':'#666',
 };
 
 // ── UNIVERSE mode globals ──
@@ -1362,11 +1620,22 @@ const nameToFighter = {};
 FIGHTERS.forEach(f => nameToFighter[f.name]=f);
 const allNames = FIGHTERS.map(f=>f.name).sort();
 
+let isNebula = false;
+const CLASSIC_COLORS = {
+  champion:   '#FFD700',
+  ex_champion:'#C0A060',
+  ranked:     '#9a9a9a',
+  unranked:   '#2a2a3a',
+};
+const NEBULA_COLORS = {
+  champion:   '#e8f0ff',
+  ex_champion:'#e8c56a',
+  ranked:     '#b08adf',
+  unranked:   '#1e1440',
+};
 function tierColor(f){
-  if(f.tier==='champion') return '#FFD700';
-  if(f.tier==='ex_champion') return '#C0A060';
-  if(f.tier==='ranked') return '#7F8FA6';
-  return '#2a2a3a';
+  const t = f.tier||'unranked';
+  return isNebula ? (NEBULA_COLORS[t]||'#1a0533') : (CLASSIC_COLORS[t]||'#2a2a3a');
 }
 function tierSize(f){
   const base=Math.min(4+f.n_fights*0.15,9);
@@ -1376,30 +1645,53 @@ function tierSize(f){
   return base;
 }
 function tierOpacity(f){
+  if(isNebula){
+    const finish = Math.min(1, ((f.ko_rate||0) + (f.sub_rate||0)));
+    if(f.tier==='champion')    return 0.85 + 0.15 * finish;
+    if(f.tier==='ex_champion') return 0.6  + 0.2  * finish;
+    if(f.tier==='ranked')      return 0.35 + 0.25 * finish;
+    return 0.08 + 0.22 * finish;
+  }
   if(f.tier==='champion') return 1.0;
   if(f.tier==='ex_champion') return 0.85;
   if(f.tier==='ranked') return 0.8;
   return 0.55;
 }
 
-const univTraces = Object.entries(byWC).map(([wc,fighters])=>({
-  type:'scatter3d', mode:'markers', name:wc,
-  x:fighters.map(f=>f.x), y:fighters.map(f=>f.y), z:fighters.map(f=>f.z),
-  text:fighters.map(f=>f.name), customdata:fighters.map(f=>f.name),
-  marker:{
-    size:fighters.map(f=>tierSize(f)),
-    color:fighters.map(f=>tierColor(f)),
-    opacity:fighters.map(f=>tierOpacity(f)),
-    line:{width:0},
-  },
-  hovertemplate:'<b>%{text}</b><extra></extra>',
-}));
+const TIER_ORDER = ['champion','ex_champion','ranked','unranked'];
+let univTraces = [];
+const traceIdx = {};
+let _ti = 0;
+Object.entries(byWC).forEach(([wc, fighters])=>{
+  traceIdx[wc] = {};
+  TIER_ORDER.forEach(tier=>{
+    const group = fighters.filter(f=>(f.tier||'unranked')===tier);
+    if(!group.length) return;
+    traceIdx[wc][tier] = _ti++;
+    univTraces.push({
+      type:'scatter3d', mode:'markers', name:wc+'__'+tier,
+      x:group.map(f=>f.x), y:group.map(f=>f.y), z:group.map(f=>f.z),
+      text:group.map(f=>f.name), customdata:group.map(f=>f.name),
+      marker:{
+        size:group.map(f=>tierSize(f)),
+        color:group.map(f=>tierColor(f)),
+        opacity:group.map(f=>tierOpacity(f)),
+        line:{width:0},
+      },
+      hovertemplate:'<b>%{text}</b><extra></extra>',
+    });
+  });
+});
 
 const hlTrace={
   type:'scatter3d', mode:'markers', x:[],y:[],z:[],text:[],
-  marker:{size:6,color:'#c0392b',opacity:0.95,line:{color:'#7f0000',width:1}},
+  marker:{size:7,color:'#7a1f28',opacity:1,line:{color:'#b83040',width:1.5}},
   hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
 };
+function updateHlColor(){
+  hlTrace.marker.color = isNebula ? 'rgba(255,255,255,0.25)' : '#7a1f28';
+  hlTrace.marker.line.color = isNebula ? '#ffffff' : '#b83040';
+}
 
 const univLayout={
   paper_bgcolor:'#09090d', plot_bgcolor:'#09090d',
@@ -1408,7 +1700,7 @@ const univLayout={
     xaxis:{title:'Grappler ↔ Striker',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
     yaxis:{title:'Decision ↔ Finisher',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
     zaxis:{title:'High-Output ↔ Patient',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
-    camera:{eye:{x:1.5,y:1.5,z:1.2}},
+    camera:{eye:{x:1.8,y:0.8,z:1.0}},
   },
   margin:{l:0,r:0,t:0,b:0},
   showlegend:false,
@@ -1426,9 +1718,17 @@ function selectFighter(name){
   const f=nameToFighter[name]; if(!f)return;
   document.getElementById('fighter-card').style.display='block';
   document.getElementById('no-selection').style.display='none';
+  document.getElementById('sidebar').style.paddingTop='20px';
+    document.getElementById('sidebar').style.overflowY='auto';
   const nameEl=document.getElementById('fighter-name');
   nameEl.textContent=f.name;
-  nameEl.style.color = (f.tier==='champion'||f.tier==='ex_champion') ? 'var(--champagne)' : 'var(--text-hi)';
+  nameEl.style.color = 'var(--text-hi)';
+  const badgeEl = document.getElementById('champion-badge');
+  if(badgeEl){
+    if(f.tier==='champion'){ badgeEl.textContent='CHAMPION'; badgeEl.style.display='inline-flex'; }
+    else if(f.tier==='ex_champion'){ badgeEl.textContent='FORMER CHAMPION'; badgeEl.style.display='inline-flex'; }
+    else { badgeEl.style.display='none'; }
+  }
   const tierBadge=f.tier==='ranked'?' ★':'';
   const wcDisplay=(f.all_wc&&f.all_wc.length>1)?f.all_wc.join(' / '):(f.wc||'Unknown');
   const wcEl=document.getElementById('fighter-wc');
@@ -1441,8 +1741,10 @@ function selectFighter(name){
   if(stEl) stEl.style.display='none';
   function setBar(sid,bid,val,display,max,thr){
     const sv=document.getElementById(sid), bv=document.getElementById(bid);
-    sv.textContent=display; bv.style.width=pct(val,max);
-    sv.classList.toggle('elite',val>=thr); bv.classList.toggle('elite',val>=thr);
+    sv.textContent=display;
+    bv.style.width=pct(val,max);
+    sv.classList.remove('elite');
+    bv.classList.remove('elite');
   }
   setBar('s-sig','b-sig',f.sig_per_r,f.sig_per_r,40,THRESHOLDS.sig_per_r);
   setBar('s-td','b-td',f.td_per_r,f.td_per_r,4,THRESHOLDS.td_per_r);
@@ -1458,6 +1760,7 @@ function selectFighter(name){
     li.onclick=()=>selectFighter(simName);
     ul.appendChild(li);
   });
+  updateHlColor();
   hlTrace.x=[f.x]; hlTrace.y=[f.y]; hlTrace.z=[f.z]; hlTrace.text=[f.name];
   setTimeout(()=>Plotly.react('plot',[...univTraces,hlTrace],univLayout,{responsive:true,displayModeBar:false}),0);
 }
@@ -1467,31 +1770,163 @@ const legendEl=document.getElementById('legend');
 const WC_ORDER=['Heavyweight','Light Heavyweight','Middleweight','Welterweight','Lightweight',
   'Featherweight','Bantamweight','Flyweight','Strawweight',
   "Women's Featherweight","Women's Bantamweight","Women's Flyweight","Women's Strawweight"];
-const wcTraceIdx={}; let ti=0;
-Object.keys(byWC).forEach(wc=>{ wcTraceIdx[wc]=ti++; });
-let activeWC=null;
+
+let activeWC=null, activeTier=null;
+
 function applyFilter(wc){
-  activeWC=wc;
-  Object.entries(wcTraceIdx).forEach(([w,i])=>Plotly.restyle('plot',{visible:wc===null?true:(w===wc)},i));
-  document.querySelectorAll('.legend-item').forEach(item=>{
+  activeWC = activeWC===wc ? null : wc;
+  applyFilters();
+  document.querySelectorAll('.legend-item[data-wc]').forEach(item=>{
     const iw=item.dataset.wc;
-    if(wc===null){item.classList.remove('muted','active-filter');}
-    else if(iw===wc){item.classList.remove('muted');item.classList.add('active-filter');}
+    if(activeWC===null){item.classList.remove('muted','active-filter');}
+    else if(iw===activeWC){item.classList.remove('muted');item.classList.add('active-filter');}
     else{item.classList.add('muted');item.classList.remove('active-filter');}
   });
-  allBtn.classList.toggle('active-filter',wc===null);
+  allBtn.classList.toggle('active-filter',activeWC===null);
+}
+
+function applyTierFilter(tier){
+  activeTier = activeTier===tier ? null : tier;
+  applyFilters();
+  document.querySelectorAll('.legend-item[data-tier]').forEach(item=>{
+    const it=item.dataset.tier;
+    if(activeTier===null){item.classList.remove('muted','active-filter');}
+    else if(it===activeTier){item.classList.remove('muted');item.classList.add('active-filter');}
+    else{item.classList.add('muted');item.classList.remove('active-filter');}
+  });
+}
+
+function applyFilters(){
+  const indices = [], visibles = [];
+  Object.entries(traceIdx).forEach(([wc, tierMap])=>{
+    const wcMatch = activeWC===null || wc===activeWC;
+    Object.entries(tierMap).forEach(([tier, idx])=>{
+      const tierMatch = activeTier===null || tier===activeTier;
+      indices.push(idx);
+      visibles.push(wcMatch && tierMatch);
+    });
+  });
+  Plotly.restyle('plot', {visible: visibles}, indices);
 }
 const allBtn=document.createElement('div');
 allBtn.id='legend-all'; allBtn.className='active-filter'; allBtn.textContent='ALL';
-allBtn.addEventListener('click',()=>applyFilter(null));
+allBtn.addEventListener('click',()=>{ activeWC=null; activeTier=null; applyFilters(); document.querySelectorAll('.legend-item').forEach(i=>i.classList.remove('muted','active-filter')); allBtn.classList.add('active-filter'); document.getElementById('fighter-card').style.display='none'; document.getElementById('no-selection').style.display='block'; document.getElementById('sidebar').style.paddingTop='0'; });
 legendEl.appendChild(allBtn);
 WC_ORDER.forEach(wc=>{
   if(!byWC[wc])return;
   const item=document.createElement('div');
   item.className='legend-item'; item.dataset.wc=wc;
   item.innerHTML=`<div class="legend-dot" style="background:${WC_COLORS[wc]}"></div>${wc} <span style="color:var(--text-lo);margin-left:auto">${byWC[wc].length}</span>`;
-  item.addEventListener('click',()=>applyFilter(activeWC===wc?null:wc));
+  item.addEventListener('click',()=>applyFilter(wc));
   legendEl.appendChild(item);
+});
+
+// ── Tier legend ──
+const tierCounts={};
+FIGHTERS.forEach(f=>{ const t=f.tier||'unranked'; tierCounts[t]=(tierCounts[t]||0)+1; });
+const TIER_ITEMS=[
+  {tier:'champion',   label:'Current Champion', color:'#FFD700', nebulaColor:'#e8f0ff'},
+  {tier:'ex_champion',label:'Former Champion',  color:'#C0A060', nebulaColor:'#e8c56a'},
+  {tier:'ranked',     label:'Ranked Top 15',    color:'#9a9a9a', nebulaColor:'#b08adf'},
+  {tier:'unranked',   label:'Unranked',         color:'#2a2a3a', nebulaColor:'#1e1440'},
+];
+const tierLegendEl=document.getElementById('tier-legend');
+const tierTitle=document.createElement('div');
+tierTitle.className='panel-title'; tierTitle.textContent='Status';
+tierLegendEl.appendChild(tierTitle);
+TIER_ITEMS.forEach(({tier,label,color,nebulaColor})=>{
+  const item=document.createElement('div');
+  item.className='legend-item';
+  item.dataset.tier=tier;
+  item.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;color:var(--text-lo);cursor:pointer;';
+  const count=tierCounts[tier]||0;
+  const dot=document.createElement('div');
+  dot.style.cssText='width:8px;height:8px;border-radius:50%;flex-shrink:0;';
+  dot.style.background=color;
+  dot.dataset.classic=color;
+  dot.dataset.nebula=nebulaColor;
+  item.appendChild(dot);
+  item.appendChild(document.createTextNode(label));
+  const countEl=document.createElement('span');
+  countEl.style.cssText='color:var(--text-lo);margin-left:auto;';
+  countEl.textContent=count;
+  item.appendChild(countEl);
+  item.addEventListener('click',()=>applyTierFilter(tier));
+  tierLegendEl.appendChild(item);
+});
+
+// ── Theme toggle ──
+function rebuildTraces(){
+  univTraces = [];
+  let _ti2 = 0;
+  Object.keys(traceIdx).forEach(wc=>{ Object.keys(traceIdx[wc]).forEach(tier=>{ traceIdx[wc][tier]=_ti2++; }); });
+  Object.entries(byWC).forEach(([wc, fighters])=>{
+    TIER_ORDER.forEach(tier=>{
+      const group = fighters.filter(f=>(f.tier||'unranked')===tier);
+      if(!group.length) return;
+      univTraces.push({
+        type:'scatter3d', mode:'markers', name:wc+'__'+tier,
+        x:group.map(f=>f.x), y:group.map(f=>f.y), z:group.map(f=>f.z),
+        text:group.map(f=>f.name), customdata:group.map(f=>f.name),
+        marker:{
+          size:group.map(f=>tierSize(f)),
+          color:group.map(f=>tierColor(f)),
+          opacity:group.map(f=>tierOpacity(f)),
+          line:{width:0},
+        },
+        hovertemplate:'<b>%{text}</b><extra></extra>',
+      });
+    });
+  });
+}
+
+const themeBtn  = document.getElementById('theme-toggle');
+const themeLabel= document.getElementById('theme-label');
+const plotEl    = document.getElementById('plot');
+
+themeBtn.addEventListener('click',()=>{
+  isNebula = !isNebula;
+  themeBtn.classList.toggle('nebula', isNebula);
+  themeLabel.textContent = isNebula ? 'NEBULA' : 'CLASSIC';
+  plotEl.style.transition = 'opacity 0.3s';
+  plotEl.style.opacity = '0';
+  setTimeout(()=>{
+    try {
+      updateHlColor();
+      rebuildTraces();
+      Plotly.react('plot',[...univTraces,hlTrace],univLayout,{responsive:true,displayModeBar:false});
+      updateTierIcons();
+    } catch(e) {
+      console.error('theme toggle error:', e);
+    }
+    plotEl.style.opacity = '1';
+  }, 300);
+});
+
+function updateTierIcons(){
+  document.querySelectorAll('#tier-legend .legend-item [data-classic]').forEach(dot=>{
+    dot.style.background = isNebula ? dot.dataset.nebula : dot.dataset.classic;
+  });
+}
+
+// ── Space key reset camera ──
+document.addEventListener('keydown', e=>{
+  if(e.code==='Space'){
+    e.preventDefault();
+    const helixActive=document.getElementById('helix-mode').classList.contains('active');
+    if(helixActive){
+      if(_helixMode==='local'){
+        // local 模式：切換 ranked / all
+        _helixShowAll = !_helixShowAll;
+        helixUpdateHint();
+        helixRenderLocal();
+      }
+      // full 模式：space 無效
+    } else if(document.getElementById('plot').style.display!=='none'){
+      // Universe：重置相機
+      Plotly.relayout('plot', {'scene.camera': {eye:{x:1.8,y:0.8,z:1.0}}});
+    }
+  }
 });
 
 // ── Universe search ──
@@ -1565,8 +2000,8 @@ function updateVsPlot(){
       type:'scatter3d', mode:'markers+text',
       x:[vsRed.x], y:[vsRed.y], z:[vsRed.z],
       text:[vsRed.name], textposition:'top center',
-      textfont:{color:'#c23030',size:10,family:'Barlow Condensed'},
-      marker:{size:9,color:'#8c1f1f',opacity:1,line:{color:'#c23030',width:1.5},
+      textfont:{color:'#b83040',size:10,family:'Barlow Condensed'},
+      marker:{size:9,color:'#7a1f28',opacity:1,line:{color:'#b83040',width:1.5},
               symbol:'circle'},
       hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
     });
@@ -1577,7 +2012,7 @@ function updateVsPlot(){
       x:[vsBlue.x], y:[vsBlue.y], z:[vsBlue.z],
       text:[vsBlue.name], textposition:'top center',
       textfont:{color:'#9994a0',size:10,family:'Barlow Condensed'},
-      marker:{size:9,color:'#1a3a6e',opacity:1,line:{color:'#9994a0',width:1.5}},
+      marker:{size:9,color:'#1a3050',opacity:1,line:{color:'#9994a0',width:1.5}},
       hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
     });
   }
@@ -1837,8 +2272,8 @@ function buildRadar(r, b) {
     data: {
       labels,
       datasets: [
-        { label: r.name.split(' ').pop(), data: rData, borderColor: '#c23030', backgroundColor: 'rgba(194,48,48,0.1)', borderWidth: 1.5, pointBackgroundColor: '#c23030', pointRadius: 2 },
-        { label: b.name.split(' ').pop(), data: bData, borderColor: '#2b5fb3', backgroundColor: 'rgba(43,95,179,0.1)', borderWidth: 1.5, pointBackgroundColor: '#2b5fb3', pointRadius: 2 },
+        { label: r.name.split(' ').pop(), data: rData, borderColor: '#b83040', backgroundColor: 'rgba(184,48,64,0.1)', borderWidth: 1.5, pointBackgroundColor: '#b83040', pointRadius: 2 },
+        { label: b.name.split(' ').pop(), data: bData, borderColor: '#2a5090', backgroundColor: 'rgba(42,80,144,0.1)', borderWidth: 1.5, pointBackgroundColor: '#2a5090', pointRadius: 2 },
       ],
     },
     options: {
@@ -1917,8 +2352,8 @@ function renderShap(topFeatures) {
   el.innerHTML = topFeatures.map(f => {
     const pct   = Math.round(Math.abs(f.shap) / maxAbs * 100);
     const isRed = f.shap > 0;
-    const color = isRed ? '#8c1f1f' : '#1a3a6e';
-    const accentColor = isRed ? '#c23030' : '#2b5fb3';
+    const color = isRed ? '#7a1f28' : '#1a3050';
+    const accentColor = isRed ? '#b83040' : '#2a5090';
     const dir   = isRed ? '▲ Red favored' : '▲ Blue favored';
     const label = labelMap[f.feature] || f.feature.replace('delta_','').replace(/_/g,' ');
     return `<div>
@@ -1972,10 +2407,10 @@ async function runVsAnalysis() {
       const div = document.createElement('div');
       div.className = 'sm-fight animate-in';
       div.innerHTML = `
-        <div class="sm-names"><span style="color:#c23030">${s.a}</span><span class="sm-vs">vs</span><span style="color:#2b5fb3">${s.bName}</span></div>
+        <div class="sm-names"><span style="color:#b83040">${s.a}</span><span class="sm-vs">vs</span><span style="color:#2a5090">${s.bName}</span></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px">
           <span class="sm-dist">style similarity: ${Math.round((1-s.dist/9)*100)}% match</span>
-          <span class="sm-winner" style="color:${winner===s.a ? '#c23030' : '#2b5fb3'}">${winner.split(' ').pop()}${finishStr}</span>
+          <span class="sm-winner" style="color:${winner===s.a ? '#b83040' : '#2a5090'}">${winner.split(' ').pop()}${finishStr}</span>
         </div>`;
       div.onclick = () => {
         if (fa && fb) { vsRed=fa; vsBlue=fb; setPickerUI('red',fa); setPickerUI('blue',fb); runVsAnalysis(); }
@@ -2033,8 +2468,8 @@ async function runVsAnalysis() {
 
       // Fight shape (ML-driven)
       const shapeMap = {
-        'KO/TKO':     { verdict:'EXPLOSIVE FIREFIGHT', color:'#c23030' },
-        'Submission': { verdict:'SUBMISSION HUNT',      color:'#4a7fd4' },
+        'KO/TKO':     { verdict:'EXPLOSIVE FIREFIGHT', color:'#b83040' },
+        'Submission': { verdict:'SUBMISSION HUNT',      color:'#2a5090' },
         'Decision':   { verdict:'WAR OF ATTRITION',     color:'#9994a0' },
       };
       const shape = shapeMap[data.method] || { verdict:'CALCULATED BATTLE', color:'#9994a0' };
@@ -2065,11 +2500,7 @@ async function runVsAnalysis() {
             const confLabelEl = document.getElementById('vs-conf-label');
       if (confLabelEl) {
         confLabelEl.textContent = data.confidence_label;
-        const cf = Math.min(1, Math.max(0, data.confidence || 0));
-        const cr = Math.round(26  + (201-26)  * cf);
-        const cg = Math.round(24  + (169-24)  * cf);
-        const cb = Math.round(36  + (110-36)  * cf);
-        confLabelEl.style.color = `rgb(${cr},${cg},${cb})`;
+        confLabelEl.style.color = 'var(--text-lo)';
       }
       const winEdge    = Math.round(Math.abs(data.red_win_prob - 0.5) * 200);
       const methodEdge = Math.round(Math.max(mp.ko, mp.sub, mp.decision) * 100);
@@ -2125,11 +2556,14 @@ function setMode(mode){
   const vsEl=document.getElementById('vs-mode');
   const bEl=document.getElementById('builder-mode');
   const dnaEl=document.getElementById('dna-mode');
+  const helixEl=document.getElementById('helix-mode');
   const searchWrap=document.getElementById('search-wrap');
   document.getElementById('btn-universe').classList.toggle('active',mode==='universe');
   document.getElementById('btn-vs').classList.toggle('active',mode==='vs');
   document.getElementById('btn-builder').classList.toggle('active',mode==='builder');
   document.getElementById('btn-dna').classList.toggle('active',mode==='dna');
+  document.getElementById('btn-helix').classList.toggle('active',mode==='helix');
+  if(helixEl) helixEl.classList.remove('active');
   if(mode==='universe'){
     univEl.style.display='block'; sideEl.style.display='flex';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
@@ -2158,9 +2592,17 @@ function setMode(mode){
   } else if(mode==='dna'){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.add('active');
+    if(helixEl) helixEl.classList.remove('active');
     searchWrap.style.display='none';
     document.getElementById('header-sub').textContent='META · Striking vs Grappling';
     dnaInit();
+  } else if(mode==='helix'){
+    univEl.style.display='none'; sideEl.style.display='none';
+    vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
+    if(helixEl) helixEl.classList.add('active');
+    searchWrap.style.display='none';
+    document.getElementById('header-sub').textContent='HELIX · Style Network & PageRank';
+    helixInit();
   }
 }
 
@@ -2171,22 +2613,22 @@ function setMode(mode){
 // Left column: Boxing(KO,Acc) + Muay Thai(3) + Wrestling(3)
 // Right column: Boxing(Vol,Def) + JiuJitsu(3) + Physical(Reach) + Find button
 const B_LEFT = [
-  {id:'pct_striking_power',    label:'KO Power',    sec:'Boxing'},
-  {id:'pct_striking_accuracy', label:'Accuracy',    sec:null},
   {id:'pct_leg_kicks',         label:'Leg Kicks',   sec:'Muay Thai'},
   {id:'pct_clinch',            label:'Clinch',      sec:null},
   {id:'pct_body',              label:'Body',        sec:null},
   {id:'pct_td_frequency',      label:'TD Frequency',sec:'Wrestling'},
   {id:'pct_td_accuracy',       label:'TD Accuracy', sec:null},
   {id:'pct_td_defense',        label:'TD Defense',  sec:null},
-];
-const B_RIGHT = [
-  {id:'pct_striking_volume',   label:'Volume',      sec:'Boxing'},
-  {id:'pct_striking_defense',  label:'Defense',     sec:null},
   {id:'pct_submission',        label:'Submission',  sec:'Jiu-Jitsu'},
   {id:'pct_control',           label:'Control',     sec:null},
   {id:'pct_ground_pound',      label:'Grd & Pound', sec:null},
-  {id:'pct_reach',             label:'Reach',       sec:'Physical'},
+];
+const B_RIGHT = [
+  {id:'pct_striking_power',    label:'KO Power',    sec:'Boxing'},
+  {id:'pct_striking_accuracy', label:'Accuracy',    sec:null},
+  {id:'pct_striking_volume',   label:'Volume',      sec:null},
+  {id:'pct_striking_defense',  label:'Defense',     sec:null},
+  {id:'pct_reach',             label:'Reach',       sec:null},
 ];
 
 // Keep B_DEFS for bVals init
@@ -2238,16 +2680,16 @@ function bBuildGrid(){
   }
 
   const TIER_LEFT = [
-    {t:'S',  color:'#FFD700',           desc:'Gods of the sport. The one. The only.'},
-    {t:'A+', color:'#c9a96e',           desc:'Legends of their era. Untouchable at their peak.'},
-    {t:'A',  color:'#c9a96e',           desc:'Dynasty builders. Reigned supreme.'},
-    {t:'B+', color:'var(--champagne)',desc:'Champions who defended. Proved gold is earned, not given.'},
+    {t:'S',   color:'var(--text-lo)', desc:'Gods of the sport. The one. The only.'},
+    {t:'A+',  color:'var(--text-lo)', desc:'Legends of their era. Untouchable at their peak.'},
+    {t:'A',   color:'var(--text-lo)', desc:'Dynasty builders. Reigned supreme.'},
+    {t:'B+',  color:'var(--text-lo)', desc:'Champions who defended. Proved gold is earned.'},
   ];
   const TIER_RIGHT = [
-    {t:'B',  color:'var(--champagne)',desc:'Once a champion, always a champion.'},
-    {t:'C+', color:'#a0a0b0',           desc:'Greatness needs no gold to be proven.'},
-    {t:'C-D',color:'#a0a0b0',           desc:'Historically ranked Top 5 / 10 / 15.'},
-    {t:'E',  color:'#a0a0b0',           desc:'World-class. The UFC is the sharkest tank on earth.'},
+    {t:'B',   color:'var(--text-lo)', desc:'Once a champion, always a champion.'},
+    {t:'C+',  color:'var(--text-lo)', desc:'Greatness needs no gold to be proven.'},
+    {t:'C-D', color:'var(--text-lo)', desc:'Historically ranked Top 5 / 10 / 15.'},
+    {t:'E',   color:'var(--text-lo)', desc:'World-class. The UFC is the sharkest tank.'},
   ];
 
   function makeTierRef(){
@@ -2255,7 +2697,7 @@ function bBuildGrid(){
     panel.id = 'b-tier-ref';
     const title = document.createElement('div');
     title.className = 'b-col-section-title b-tier-ref-title';
-    title.textContent = 'Tier Reference';
+    title.textContent = 'Tier';
     panel.appendChild(title);
     const grid = document.createElement('div');
     grid.className = 'b-tier-grid';
@@ -2314,12 +2756,12 @@ function bFlashPip(featId, targetVal){
   // Briefly show target value then bounce back to current
   const cur = bVals[featId];
   const elite = targetVal >= 8;
-  const flashColor = elite ? 'var(--crimson-2)' : 'var(--champagne)';
+  const flashColor = elite ? 'var(--champagne)' : 'var(--text-lo)';
   for(let i=1;i<=10;i++){
     const pip=document.getElementById(`pip-${featId}-${i}`);
     if(!pip) continue;
-    pip.style.background = i<=targetVal ? flashColor : 'var(--border)';
-    pip.style.boxShadow  = (i<=targetVal&&elite) ? '0 0 4px rgba(194,48,48,0.5)' : 'none';
+    pip.style.background = i<=targetVal ? flashColor : 'var(--surface-3)';
+    pip.style.boxShadow  = 'none';
   }
   const valEl=document.getElementById('val-'+featId);
   if(valEl){ valEl.textContent=targetVal; valEl.style.color=flashColor; }
@@ -2329,21 +2771,20 @@ function bFlashPip(featId, targetVal){
 function bUpdateBox(featId){
   const val   = bVals[featId];
   const elite = val >= 8;
-  const fillColor = elite ? 'var(--crimson-2)' : 'var(--champagne)';
-  const glowColor = elite ? 'rgba(194,48,48,0.45)' : 'rgba(201,169,110,0.3)';
+  const fillColor = elite ? 'var(--champagne)' : 'var(--text-lo)';
   for(let i=1;i<=10;i++){
     const pip=document.getElementById(`pip-${featId}-${i}`);
     if(!pip) continue;
-    pip.style.background = i<=val ? fillColor : 'var(--border)';
-    pip.style.boxShadow  = (i<=val&&elite) ? `0 0 3px ${glowColor}` : 'none';
+    pip.style.background = i<=val ? fillColor : 'var(--surface-3)';
+    pip.style.boxShadow  = 'none';
   }
   const valEl=document.getElementById('val-'+featId);
   if(valEl){
     valEl.textContent=val;
-    valEl.style.color = elite ? 'var(--crimson-2)' : 'var(--champagne)';
+    valEl.style.color = elite ? 'var(--champagne)' : 'var(--text-lo)';
   }
   const box=document.getElementById('attr-'+featId);
-  if(box) box.style.borderColor = elite ? 'rgba(194,48,48,0.35)' : 'var(--border)';
+  if(box) box.style.borderColor = 'var(--border)';
 }
 
 function bRefreshAll(){ B_DEFS.forEach(d=>bUpdateBox(d.id)); bUpdateBudget(); }
@@ -2611,7 +3052,8 @@ async function dnaInit(){
     // Hit-test year column
     if(!hit && _dnaYearly.length){
       const pad = dnaGetPad(canvas);
-      const chartW = canvas.width  - pad.l - pad.r;
+      const rect2 = canvas.getBoundingClientRect();
+      const chartW = rect2.width - pad.l - pad.r;
       const n = _dnaYearly.length;
       const colW = chartW / n;
       const xi = Math.floor((mx - pad.l) / colW);
@@ -2644,7 +3086,7 @@ async function dnaInit(){
           ? (d.winrate_diff > 0 ? '+' : '') + d.winrate_diff.toFixed(1) + '%'
           : '—';
         const diffColor = d.winrate_diff != null
-          ? (d.winrate_diff > 0 ? '#c23030' : '#c9a96e')
+          ? (d.winrate_diff > 0 ? '#b83040' : '#c9a96e')
           : '#4a4858';
         ttName.textContent = d.year + (d.is_partial ? ' *' : '');
         ttBody.innerHTML =
@@ -2730,16 +3172,16 @@ function dnaDraw(canvas, W, H, dpr){
 
     // Striking bar (above mid)
     const sh = barH(d.pct_striking || 0);
-    ctx.fillStyle   = 'rgba(140,31,31,0.38)';
-    ctx.strokeStyle = 'rgba(140,31,31,0.60)';
+    ctx.fillStyle   = 'rgba(122,31,40,0.38)';
+    ctx.strokeStyle = 'rgba(122,31,40,0.60)';
     ctx.lineWidth   = 0.5;
     ctx.fillRect(bx, yMid - sh, bw, sh);
     ctx.strokeRect(bx, yMid - sh, bw, sh);
 
     // Grappling bar (below mid)
     const gh = barH(d.pct_grappling || 0);
-    ctx.fillStyle   = 'rgba(43,95,179,0.38)';
-    ctx.strokeStyle = 'rgba(43,95,179,0.60)';
+    ctx.fillStyle   = 'rgba(42,80,144,0.38)';
+    ctx.strokeStyle = 'rgba(42,80,144,0.60)';
     ctx.fillRect(bx, yMid, bw, gh);
     ctx.strokeRect(bx, yMid, bw, gh);
   });
@@ -2785,13 +3227,13 @@ function dnaDraw(canvas, W, H, dpr){
   const grpPts = yearly.map((d,i)=>
     d.grp_winrate != null ? {x: xPos(i), y: yWR(d.grp_winrate)} : null
   );
-  drawLine(grpPts.filter(Boolean), '#4a7fd4', 2);
+  drawLine(grpPts.filter(Boolean), '#2a5090', 2);
 
   // Striking win rate line (crimson)
   const strPts = yearly.map((d,i)=>
     d.str_winrate != null ? {x: xPos(i), y: yWR(d.str_winrate)} : null
   );
-  drawLine(strPts.filter(Boolean), '#c23030', 2);
+  drawLine(strPts.filter(Boolean), '#b83040', 2);
 
   // ── X axis labels ──
   ctx.fillStyle    = '#4a4858';
@@ -2865,6 +3307,440 @@ function dnaDraw(canvas, W, H, dpr){
   ctx.stroke();
 }
 
+
+// HELIX MODE
+// State
+let _helixInited    = false;
+let _helixAllNodes  = null;   // 全量 node 列表（搜尋用）
+let _helixAllEdges  = null;   // 全量 edge 列表
+let _helixMode      = 'local'; // 'local' | 'full'
+let _helixShowAll   = false;  // local 模式：是否顯示 unranked
+let _helixSelected  = null;   // 單擊選中的選手（panel）
+let _helixCenter    = null;   // local 模式的中心選手
+let _helixLocalRaw  = null;   // local 模式 API 回傳的原始 nodes（含 unranked）
+let _helixLocalEdgesRaw = null; // local 模式原始 edges
+const HELIX_DEFAULT = 'Charles Oliveira';
+
+// ── Color / size helpers ──
+function helixNodeColor(d){
+  if(d.tier==='champion')        return '#FFD700';
+  if(d.tier==='former_champion') return '#C0A060';
+  if(d.tier==='ever_ranked')     return '#9a9a9a';
+  return '#2a2a3a';
+}
+function helixNodeStroke(d, centerName){
+  if(d.id===_helixSelected)      return '#c9a96e';
+  if(centerName && d.id===centerName) return '#c9a96e';
+  if(d.tier==='champion')        return 'rgba(255,215,0,0.55)';
+  if(d.tier==='former_champion') return 'rgba(192,160,96,0.35)';
+  if(d.tier==='ever_ranked')     return 'rgba(154,154,154,0.15)';
+  return 'transparent';
+}
+function helixNodeR(d, centerName){
+  if(centerName && d.id===centerName) return 14;
+  return 3 + (d.pr/100)*10;
+}
+
+// ── Init ──
+async function helixInit(){
+  if(_helixInited && _helixAllNodes){ helixFocusOn(HELIX_DEFAULT); return; }
+  if(_helixInited) return;
+  _helixInited = true;
+  try{
+    const res = await fetch(API_BASE+'/api/helix/graph?ranked_only=false');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const full = await res.json();
+    _helixAllNodes = full.nodes||[];
+    _helixAllEdges = full.edges||[];
+  }catch(e){
+    console.error('HELIX load failed:',e);
+    const ld = document.getElementById('helix-loading');
+    ld.textContent = 'Failed to load graph data';
+    ld.style.color = '#b83040';
+    return;
+  }
+  helixBuildSearch();
+  helixFocusOn(HELIX_DEFAULT);
+}
+
+// ── Search autocomplete ──
+function helixBuildSearch(){
+  const nodes = _helixAllNodes||[];
+  const inp = document.getElementById('helix-search');
+  const ac  = document.getElementById('helix-ac');
+  inp.addEventListener('input',()=>{
+    const q = inp.value.toLowerCase().trim();
+    ac.innerHTML = ''; ac.style.display='none';
+    if(!q) return;
+    const matches = nodes.filter(n=>n.id.toLowerCase().includes(q))
+                         .sort((a,b)=>b.pr-a.pr).slice(0,8);
+    if(!matches.length) return;
+    matches.forEach(n=>{
+      const div=document.createElement('div'); div.className='helix-ac-item';
+      const s1=document.createElement('span'); s1.textContent=n.id;
+      const s2=document.createElement('span'); s2.className='helix-ac-pr'; s2.textContent='PR #'+n.pr_rank;
+      div.appendChild(s1); div.appendChild(s2);
+      div.onclick=()=>{ inp.value=n.id; ac.style.display='none'; helixFocusOn(n.id); };
+      ac.appendChild(div);
+    });
+    ac.style.display='block';
+  });
+  document.addEventListener('click',e=>{ if(!inp.contains(e.target)) ac.style.display='none'; });
+}
+
+// ── LOCAL MODE: focus on fighter ──
+async function helixFocusOn(name){
+  _helixMode   = 'local';
+  _helixCenter = name;
+  _helixShowAll = false;  // 每次 focus 重設為 ranked only
+  _helixSelected = name;
+
+  const loading = document.getElementById('helix-loading');
+  loading.style.display = 'flex';
+  helixUpdateHint();
+
+  try{
+    const res = await fetch(API_BASE+'/api/helix/fighter/'+encodeURIComponent(name)+'?depth=2');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    _helixLocalRaw      = data.nodes||[];
+    _helixLocalEdgesRaw = data.edges||[];
+    helixShowPanel(name);
+  }catch(e){
+    console.error('helixFocusOn failed:',e);
+    loading.style.display='none';
+    return;
+  }
+
+  helixRenderLocal();
+}
+
+// ── Render local graph（用 _helixLocalRaw + _helixShowAll 過濾）──
+function helixRenderLocal(){
+  if(!_helixLocalRaw) return;
+  const centerName = _helixCenter;
+
+  // 過濾：中心選手永遠顯示，其餘根據 _helixShowAll
+  let nodes = _helixLocalRaw.filter(n=>
+    n.id===centerName || (_helixShowAll ? true : n.tier!=='unranked')
+  );
+  const nodeIds = new Set(nodes.map(n=>n.id));
+  const edges   = _helixLocalEdgesRaw.filter(e=>nodeIds.has(e.winner)&&nodeIds.has(e.loser));
+
+  nodes = nodes.map(n=>({...n}));
+  const nodeMap = Object.fromEntries(nodes.map(n=>[n.id,n]));
+  const links   = edges.map(e=>({
+    source:nodeMap[e.winner], target:nodeMap[e.loser],
+    weight:e.weight, count:e.count,
+    method:e.bouts&&e.bouts[0]?e.bouts[0].method:''
+  })).filter(l=>l.source&&l.target);
+
+  const wrap = document.getElementById('helix-graph-wrap');
+  const W = wrap.clientWidth||900, H = wrap.clientHeight||700;
+  const svgEl = d3.select('#helix-svg').attr('viewBox','0 0 '+W+' '+H).style('background','#09090d');
+  svgEl.selectAll('*').remove();
+
+  helixAddArrows(svgEl,'2');
+
+  const g = svgEl.append('g');
+  helixSetZoom(svgEl,g);
+
+  // 中心節點固定在畫面中央
+  const centerNode = nodes.find(n=>n.id===centerName);
+  if(centerNode){ centerNode.fx=W/2; centerNode.fy=H/2; }
+
+  const sim = d3.forceSimulation(nodes)
+    .force('link',d3.forceLink(links).id(d=>d.id).distance(d=>70-d.weight*8).strength(0.6))
+    .force('charge',d3.forceManyBody().strength(d=>d.id===centerName?-300:-80-d.pr*0.5))
+    .force('center',d3.forceCenter(W/2,H/2))
+    .force('collision',d3.forceCollide().radius(d=>helixNodeR(d,centerName)+4));
+
+  const link = helixDrawLinks(g, links, '2');
+
+  const node = g.append('g').selectAll('circle').data(nodes).join('circle')
+    .attr('r',d=>helixNodeR(d,centerName))
+    .attr('fill',d=>helixNodeColor(d))
+    .attr('stroke',d=>helixNodeStroke(d,centerName))
+    .attr('stroke-width',d=>d.id===centerName?2:1)
+    .attr('opacity',d=>d.id===centerName?1:d.tier==='unranked'?0.5:0.85)
+    .style('cursor','pointer')
+    // 單擊：顯示 panel
+    .on('click',(event,d)=>{ event.stopPropagation(); _helixSelected=d.id; helixShowPanel(d.id); helixHighlightNode(node,d.id,centerName); })
+    // 雙擊：focus 到該選手
+    .on('dblclick',(event,d)=>{ event.stopPropagation(); helixFocusOn(d.id); })
+    .call(d3.drag()
+      .on('start',(e,d)=>{ if(!e.active)sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+      .on('drag', (e,d)=>{ d.fx=e.x; d.fy=e.y; })
+      .on('end',  (e,d)=>{ if(!e.active)sim.alphaTarget(0); if(d.id!==centerName){d.fx=null;d.fy=null;} }));
+
+  helixAddTooltip(node, centerName);
+
+  // Labels — 全部顯示（local graph node 少）
+  const labels = g.append('g').selectAll('text').data(nodes).join('text')
+    .attr('font-family','Barlow Condensed,sans-serif')
+    .attr('font-size',d=>d.id===centerName?12:8)
+    .attr('fill',d=>d.id===centerName?'#c9a96e':d.tier==='unranked'?'#3a3748':'#6e6a7c')
+    .attr('font-weight',d=>d.id===centerName?700:400)
+    .attr('text-anchor','middle').attr('dy','2em').attr('pointer-events','none')
+    .text(d=>d.id.split(' ').pop());
+
+  sim.on('tick',()=>{
+    link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    node.attr('cx',d=>d.x).attr('cy',d=>d.y);
+    labels.attr('x',d=>d.x).attr('y',d=>d.y);
+  });
+
+  setTimeout(()=>{ document.getElementById('helix-loading').style.display='none'; },1500);
+
+  svgEl.on('click',()=>{ const tt=document.getElementById('helix-tt'); if(tt)tt.style.display='none'; });
+}
+
+function helixHighlightNode(nodeSel, name, centerName){
+  nodeSel
+    .attr('stroke',d=>helixNodeStroke(d,centerName))
+    .attr('stroke-width',d=>d.id===name||d.id===centerName?2:1)
+    .attr('r',d=>helixNodeR(d,centerName));
+}
+
+// ── FULL MODE ──
+function helixGoFull(){
+  _helixMode    = 'full';
+  _helixCenter  = null;
+  _helixShowAll = false;
+  _helixSelected = null;
+  helixClearPanel();
+  helixUpdateHint();
+  helixRenderFull();
+}
+
+function helixRenderFull(){
+  if(!_helixAllNodes) return;
+  const loading = document.getElementById('helix-loading');
+  loading.style.display = 'flex';
+
+  const nodes   = _helixAllNodes.filter(n=>n.tier!=='unranked');
+  const nodeIds = new Set(nodes.map(n=>n.id));
+  const edges   = _helixAllEdges.filter(e=>nodeIds.has(e.winner)&&nodeIds.has(e.loser));
+  // 過濾孤立節點（沒有任何 edge 的 node）
+  const connectedIds = new Set();
+  edges.forEach(e=>{ connectedIds.add(e.winner); connectedIds.add(e.loser); });
+  const nodesCopy = nodes.filter(n=>connectedIds.has(n.id)).map(n=>({...n}));
+  const nodeMap = Object.fromEntries(nodesCopy.map(n=>[n.id,n]));
+  const links   = edges.map(e=>({
+    source:nodeMap[e.winner], target:nodeMap[e.loser],
+    weight:e.weight, count:e.count,
+    method:e.bouts&&e.bouts[0]?e.bouts[0].method:''
+  })).filter(l=>l.source&&l.target);
+
+  const wrap = document.getElementById('helix-graph-wrap');
+  const W = wrap.clientWidth||900, H = wrap.clientHeight||700;
+  const svgEl = d3.select('#helix-svg').attr('viewBox','0 0 '+W+' '+H).style('background','#09090d');
+  svgEl.selectAll('*').remove();
+
+  helixAddArrows(svgEl,'f');
+
+  const g = svgEl.append('g');
+  helixSetZoom(svgEl,g);
+
+  const sim = d3.forceSimulation(nodesCopy)
+    .force('link',d3.forceLink(links).id(d=>d.id).distance(d=>55-d.weight*6).strength(0.5))
+    .force('charge',d3.forceManyBody().strength(d=>-60-d.pr*0.7))
+    .force('center',d3.forceCenter(W/2,H/2))
+    .force('collision',d3.forceCollide().radius(d=>helixNodeR(d,null)+3))
+    .alphaMin(0.005);
+
+  const link = helixDrawLinks(g, links, 'f');
+
+  const node = g.append('g').selectAll('circle').data(nodesCopy).join('circle')
+    .attr('r',d=>helixNodeR(d,null))
+    .attr('fill',d=>helixNodeColor(d))
+    .attr('stroke',d=>helixNodeStroke(d,null))
+    .attr('stroke-width',1)
+    .attr('opacity',0.85)
+    .style('cursor','pointer')
+    // 單擊：顯示 panel
+    .on('click',(event,d)=>{ event.stopPropagation(); _helixSelected=d.id; helixShowPanel(d.id); })
+    // 雙擊：切到 local mode
+    .on('dblclick',(event,d)=>{ event.stopPropagation(); helixFocusOn(d.id); })
+    .call(d3.drag()
+      .on('start',(e,d)=>{ if(!e.active)sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+      .on('drag', (e,d)=>{ d.fx=e.x; d.fy=e.y; })
+      .on('end',  (e,d)=>{ if(!e.active)sim.alphaTarget(0); d.fx=null; d.fy=null; }));
+
+  helixAddTooltip(node, null);
+
+  const labels = g.append('g').selectAll('text')
+    .data(nodesCopy.filter(n=>n.pr>=55))
+    .join('text')
+    .attr('font-family','Barlow Condensed,sans-serif')
+    .attr('font-size',d=>d.pr>=75?10:8)
+    .attr('fill',d=>d.pr>=80?'#c9a96e':'#6e6a7c')
+    .attr('text-anchor','middle').attr('dy','2em').attr('pointer-events','none')
+    .text(d=>d.id.split(' ').pop());
+
+  sim.on('tick',()=>{
+    link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    node.attr('cx',d=>d.x).attr('cy',d=>d.y);
+    labels.attr('x',d=>d.x).attr('y',d=>d.y);
+  });
+
+  // Zoom-to-fit after simulation settles
+  sim.on('end',()=>{
+    // sim 結束才隱藏 loading 並 zoom-to-fit
+    const padding = 60;
+    const xs = nodesCopy.map(n=>n.x).filter(v=>v!=null&&isFinite(v));
+    const ys = nodesCopy.map(n=>n.y).filter(v=>v!=null&&isFinite(v));
+    if(xs.length){
+      const x0=Math.min(...xs)-padding, x1=Math.max(...xs)+padding;
+      const y0=Math.min(...ys)-padding, y1=Math.max(...ys)+padding;
+      const scale = Math.min(0.92, Math.min(W/(x1-x0), H/(y1-y0)));
+      const tx = (W - scale*(x0+x1))/2;
+      const ty = (H - scale*(y0+y1))/2;
+      window._helixSvgEl.transition().duration(500)
+        .call(window._helixZoom.transform, d3.zoomIdentity.translate(tx,ty).scale(scale));
+    }
+    loading.style.display='none';
+  });
+  // fallback：最多等 4 秒
+  setTimeout(()=>{ loading.style.display='none'; },4000);
+  svgEl.on('click',()=>{ const tt=document.getElementById('helix-tt'); if(tt)tt.style.display='none'; });
+}
+
+// ── Shared helpers ──
+function helixAddArrows(svgEl, suffix){
+  const defs = svgEl.append('defs');
+  [['ko'+suffix,'rgba(184,48,64,0.7)'],['sub'+suffix,'rgba(42,80,144,0.7)'],['dec'+suffix,'rgba(100,100,120,0.5)']].forEach(([id,fill])=>{
+    defs.append('marker').attr('id','arrow-'+id).attr('viewBox','0 -4 8 8')
+      .attr('refX',16).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto')
+      .append('path').attr('d','M0,-4L8,0L0,4').attr('fill',fill);
+  });
+}
+function helixSetZoom(svgEl, g){
+  const zoom = d3.zoom().scaleExtent([0.15,8]).on('zoom',e=>g.attr('transform',e.transform));
+  svgEl.call(zoom);
+  window._helixZoom=zoom; window._helixSvgEl=svgEl;
+}
+function helixDrawLinks(g, links, suffix){
+  return g.append('g').selectAll('line').data(links).join('line')
+    .attr('stroke',d=>d.method.includes('KO')?'rgba(184,48,64,0.45)':d.method.includes('Sub')?'rgba(42,80,144,0.45)':'rgba(80,80,100,0.25)')
+    .attr('stroke-width',d=>Math.min(2.5,0.6+d.weight*0.3))
+    .attr('marker-end',d=>d.method.includes('KO')?'url(#arrow-ko'+suffix+')':d.method.includes('Sub')?'url(#arrow-sub'+suffix+')':'url(#arrow-dec'+suffix+')');
+}
+function helixAddTooltip(node, centerName){
+  let tt=document.getElementById('helix-tt');
+  if(!tt){
+    tt=document.createElement('div'); tt.id='helix-tt';
+    tt.style.cssText='position:fixed;pointer-events:none;background:rgba(14,14,20,0.95);border:1px solid #1f1f2c;border-radius:3px;padding:7px 10px;font-family:DM Mono,monospace;font-size:10px;color:#b8b4c0;display:none;z-index:9999;max-width:200px;line-height:1.6';
+    document.body.appendChild(tt);
+  }
+  node
+    .on('mouseover',(e,d)=>{
+      tt.style.display='block';
+      const hint = centerName && d.id===centerName ? '<br><span style="color:#c9a96e">center</span>' : '<br><span style="color:#3a3748">dbl-click to focus</span>';
+      tt.innerHTML='<strong style="color:#e8e4dc;font-size:13px;text-transform:uppercase">'+d.id+'</strong><br>PR Rank <span style="color:#c9a96e">#'+d.pr_rank+'</span><br>'+d.style+hint;
+    })
+    .on('mousemove',e=>{ tt.style.left=(e.clientX+14)+'px'; tt.style.top=(e.clientY-8)+'px'; })
+    .on('mouseout', ()=>{ tt.style.display='none'; });
+}
+
+// ── Hint bar ──
+function helixUpdateHint(){
+  const hint = document.getElementById('helix-hint');
+  if(!hint) return;
+  if(_helixMode==='local'){
+    hint.style.display='block';
+    const modeSpan = hint.querySelector('.hint-mode');
+    if(modeSpan) modeSpan.textContent = _helixShowAll ? 'ALL' : 'RANKED';
+  } else {
+    hint.style.display='none';
+  }
+}
+
+// ── Panel ──
+async function helixShowPanel(name){
+  const emptyEl  = document.getElementById('helix-empty');
+  const detailEl = document.getElementById('helix-fighter-detail');
+  emptyEl.style.display  = 'none';
+  detailEl.style.display = 'block';
+  detailEl.textContent   = '';
+  const ld = document.createElement('div');
+  ld.style.cssText = 'color:var(--text-lo);font-family:DM Mono,monospace;font-size:9px;letter-spacing:0.1em';
+  ld.textContent = 'LOADING...';
+  detailEl.appendChild(ld);
+  try{
+    const res  = await fetch(API_BASE+'/api/helix/fighter/'+encodeURIComponent(name));
+    const data = await res.json();
+    const fn   = data.fighter;
+    const beats= data.beat_chain||[];
+    const lost = data.loss_chain||[];
+    detailEl.textContent = '';
+    function mk(tag,cls,txt){
+      const d=document.createElement(tag);
+      if(cls) d.className=cls;
+      if(txt!==undefined) d.textContent=txt;
+      return d;
+    }
+    function row(label,val,gold){
+      const d=mk('div','helix-stat-row');
+      d.appendChild(mk('span','helix-stat-label',label));
+      d.appendChild(mk('span','helix-stat-val'+(gold?' gold':''),val));
+      return d;
+    }
+    function chainItem(opponent,method){
+      const d=mk('div','helix-chain-item');
+      d.addEventListener('click',()=>helixFocusOn(opponent));
+      const mc=method&&method.includes('KO')?'ko':method&&method.includes('Sub')?'sub':'dec';
+      const ms=method&&method.includes('KO')?'KO':method&&method.includes('Sub')?'SUB':'DEC';
+      d.appendChild(mk('span','helix-chain-name',opponent));
+      d.appendChild(mk('span','helix-chain-method '+mc,ms));
+      return d;
+    }
+    function note(t){
+      const d=mk('div'); d.style.cssText='font-size:9px;color:var(--text-lo);padding:4px 0';
+      d.textContent=t; return d;
+    }
+    function getMethod(b){ return b&&b.bouts&&b.bouts[0]?b.bouts[0].method:''; }
+    const tl={'champion':'◆ Champion','former_champion':'Former Champion','ever_ranked':'Ever Ranked','unranked':'Unranked'};
+    const nameEl=mk('div'); nameEl.id='helix-fighter-name'; nameEl.textContent=fn.id;
+    const metaEl=mk('div'); metaEl.id='helix-fighter-meta';
+    metaEl.textContent=(fn.style||'-')+' · '+(fn.stance||'-')+' · '+(tl[fn.tier]||fn.tier||'-');
+    detailEl.appendChild(nameEl);
+    detailEl.appendChild(metaEl);
+    detailEl.appendChild(row('PageRank','#'+fn.pr_rank,fn.tier==='champion'));
+    detailEl.appendChild(row('W / L (graph)',fn.wins_graph+' / '+fn.losses_graph,false));
+    // 找社群代表：同 community 裡 tier 最高、PR 最高的 ranked 選手
+    (function(){
+      const comm = fn.community;
+      const allN = window._helixAllNodes||[];
+      const TIER_W = {'champion':4,'former_champion':3,'ever_ranked':2,'unranked':1};
+      const peers = allN.filter(n=>n.community===comm);
+      peers.sort((a,b)=>{
+        const tw = (TIER_W[b.tier]||0)-(TIER_W[a.tier]||0);
+        return tw!==0 ? tw : b.pr-a.pr;
+      });
+      const leader = peers.find(n=>n.tier!=='unranked');
+      const label = leader ? leader.id.split(' ').pop() : '#'+comm;
+      detailEl.appendChild(row('Community',label,false));
+    })();
+    detailEl.appendChild(mk('div','helix-chain-title','Beat Chain'));
+    if(beats.length) beats.slice(0,10).forEach(b=>detailEl.appendChild(chainItem(b.opponent,getMethod(b))));
+    else detailEl.appendChild(note('No recorded victories'));
+    detailEl.appendChild(mk('div','helix-chain-title','Lost To'));
+    if(lost.length) lost.slice(0,5).forEach(b=>detailEl.appendChild(chainItem(b.opponent,getMethod(b))));
+    else detailEl.appendChild(note('No recorded losses'));
+  }catch(e){
+    detailEl.textContent='';
+    const err=mk('div'); err.style.cssText='color:#b83040;font-size:9px';
+    err.textContent='Load failed'; detailEl.appendChild(err);
+  }
+}
+
+function helixClearPanel(){
+  document.getElementById('helix-empty').style.display='flex';
+  document.getElementById('helix-fighter-detail').style.display='none';
+  document.getElementById('helix-fighter-detail').textContent='';
+}
+
   window.setMode=setMode;
   window.openVsPicker=openVsPicker;
   window.loadRandomMatchup=loadRandomMatchup;
@@ -2874,6 +3750,9 @@ function dnaDraw(canvas, W, H, dpr){
   window.bFind=bFind;
   window.bPipClick=bPipClick;
   window.bSubmit=bSubmit;
+  window.helixGoFull=helixGoFull;
+  // expose for community lookup
+  Object.defineProperty(window,'_helixAllNodes',{get:()=>_helixAllNodes});
 }
 boot();
 </script>

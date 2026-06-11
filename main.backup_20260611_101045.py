@@ -76,8 +76,6 @@ _MATRIX = _build_matrix()
 print(f"KNN matrix: {_MATRIX.shape}, nan: {np.isnan(_MATRIX).any()}")
 
 # ══════════════════════════════════════════════════════
-#  VS Mode — ML 勝率預測
-# ══════════════════════════════════════════════════════
 #  VS Mode — ML 預測（勝負 + 方式 + 回合）
 # ══════════════════════════════════════════════════════
 import xgboost as xgb
@@ -192,44 +190,102 @@ def _build_vs_vector(red_name, blue_name):
             bs = str(fa_val(fa_b, 'stance') or '')
             vec[col] = float(rs == bs)
         elif col == 'delta_str_penetration':
-            # red 站立穿透 - blue 站立穿透（delta 正值 = red 佔優）
-            r_str = safe_float(r.get('sig_per_r'), 5.0)
-            b_sdef = safe_float(b.get('str_def'), 0.5)
-            b_str = safe_float(b.get('sig_per_r'), 5.0)
-            r_sdef = safe_float(r.get('str_def'), 0.5)
-            f1_sp = r_str * (1 - b_sdef)
-            f2_sp = b_str * (1 - r_sdef)
-            vec[col] = f1_sp - f2_sp
-        elif col == 'delta_td_penetration':
-            # red 摔跤穿透 - blue 摔跤穿透
-            r_td  = safe_float(r.get('td_per_r'), 1.0)
-            b_tdef = safe_float(b.get('td_def'), 0.5)
-            b_td  = safe_float(b.get('td_per_r'), 1.0)
-            r_tdef = safe_float(r.get('td_def'), 0.5)
-            f1_tp = r_td * (1 - b_tdef)
-            f2_tp = b_td * (1 - r_tdef)
-            vec[col] = f1_tp - f2_tp
-        elif col == 'delta_str_vs_td':
-            # (red站打/blue摔跤穿透) - (blue站打/red摔跤穿透)
             r_str  = safe_float(r.get('sig_per_r'), 5.0)
             b_sdef = safe_float(b.get('str_def'), 0.5)
-            b_td   = safe_float(b.get('td_per_r'), 1.0)
-            r_tdef = safe_float(r.get('td_def'), 0.5)
             b_str  = safe_float(b.get('sig_per_r'), 5.0)
             r_sdef = safe_float(r.get('str_def'), 0.5)
+            f1_sp  = r_str * (1 - b_sdef)
+            f2_sp  = b_str * (1 - r_sdef)
+            vec[col] = f1_sp - f2_sp
+        elif col == 'delta_td_penetration':
             r_td   = safe_float(r.get('td_per_r'), 1.0)
             b_tdef = safe_float(b.get('td_def'), 0.5)
-            f1_sp = r_str * (1 - b_sdef)
-            f2_tp = b_td  * (1 - r_tdef)
-            f2_sp = b_str * (1 - r_sdef)
-            f1_tp = r_td  * (1 - b_tdef)
-            vec[col] = (f1_sp / (f2_tp + 0.01)) - (f2_sp / (f1_tp + 0.01))
+            b_td   = safe_float(b.get('td_per_r'), 1.0)
+            r_tdef = safe_float(r.get('td_def'), 0.5)
+            f1_tp  = r_td * (1 - b_tdef)
+            f2_tp  = b_td * (1 - r_tdef)
+            vec[col] = f1_tp - f2_tp
+        elif col == 'delta_str_vs_td':
+            r_str  = safe_float(r.get('sig_per_r'), 5.0)
+            b_tdef = safe_float(b.get('td_def'), 0.5)
+            b_str  = safe_float(b.get('sig_per_r'), 5.0)
+            r_tdef = safe_float(r.get('td_def'), 0.5)
+            f1     = r_str * (1 - b_tdef)
+            f2     = b_str * (1 - r_tdef)
+            vec[col] = f1 - f2
+        elif col == 'f1_td_threat_vs_f2_def':
+            vec[col] = safe_float(r.get('pct_td_frequency'), 5.0) * safe_float(b.get('pct_td_defense'), 5.0)
+        elif col == 'f2_td_threat_vs_f1_def':
+            vec[col] = safe_float(b.get('pct_td_frequency'), 5.0) * safe_float(r.get('pct_td_defense'), 5.0)
+        elif col == 'f1_str_threat_vs_f2_def':
+            vec[col] = safe_float(r.get('pct_striking_volume'), 5.0) * safe_float(b.get('pct_striking_defense'), 5.0)
+        elif col == 'f2_str_threat_vs_f1_def':
+            vec[col] = safe_float(b.get('pct_striking_volume'), 5.0) * safe_float(r.get('pct_striking_defense'), 5.0)
+        elif col == 'f1_sub_vs_f2_ctrl':
+            vec[col] = safe_float(r.get('pct_submission'), 5.0) * safe_float(b.get('pct_control'), 5.0)
+        elif col == 'f1_ko_vs_f2_absorb':
+            vec[col] = safe_float(r.get('pct_striking_power'), 5.0) * safe_float(b.get('pct_striking_defense'), 5.0)
         else:
             vec[col] = 0.0
 
     X = pd.DataFrame([vec])[_vs_cols].fillna(0)
     return X, r, b
 
+# ══════════════════════════════════════════════════════
+#  工具函數
+# ══════════════════════════════════════════════════════
+def safe_float(val, default=0.0):
+    try:
+        v = float(val)
+        return default if (math.isnan(v) or math.isinf(v)) else v
+    except:
+        return default
+
+def safe_int(val, default=0):
+    try:
+        v = float(val)
+        return default if (math.isnan(v) or math.isinf(v)) else int(v)
+    except:
+        return default
+
+def safe_str(val, default=''):
+    try:
+        if val is None: return default
+        if isinstance(val, float) and math.isnan(val): return default
+        return str(val)
+    except:
+        return default
+
+def clean_json(obj):
+    if isinstance(obj, dict):        return {k: clean_json(v) for k, v in obj.items()}
+    if isinstance(obj, list):        return [clean_json(v) for v in obj]
+    if isinstance(obj, np.integer):  return int(obj)
+    if isinstance(obj, np.floating):
+        v = float(obj)
+        return None if (math.isnan(v) or math.isinf(v)) else v
+    if isinstance(obj, np.bool_):    return bool(obj)
+    if isinstance(obj, float):
+        return None if (math.isnan(obj) or math.isinf(obj)) else obj
+    return obj
+
+def _row_to_result(row, dist):
+    return {
+        "name":       safe_str(row.get('name'), 'Unknown'),
+        "wc":         safe_str(row.get('wc'), ''),
+        "tier_label": safe_str(row.get('tier_label'), 'E') or 'E',
+        "tier_score": safe_int(row.get('tier_score'), 0),
+        "best_rank":  None if pd.isna(row.get('best_rank')) else safe_float(row['best_rank']),
+        "win_rate":   None if pd.isna(row.get('win_rate'))  else round(safe_float(row['win_rate']), 3),
+        "distance":   round(float(dist), 3),
+        "pct": {
+            col: round(safe_float(row.get(col), 5.0), 1)
+            for col in KNN_COLS
+        }
+    }
+
+# ══════════════════════════════════════════════════════
+#  VS Mode endpoint
+# ══════════════════════════════════════════════════════
 class VsInput(BaseModel):
     red:  str
     blue: str
@@ -239,55 +295,50 @@ def vs_predict(inp: VsInput):
     if _vs_win is None:
         raise HTTPException(status_code=503, detail="VS models not loaded")
 
-    X1, r_row, b_row = _build_vs_vector(inp.red, inp.blue)
-    X2, _, _         = _build_vs_vector(inp.blue, inp.red)
-    if X1 is None or X2 is None:
-        raise HTTPException(status_code=404, detail="Fighter not found in builder features")
+    X_fwd, r_row, b_row = _build_vs_vector(inp.red,  inp.blue)
+    X_rev, _,     _     = _build_vs_vector(inp.blue, inp.red)
 
-    # ── 勝率（對稱化）──
-    p1 = float(_vs_win.predict_proba(X1)[0][1])
-    p2 = float(_vs_win.predict_proba(X2)[0][1])
-    win_prob = (p1 + (1 - p2)) / 2
+    if X_fwd is None or X_rev is None:
+        raise HTTPException(status_code=404,
+            detail=f"Fighter not found: {inp.red} or {inp.blue}")
 
-    # ── 結束方式（0=Dec, 1=KO, 2=Sub）同樣對稱化 ──
-    mp1 = _vs_method.predict_proba(X1)[0]   # [dec, ko, sub]
-    mp2 = _vs_method.predict_proba(X2)[0]
-    method_probs = [(mp1[i] + mp2[i]) / 2 for i in range(3)]
-    method_idx = int(np.argmax(method_probs))
-    method_map = {0: "Decision", 1: "KO/TKO", 2: "Submission"}
+    # 對稱化：兩方向平均
+    win_fwd  = float(_vs_win.predict_proba(X_fwd)[0][1])
+    win_rev  = float(_vs_win.predict_proba(X_rev)[0][0])
+    win_prob = (win_fwd + win_rev) / 2
 
-    # ── 預測回合（1-5，class 0=R1…4=R5）對稱化 ──
-    rp1 = _vs_round.predict_proba(X1)[0]
-    rp2 = _vs_round.predict_proba(X2)[0]
-    n_r = min(len(rp1), len(rp2))
-    round_probs = [(rp1[i] + rp2[i]) / 2 for i in range(n_r)]
-    pred_round = int(np.argmax(round_probs)) + 1  # 1-indexed
+    method_probs_fwd = _vs_method.predict_proba(X_fwd)[0]
+    method_probs_rev = _vs_method.predict_proba(X_rev)[0]
+    method_probs     = (method_probs_fwd + method_probs_rev[::-1][:len(method_probs_fwd)]) / 2
+    method_idx       = int(np.argmax(method_probs))
+    method_map       = {0: "Decision", 1: "KO/TKO", 2: "Submission"}
 
-    # ── Confidence Score ──
-    # 三個信號：勝率離50%的距離、method最高概率、round最高概率
-    win_confidence   = abs(win_prob - 0.5) * 2          # 0-1
-    method_confidence = max(method_probs)                 # 0-1
-    round_confidence  = max(round_probs)                  # 0-1
-    # 加權合成
-    confidence = round(win_confidence * 0.5 + method_confidence * 0.3 + round_confidence * 0.2, 3)
-    if confidence >= 0.65:   confidence_label = "HIGH"
-    elif confidence >= 0.45: confidence_label = "MEDIUM"
+    round_probs_fwd  = _vs_round.predict_proba(X_fwd)[0]
+    round_probs_rev  = _vs_round.predict_proba(X_rev)[0]
+    round_probs      = (round_probs_fwd + round_probs_rev) / 2
+    pred_round       = int(np.argmax(round_probs)) + 1
+
+    win_sig    = abs(win_prob - 0.5) * 2
+    method_sig = float(np.max(method_probs))
+    round_sig  = float(np.max(round_probs))
+    confidence = round(win_sig * 0.5 + method_sig * 0.3 + round_sig * 0.2, 3)
+    if   confidence >= 0.65: confidence_label = "HIGH"
+    elif confidence >= 0.50: confidence_label = "MODERATE"
     else:                    confidence_label = "LOW"
 
-    # ── SHAP top 5 ──
+    # SHAP
     try:
         import shap
         explainer  = shap.TreeExplainer(_vs_win)
-        shap_vals  = explainer.shap_values(X1)
+        shap_vals  = explainer.shap_values(X_fwd)
         sv         = shap_vals[0]
         feat_shap  = sorted(zip(_vs_cols, sv), key=lambda x: abs(x[1]), reverse=True)[:5]
         top_features = [{"feature": f, "shap": round(float(v), 4)} for f, v in feat_shap]
     except Exception:
         top_features = []
 
-    # ── 量級警告 ──
-    r_wc = safe_str(r_row.get('wc'), '') if r_row is not None else ''
-    b_wc = safe_str(b_row.get('wc'), '') if b_row is not None else ''
+    r_wc   = safe_str(r_row.get('wc'), '') if r_row is not None else ''
+    b_wc   = safe_str(b_row.get('wc'), '') if b_row is not None else ''
     cross_wc = (r_wc != b_wc and r_wc != '' and b_wc != '')
 
     return clean_json({
@@ -318,58 +369,6 @@ def _load_leaderboard():
 def _save_leaderboard(data):
     with open(LEADERBOARD_PATH, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
-
-# ══════════════════════════════════════════════════════
-#  工具函數
-# ══════════════════════════════════════════════════════
-def safe_float(val, default=0.0):
-    try:
-        v = float(val)
-        return default if (math.isnan(v) or math.isinf(v)) else v
-    except:
-        return default
-
-def safe_int(val, default=0):
-    try:
-        v = float(val)
-        return default if (math.isnan(v) or math.isinf(v)) else int(v)
-    except:
-        return default
-
-def safe_str(val, default=''):
-    try:
-        if val is None: return default
-        if isinstance(val, float) and math.isnan(val): return default
-        return str(val)
-    except:
-        return default
-
-def clean_json(obj):
-    if isinstance(obj, dict):       return {k: clean_json(v) for k, v in obj.items()}
-    if isinstance(obj, list):       return [clean_json(v) for v in obj]
-    if isinstance(obj, np.integer): return int(obj)
-    if isinstance(obj, np.floating):
-        v = float(obj)
-        return None if (math.isnan(v) or math.isinf(v)) else v
-    if isinstance(obj, np.bool_):   return bool(obj)
-    if isinstance(obj, float):
-        return None if (math.isnan(obj) or math.isinf(obj)) else obj
-    return obj
-
-def _row_to_result(row, dist):
-    return {
-        "name":       safe_str(row.get('name'), 'Unknown'),
-        "wc":         safe_str(row.get('wc'), ''),
-        "tier_label": safe_str(row.get('tier_label'), 'E') or 'E',
-        "tier_score": safe_int(row.get('tier_score'), 0),
-        "best_rank":  None if pd.isna(row.get('best_rank')) else safe_float(row['best_rank']),
-        "win_rate":   None if pd.isna(row.get('win_rate'))  else round(safe_float(row['win_rate']), 3),
-        "distance":   round(float(dist), 3),
-        "pct": {
-            col: round(safe_float(row.get(col), 5.0), 1)
-            for col in KNN_COLS
-        }
-    }
 
 # ══════════════════════════════════════════════════════
 #  既有端點
@@ -425,21 +424,17 @@ def find_nearest(inp: BuilderInput):
     diffs = _MATRIX - query
     dists = np.sqrt((diffs ** 2).sum(axis=1))
 
-    # ── 你的戰士：純距離最近的 1 個，不管 tier ────────
     closest_idx  = int(np.argmin(dists))
     your_fighter = _row_to_result(BUILDER_DF.iloc[closest_idx], dists[closest_idx])
 
-    # ── 最近知名選手：top30 裡 tier 最高的 2 個 ───────
-    # 排除已經是「你的戰士」的那個
     top30_idx = np.argsort(dists)[:30]
     notable_candidates = []
     for idx in top30_idx:
         if idx == closest_idx:
             continue
-        row = BUILDER_DF.iloc[idx]
+        row   = BUILDER_DF.iloc[idx]
         tier  = safe_str(row.get('tier_label'), 'E') or 'E'
         score = safe_int(row.get('tier_score'), 0)
-        # 只考慮 B tier 以上
         if tier in ('D+', 'D', 'E'):
             continue
         notable_candidates.append({
@@ -449,7 +444,6 @@ def find_nearest(inp: BuilderInput):
             'tier':  tier,
         })
 
-    # 按 tier_score 降序，同分按距離升序
     notable_candidates.sort(key=lambda x: (-x['score'], x['dist']))
     notable = []
     for c in notable_candidates[:2]:
@@ -461,7 +455,7 @@ def find_nearest(inp: BuilderInput):
     })
 
 # ══════════════════════════════════════════════════════
-#  排行榜
+#  排行榜端點
 # ══════════════════════════════════════════════════════
 class LeaderboardEntry(BaseModel):
     username:    str
@@ -492,3 +486,257 @@ def post_leaderboard(entry: LeaderboardEntry):
         data.append(new_entry)
     _save_leaderboard(data)
     return {"ok": True, "entries": len(data)}
+
+# ══════════════════════════════════════════════════════
+#  DNA Mode — 三個靜態資料端點
+# ══════════════════════════════════════════════════════
+DNA_YEARLY_PATH   = Path(__file__).parent / "data" / "dna_yearly.csv"
+DNA_FIGHTERS_PATH = Path(__file__).parent / "data" / "dna_fighters.csv"
+DNA_CHAMPS_PATH   = Path(__file__).parent / "data" / "dna_champions.csv"
+
+def _load_dna():
+    result = {}
+
+    # yearly
+    try:
+        df = pd.read_csv(DNA_YEARLY_PATH)
+        records = []
+        for _, row in df.iterrows():
+            records.append({
+                "year":          int(row["year"]),
+                "n_fighters":    int(row["n_fighters"]),
+                "pct_striking":  safe_float(row.get("pct_striking"),  0),
+                "pct_grappling": safe_float(row.get("pct_grappling"), 0),
+                "pct_balanced":  safe_float(row.get("pct_balanced"),  0),
+                "str_winrate":   None if pd.isna(row.get("str_winrate"))  else safe_float(row["str_winrate"],  0),
+                "grp_winrate":   None if pd.isna(row.get("grp_winrate"))  else safe_float(row["grp_winrate"],  0),
+                "winrate_diff":  None if pd.isna(row.get("winrate_diff")) else safe_float(row["winrate_diff"], 0),
+                "is_partial":    bool(row.get("is_partial", False)),
+            })
+        result["yearly"] = records
+        print(f"DNA yearly loaded: {len(records)} years")
+    except Exception as e:
+        print(f"WARNING: DNA yearly not loaded: {e}")
+        result["yearly"] = []
+
+    # fighters
+    try:
+        df = pd.read_csv(DNA_FIGHTERS_PATH)
+        records = []
+        for _, row in df.iterrows():
+            records.append({
+                "fighter":          safe_str(row.get("fighter"), ""),
+                "wc":               safe_str(row.get("wc"), ""),
+                "tier_label":       safe_str(row.get("tier_label"), "E"),
+                "ever_champion":    bool(row.get("ever_champion", False)),
+                "win_rate":         None if pd.isna(row.get("win_rate")) else safe_float(row["win_rate"], 0),
+                "meta_score_pct":   safe_float(row.get("meta_score_pct"), 50),
+                "striking_signal":  safe_float(row.get("striking_signal"), 0),
+                "grappling_signal": safe_float(row.get("grappling_signal"), 0),
+            })
+        result["fighters"] = records
+        print(f"DNA fighters loaded: {len(records)} fighters")
+    except Exception as e:
+        print(f"WARNING: DNA fighters not loaded: {e}")
+        result["fighters"] = []
+
+    # champions
+    try:
+        df = pd.read_csv(DNA_CHAMPS_PATH)
+        records = []
+        for _, row in df.iterrows():
+            if pd.isna(row.get("title_year")):
+                continue
+            records.append({
+                "champion":         safe_str(row.get("champion"), ""),
+                "wc":               safe_str(row.get("wc"), ""),
+                "title_year":       int(row["title_year"]),
+                "meta_score_pct":   safe_float(row.get("meta_score_pct"), 50),
+                "title_fights_won": safe_int(row.get("title_fights_won"), 1),
+                "radius":           safe_float(row.get("radius"), 6),
+                "n_reigns":         safe_int(row.get("n_reigns"), 1),
+            })
+        result["champions"] = records
+        print(f"DNA champions loaded: {len(records)} champions")
+    except Exception as e:
+        print(f"WARNING: DNA champions not loaded: {e}")
+        result["champions"] = []
+
+    return result
+
+_DNA = _load_dna()
+
+@app.get("/api/dna/yearly")
+def get_dna_yearly():
+    return _DNA.get("yearly", [])
+
+@app.get("/api/dna/fighters")
+def get_dna_fighters():
+    return _DNA.get("fighters", [])
+
+@app.get("/api/dna/champions")
+def get_dna_champions():
+    return _DNA.get("champions", [])
+
+
+# ══════════════════════════════════════════════════════
+#  HELIX — Graph 資料端點
+# ══════════════════════════════════════════════════════
+HELIX_PATH = Path(__file__).parent / "data" / "helix_graph.json"
+_HELIX = None
+
+def _load_helix():
+    global _HELIX
+    if not HELIX_PATH.exists():
+        print("WARNING: helix_graph.json 不存在，跳過")
+        return
+    with open(HELIX_PATH, encoding="utf-8") as f:
+        _HELIX = json.load(f)
+    print(f"HELIX loaded: {_HELIX['meta']['nodes']} nodes, {_HELIX['meta']['edges']} edges")
+
+try:
+    _load_helix()
+except Exception as e:
+    print(f"WARNING: HELIX not loaded: {e}")
+
+@app.get("/api/helix/meta")
+def get_helix_meta():
+    """Graph 的 meta 資訊（nodes/edges 數量等）"""
+    if _HELIX is None:
+        raise HTTPException(status_code=503, detail="HELIX data not available")
+    return _HELIX["meta"]
+
+@app.get("/api/helix/graph")
+def get_helix_graph(ranked_only: bool = True):
+    """
+    取得 graph 資料
+    ranked_only=true  → 只回傳曾排名的 node（預設，前端常駐）
+    ranked_only=false → 全部 node
+    edge 只回傳兩端 node 都在回傳集合內的
+    """
+    if _HELIX is None:
+        raise HTTPException(status_code=503, detail="HELIX data not available")
+
+    nodes = _HELIX["nodes"]
+    edges = _HELIX["edges"]
+
+    if ranked_only:
+        nodes = [n for n in nodes if n.get("is_ranked")]
+
+    node_ids = {n["id"] for n in nodes}
+    edges = [
+        e for e in edges
+        if e["winner"] in node_ids and e["loser"] in node_ids
+    ]
+
+    return {
+        "nodes": nodes,
+        "edges": edges,
+        "total_nodes": len(nodes),
+        "total_edges": len(edges),
+    }
+
+@app.get("/api/helix/fighter/{name}")
+def get_helix_fighter(name: str, depth: int = 1):
+    """
+    取得某選手的局部 graph（鄰居展開）
+    depth=1 → 直接對手（預設）
+    depth=2 → 對手的對手
+    回傳包含 unranked 的完整鄰居
+    """
+    if _HELIX is None:
+        raise HTTPException(status_code=503, detail="HELIX data not available")
+
+    # 建立快速查詢 dict
+    node_map = {n["id"]: n for n in _HELIX["nodes"]}
+
+    if name not in node_map:
+        raise HTTPException(status_code=404, detail=f"Fighter '{name}' not found in graph")
+
+    # BFS 展開到指定 depth
+    visited = {name}
+    frontier = {name}
+
+    all_edges = _HELIX["edges"]
+    # 建立adjacency（雙向方便BFS）
+    adj = {}
+    for e in all_edges:
+        adj.setdefault(e["winner"], []).append(e["loser"])
+        adj.setdefault(e["loser"], []).append(e["winner"])
+
+    for _ in range(min(depth, 2)):  # 最多 depth=2 避免爆量
+        next_frontier = set()
+        for node in frontier:
+            for neighbor in adj.get(node, []):
+                if neighbor not in visited:
+                    next_frontier.add(neighbor)
+                    visited.add(neighbor)
+        frontier = next_frontier
+
+    # 收集相關 nodes 和 edges
+    result_nodes = [node_map[n] for n in visited if n in node_map]
+    result_edges = [
+        e for e in all_edges
+        if e["winner"] in visited and e["loser"] in visited
+    ]
+
+    # beat chain：從 name 出發，只取出邊（他打贏的人）
+    beat_chain = []
+    for e in all_edges:
+        if e["winner"] == name:
+            beat_chain.append({
+                "opponent": e["loser"],
+                "bouts":    e["bouts"],
+                "count":    e["count"],
+                "weight":   e["weight"],
+            })
+    beat_chain.sort(key=lambda x: -x["weight"])
+
+    # loss chain：輸給誰
+    loss_chain = []
+    for e in all_edges:
+        if e["loser"] == name:
+            loss_chain.append({
+                "opponent": e["winner"],
+                "bouts":    e["bouts"],
+                "count":    e["count"],
+            })
+
+    return {
+        "fighter":    node_map[name],
+        "nodes":      result_nodes,
+        "edges":      result_edges,
+        "beat_chain": beat_chain,
+        "loss_chain": loss_chain,
+    }
+
+@app.get("/api/helix/top")
+def get_helix_top(n: int = 50, wc: str = None):
+    """
+    PageRank 前 n 名的選手 + 彼此之間的 edge
+    wc: 按量級過濾（可選）
+    """
+    if _HELIX is None:
+        raise HTTPException(status_code=503, detail="HELIX data not available")
+
+    nodes = sorted(_HELIX["nodes"], key=lambda x: -x["pr"])
+
+    if wc and wc.lower() != "all":
+        # 用 beat_chain 的 wc 資訊過濾 edge，node 本身沒有固定量級
+        # 這裡先回傳全量級的 top n，wc filter 留給前端
+        pass
+
+    top_nodes = nodes[:n]
+    top_ids   = {nd["id"] for nd in top_nodes}
+
+    top_edges = [
+        e for e in _HELIX["edges"]
+        if e["winner"] in top_ids and e["loser"] in top_ids
+    ]
+
+    return {
+        "nodes":        top_nodes,
+        "edges":        top_edges,
+        "community_leaders": _HELIX.get("community_leaders", []),
+    }
+
