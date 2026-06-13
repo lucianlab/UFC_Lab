@@ -1841,7 +1841,7 @@ body {
               </div>
             </div>
             <div id="vs-breakdown-meth-link" style="display:none;margin-top:auto;padding-top:16px">
-              <span onclick="setMode('methodology')" style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-lo);letter-spacing:0.06em;cursor:pointer;transition:color 0.15s" onmouseenter="this.style.color='var(--text-md)'" onmouseleave="this.style.color='var(--text-lo)'">How this model works →</span>
+              <span onclick="setMode('methodology');setTimeout(()=>methScrollTo('meth-9'),80);" style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-lo);letter-spacing:0.06em;cursor:pointer;transition:color 0.15s" onmouseenter="this.style.color='var(--text-md)'" onmouseleave="this.style.color='var(--text-lo)'">How this model works →</span>
             </div>
           </div>
 
@@ -2106,6 +2106,10 @@ body {
           <span class="meth-toc-num">08</span>
           <span class="meth-toc-text">Graph & PageRank</span>
         </a>
+        <a class="meth-toc-item" href="#meth-9" onclick="methScrollTo('meth-9')">
+          <span class="meth-toc-num">09</span>
+          <span class="meth-toc-text">How This Model Works</span>
+        </a>
       </nav>
 
       <!-- Content -->
@@ -2269,6 +2273,27 @@ body {
           <div class="meth-callout">
             <p class="meth-p">The Martins result isn&rsquo;t a flaw to hide &mdash; it&rsquo;s an honest demonstration of what PageRank measures and what it doesn&rsquo;t. It measures network centrality, not fighting ability. These are structural limitations of static PageRank applied to a temporal domain, and they&rsquo;re worth understanding. Adriano Martins at number five is the most honest thing in this project.</p>
           </div>
+        </div>
+
+        <!-- 09 -->
+        <div class="meth-section" id="meth-9">
+          <div class="meth-section-header">
+            <span class="meth-section-num">09</span>
+            <span class="meth-section-title">How This Model Works</span>
+          </div>
+          <p class="meth-p">Three XGBoost classifiers, each trained on 6,180 UFC bouts from 2013 to 2026: one predicting the winner, one the finishing method, and one the round. All three are validated with TimeSeriesSplit cross-validation (5 folds) to ensure no future data contaminates past predictions.</p>
+
+          <div class="meth-sub">Win Model</div>
+          <p class="meth-p">Binary classification: does fighter A beat fighter B? AUC 0.63 on held-out data. Each prediction runs in both directions (A vs B, then B vs A) and averages the result to remove red/blue corner assignment bias. The betting market sits at approximately 70% &mdash; the gap between 63% and 70% is the subject of section 06.</p>
+
+          <div class="meth-sub">Features (31 total)</div>
+          <p class="meth-p">All features are difference values between the two fighters &mdash; what matters is not a fighter&rsquo;s absolute stat but how it compares to their opponent&rsquo;s. Categories: career performance (win rate, KO rate, finishing rate), recent form (last 3 fights), striking and takedown metrics, style-clash interaction terms (takedown threat vs opponent&rsquo;s takedown defense, striking threat vs opponent&rsquo;s striking defense), strength of schedule, age and prime window, and physical attributes (reach, height, stance).</p>
+
+          <div class="meth-sub">Confidence Score</div>
+          <p class="meth-p">A composite signal weighted across the three models: win probability (50%), method prediction (30%), and round prediction (20%). Higher confidence means the three models agree and the margins are large. Low confidence means the fight is genuinely close or the models are reading different signals.</p>
+
+          <div class="meth-sub">What the model cannot see</div>
+          <p class="meth-p">Weight cut severity. Injury status. Training camp quality. Coaching adjustments. The physical condition visible at the weigh-in. These are the variables the betting market prices in during fight week &mdash; and the primary reason a clean model ceiling sits below market accuracy. The model works with what is officially recorded. Everything else is the gap.</p>
         </div>
 
       </div><!-- end #meth-content -->
