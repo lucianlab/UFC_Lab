@@ -92,6 +92,8 @@ body {
   gap: 12px;
   padding: 0 24px;
   border-right: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
 }
 .brand-text {
   display: flex;
@@ -1165,6 +1167,94 @@ body {
 
 
 /* ─── HELIX MODE ─── */
+/* ─── Home ─── */
+#home-mode {
+  display: none;
+  position: absolute; inset: 0;
+  background: var(--obsidian);
+  z-index: 5;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 40px;
+  overflow-y: auto;
+}
+#home-mode.active { display: flex; }
+#home-inner {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+#home-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 52px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-hi);
+  line-height: 1;
+  margin-bottom: 16px;
+}
+#home-desc {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--text-md);
+  max-width: 560px;
+  margin-bottom: 48px;
+}
+#home-author {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--text-lo);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 48px;
+}
+#home-divider {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 32px;
+}
+#home-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.home-nav-item {
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+.home-nav-item:first-child { border-top: 1px solid var(--border); }
+.home-nav-item:hover .home-nav-name { color: var(--champagne); }
+.home-nav-item:hover .home-nav-desc { color: var(--text-md); }
+.home-nav-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-md);
+  min-width: 180px;
+  transition: color 0.15s;
+}
+.home-nav-desc {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--text-lo);
+  letter-spacing: 0.06em;
+  transition: color 0.15s;
+}
+
 /* ─── Methodology ─── */
 #methodology-mode {
   display: none;
@@ -1658,7 +1748,7 @@ body {
 <body>
 
 <div id="header">
-  <div class="header-brand">
+  <div class="header-brand" onclick="setMode('home')" title="Home">
     <svg width="44" height="44" viewBox="0 0 280 280" style="flex-shrink:0">
       <polygon points="94,26 186,26 254,94 254,186 186,254 94,254 26,186 26,94"
         stroke="#c9a96e" stroke-width="6" fill="none" stroke-linejoin="round"/>
@@ -1929,7 +2019,7 @@ body {
     <div id="dna-topbar">
       <div id="dna-title-block">
         <div id="dna-title">Meta-Game Evolution</div>
-        <div id="dna-subtitle">Striking vs Grappling · UFC 2007–2025 · Win rate / style distribution / champion anchors</div>
+        <div id="dna-subtitle">Striking vs Grappling · UFC 2007–2026 · Win rate / style distribution / champion anchors</div>
       </div>
       <div id="dna-legend">
         <div class="dna-legend-row">
@@ -2035,6 +2125,42 @@ body {
       </div>
     </div>
   </div><!-- end #helix-mode -->
+
+  <!-- HOME MODE -->
+  <div id="home-mode">
+    <div id="home-inner">
+      <div id="home-title">UFC Lab</div>
+      <div id="home-desc">A data science portfolio using mixed martial arts as a case study in machine learning, graph analysis, and the limits of predictive modelling.</div>
+      <div id="home-author">Chun Ju Hsieh &nbsp;&middot;&nbsp; Electrical Engineering &nbsp;&middot;&nbsp; National Taiwan University</div>
+      <div id="home-divider"></div>
+      <nav id="home-nav">
+        <div class="home-nav-item" onclick="setMode('universe')">
+          <span class="home-nav-name">Style Map</span>
+          <span class="home-nav-desc">Explore 1,239 fighters in 3-axis PCA space</span>
+        </div>
+        <div class="home-nav-item" onclick="setMode('vs')">
+          <span class="home-nav-name">Matchup Engine</span>
+          <span class="home-nav-desc">XGBoost prediction &middot; AUC 0.63 &middot; SHAP</span>
+        </div>
+        <div class="home-nav-item" onclick="setMode('builder')">
+          <span class="home-nav-name">Blueprint</span>
+          <span class="home-nav-desc">KNN matching in 14-dimensional style space</span>
+        </div>
+        <div class="home-nav-item" onclick="setMode('dna')">
+          <span class="home-nav-name">Meta Evolution</span>
+          <span class="home-nav-desc">How UFC striking and grappling evolved &middot; 2007&ndash;2026</span>
+        </div>
+        <div class="home-nav-item" onclick="setMode('helix')">
+          <span class="home-nav-name">Bout Graph</span>
+          <span class="home-nav-desc">PageRank &middot; fight network &middot; 34 communities</span>
+        </div>
+        <div class="home-nav-item" onclick="setMode('methodology')">
+          <span class="home-nav-name">Methodology</span>
+          <span class="home-nav-desc">Research process &middot; honest about limitations</span>
+        </div>
+      </nav>
+    </div>
+  </div><!-- end #home-mode -->
 
   <!-- METHODOLOGY MODE -->
   <div id="methodology-mode">
@@ -2296,6 +2422,8 @@ async function boot(){
   }
 
   document.getElementById('header-sub').textContent = FIGHTERS.length.toLocaleString()+' fighters · 3-axis PCA';
+  // Start on home page
+  setMode('home');
 
 const THRESHOLDS = {"sig_per_r":20.3,"td_per_r":0.74,"ctrl_per_r":85.78,"ko_rate":0.5,"sub_rate":0.33,"gas_tank":1.33};
 
@@ -3374,6 +3502,7 @@ function setMode(mode){
   const bEl=document.getElementById('builder-mode');
   const dnaEl=document.getElementById('dna-mode');
   const helixEl=document.getElementById('helix-mode');
+  const homeEl=document.getElementById('home-mode');
   const searchWrap=document.getElementById('search-wrap');
   document.getElementById('btn-universe').classList.toggle('active',mode==='universe');
   document.getElementById('btn-vs').classList.toggle('active',mode==='vs');
@@ -3381,12 +3510,19 @@ function setMode(mode){
   document.getElementById('btn-dna').classList.toggle('active',mode==='dna');
   document.getElementById('btn-helix').classList.toggle('active',mode==='helix');
   if(helixEl) helixEl.classList.remove('active');
+  if(homeEl) homeEl.classList.remove('active');
   const _methEl=document.getElementById('methodology-mode');
   if(_methEl) _methEl.classList.remove('active');
   const _authEl=document.getElementById('meth-author');
   if(_authEl) _authEl.classList.remove('visible');
   document.getElementById('btn-methodology').classList.toggle('active',mode==='methodology');
-  if(mode==='universe'){
+  if(mode==='home'){
+    univEl.style.display='none'; sideEl.style.display='none';
+    vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
+    if(homeEl) homeEl.classList.add('active');
+    document.getElementById('header-sub').textContent='A data science lab using MMA as a case study';
+    return;
+  } else if(mode==='universe'){
     univEl.style.display='block'; sideEl.style.display='flex';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
     // search in sidebar, controlled by sideEl;
@@ -3416,7 +3552,7 @@ function setMode(mode){
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.add('active');
     if(helixEl) helixEl.classList.remove('active');
     // search in sidebar, controlled by sideEl;
-    document.getElementById('header-sub').textContent='2013–2026 · meta trends';
+    document.getElementById('header-sub').textContent='2007–2026 · meta trends';
     dnaInit();
   } else if(mode==='methodology'){
     univEl.style.display='none'; sideEl.style.display='none';
