@@ -51,6 +51,11 @@
 
 * { margin:0; padding:0; box-sizing:border-box; }
 
+::selection {
+  background: rgba(140, 40, 55, 0.55);
+  color: var(--text-hi);
+}
+
 body {
   background: var(--obsidian);
   color: var(--text-hi);
@@ -1142,7 +1147,8 @@ body {
   display: flex;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow: visible;
+  min-height: 0;
 }
 
 /* Left TOC */
@@ -1640,7 +1646,7 @@ body {
   <div id="mode-toggle">
     <button class="mode-btn active" id="btn-universe" onclick="setMode('universe')">Style Map</button>
     <button class="mode-btn" id="btn-vs" onclick="setMode('vs')">Matchup Engine</button>
-    <button class="mode-btn" id="btn-builder" onclick="setMode('builder')">Fighter DNA</button>
+    <button class="mode-btn" id="btn-builder" onclick="setMode('builder')">Blueprint</button>
     <button class="mode-btn" id="btn-dna" onclick="setMode('dna')">Meta Evolution</button>
     <button class="mode-btn" id="btn-helix" onclick="setMode('helix')">Bout Graph</button>
     <button class="mode-btn" id="btn-methodology" onclick="setMode('methodology')">Methodology</button>
@@ -1936,7 +1942,7 @@ body {
   <!-- HELIX MODE -->
   <div id="helix-mode">
     <div id="helix-loading">
-      <span>INITIALISING HELIX</span>
+      <span>INITIALISING GRAPH</span>
       <div class="helix-loading-bar"><div class="helix-loading-fill"></div></div>
     </div>
     <div id="helix-graph-wrap">
@@ -2222,7 +2228,7 @@ async function boot(){
     return;
   }
 
-  document.getElementById('header-sub').textContent = FIGHTERS.length.toLocaleString()+' fighters · 3-axis style space';
+  document.getElementById('header-sub').textContent = FIGHTERS.length.toLocaleString()+' fighters · 3-axis PCA';
 
 const THRESHOLDS = {"sig_per_r":20.3,"td_per_r":0.74,"ctrl_per_r":85.78,"ko_rate":0.5,"sub_rate":0.33,"gas_tank":1.33};
 
@@ -3292,12 +3298,12 @@ function setMode(mode){
     univEl.style.display='block'; sideEl.style.display='flex';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
     // search in sidebar, controlled by sideEl;
-    document.getElementById('header-sub').textContent=FIGHTERS.length.toLocaleString()+' fighters · 3-axis style space';
+    document.getElementById('header-sub').textContent=FIGHTERS.length.toLocaleString()+' fighters · 3-axis PCA';
   } else if(mode==='vs'){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.add('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
     // search in sidebar, controlled by sideEl;
-    document.getElementById('header-sub').textContent='Matchup Engine · ML Fight Prediction';
+    document.getElementById('header-sub').textContent='XGBoost · AUC 0.63 · SHAP';
     if(!vsRed && !vsBlue) {
       const defaultRed  = nameToFighter['Conor McGregor']  || FIGHTERS[0];
       const defaultBlue = nameToFighter['Max Holloway'] || FIGHTERS[1];
@@ -3311,14 +3317,14 @@ function setMode(mode){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.remove('active'); bEl.classList.add('active'); dnaEl.classList.remove('active');
     // search in sidebar, controlled by sideEl;
-    document.getElementById('header-sub').textContent='Fighter DNA · Style Archetype Finder';
+    document.getElementById('header-sub').textContent='KNN matching · style space';
     bInit();
   } else if(mode==='dna'){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.add('active');
     if(helixEl) helixEl.classList.remove('active');
     // search in sidebar, controlled by sideEl;
-    document.getElementById('header-sub').textContent='Meta Evolution · Striking vs Grappling';
+    document.getElementById('header-sub').textContent='2013–2026 · meta trends';
     dnaInit();
   } else if(mode==='methodology'){
     univEl.style.display='none'; sideEl.style.display='none';
@@ -3335,7 +3341,7 @@ function setMode(mode){
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
     if(helixEl) helixEl.classList.add('active');
     // search in sidebar, controlled by sideEl;
-    document.getElementById('header-sub').textContent='Bout Graph · Fight Network & PageRank';
+    document.getElementById('header-sub').textContent='PageRank · fight network';
     // sync theme state
     const hBtn2=document.getElementById('helix-theme-toggle');
     const hLbl2=document.getElementById('helix-theme-label');
