@@ -2583,7 +2583,7 @@ const univLayout={
     xaxis:{title:'Grappler ↔ Striker',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
     yaxis:{title:'Decision ↔ Finisher',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
     zaxis:{title:'High-Output ↔ Patient',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
-    camera:{eye:{x:1.8,y:0.8,z:1.0}},
+    camera:{eye:{x:1.5,y:1.5,z:1.2}},
   },
   margin:{l:0,r:0,t:0,b:0},
   showlegend:false,
@@ -2822,7 +2822,7 @@ document.addEventListener('keydown', e=>{
       // full 模式：space 無效
     } else if(document.getElementById('plot').style.display!=='none'){
       // Universe：重置相機
-      Plotly.relayout('plot', {'scene.camera': {eye:{x:1.8,y:0.8,z:1.0}}});
+      Plotly.relayout('plot', {'scene.camera': {eye:{x:1.5,y:1.5,z:1.2}}});
     }
   }
 });
