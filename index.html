@@ -2451,7 +2451,11 @@ function exitVsOverlay(){
 function vsGoToStyleMap(){
   if(!vsRed || !vsBlue) return;
   setMode('universe');
-  setTimeout(()=>enterVsOverlay(vsRed.name, vsBlue.name), 150);
+  // Wait for Plotly to finish rendering before overlaying
+  setTimeout(()=>{
+    try{ enterVsOverlay(vsRed.name, vsBlue.name); }
+    catch(e){ console.warn("VS overlay failed:", e); }
+  }, 500);
 }
 
 const univLayout={
