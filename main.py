@@ -747,6 +747,18 @@ def get_helix_top(n: int = 50, wc: str = None):
 import os
 
 # SHAP feature → 可讀描述
+# Archetype human-readable descriptions
+ARCHETYPE_DESC = {
+    "Submission Hunter":   "a relentless high-volume grappler who hunts for the finish on the ground",
+    "Trap Hunter":         "a patient grappler who waits for the perfect moment to secure a submission",
+    "Chain Controller":    "a volume grappler who wins through constant takedowns and top control, grinding opponents down",
+    "Position Controller": "a methodical grappler who controls position and wins decisions through dominant wrestling",
+    "Pressure Swarm":      "an aggressive pressure striker who overwhelms opponents with high volume and forward momentum",
+    "Power Sniper":        "a calculated power striker who picks his spots and looks for the decisive finish",
+    "Pace Setter":         "a high-output striker who wins through volume, accuracy and pace over all five rounds",
+    "Range Technician":    "a technical counter-striker who uses distance, footwork and timing to outpoint opponents",
+}
+
 SHAP_LABELS = {
     "delta_win_rate":          "win rate gap",
     "delta_ko_rate":           "KO rate gap",
@@ -848,25 +860,31 @@ async def vs_narrative(inp: NarrativeInput):
             "- flowing prose, not bullet points, no hedging."
         )
 
-        import urllib.request as _ur, json as _json
-        _data = _json.dumps({
+        import json as _json, urllib.request as _ur
+        prompt_safe = prompt.encode("ascii", "ignore").decode("ascii")
+        _payload = _json.dumps({
             "model": "gpt-4o-mini",
-            "messages": [{"role": "user", "content": prompt}],
+            "messages": [{"role": "user", "content": prompt_safe}],
             "max_tokens": 220,
             "temperature": 0.7
-        }).encode()
+        }, ensure_ascii=False).encode("utf-8")
         _req = _ur.Request(
             "https://api.openai.com/v1/chat/completions",
-            data=_data,
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+            data=_payload,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json; charset=utf-8"
+            }
         )
         _res = _json.loads(_ur.urlopen(_req).read())
-        text = _res["choices"][0]["message"]["content"].strip().replace("\n", " ")
+        text = _res["choices"][0]["message"]["content"].strip().replace("\n", " ").encode("ascii", "ignore").decode("ascii")
         sentences = [s.strip() for s in text.split(".") if s.strip()]
         result = ". ".join(sentences[:4]) + ("." if sentences else "")
         return {"narrative": result}
 
     except Exception as e:
-        print(f"Gemini error: {e}")
+        import traceback
+        traceback.print_exc()
+        print(f"Narrative error: {type(e).__name__}: {e}")
         return {"narrative": ""}
 
