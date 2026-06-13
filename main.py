@@ -832,29 +832,38 @@ async def vs_narrative(inp: NarrativeInput):
         red_stats  = _fmt_stats(inp.red)
         blue_stats = _fmt_stats(inp.blue)
 
-        prompt = f"""You are a UFC tactical analyst. Based ONLY on the statistics below, write exactly 2 sentences of fight analysis. Do NOT mention specific past fights or results. Only analyze based on the numbers provided.
+        red_desc  = ARCHETYPE_DESC.get(red_arch,  red_arch)
+        blue_desc = ARCHETYPE_DESC.get(blue_arch, blue_arch)
+        method_human = {"KO/TKO": "knockout", "Submission": "submission", "Decision": "decision"}.get(method_str, method_str)
 
-FIGHTERS:
-- {inp.red} ({red_arch}): {red_stats}
-- {inp.blue} ({blue_arch}): {blue_stats}
-
-MODEL PREDICTION: {winner} wins {win_pct}% probability via {method_str} ({round_str})
-CONFIDENCE: {inp.confidence_label}
-KEY FACTORS: {shap_str}
-
-Write 2 concise sentences (max 30 words each) analyzing the tactical matchup and why the model favors {winner}. Be specific about styles and stats. No hedging phrases like "could" or "might"."""
+        prompt = (
+            "You are a passionate UFC analyst writing a pre-fight breakdown. "
+            "Write 3-4 sentences with genuine enthusiasm for the sport. "
+            "Do NOT mention specific past fights or career history. Analyze only from the data below.\n\n"
+            f"FIGHTERS:\n"
+            f"- {inp.red}: {red_desc}. Stats: {red_stats}\n"
+            f"- {inp.blue}: {blue_desc}. Stats: {blue_stats}\n\n"
+            f"MODEL OUTPUT: {winner} wins - {win_pct}% probability, predicted {method_human} ({round_str})\n"
+            f"KEY FACTORS THE MODEL IS WEIGHTING: {shap_str}\n\n"
+            "Write a flowing 3-4 sentence fight breakdown. "
+            "First sentence: describe the stylistic matchup in vivid, human terms - what kind of fight does this set up? "
+            "Second sentence: each fighter's path to victory based on their style and the key factors. "
+            "Third sentence: what the model sees in the numbers that drives its prediction. "
+            "Optional fourth sentence: the most likely decisive moment or dimension. "
+            "Use fighter last names only. Write with the energy of someone who loves this sport "
+            "- flowing prose, not bullet points, no hedging."
+        )
 
         response = model.generate_content(
             prompt,
             generation_config=genai.types.GenerationConfig(
-                max_output_tokens=120,
-                temperature=0.4,
+                max_output_tokens=220,
+                temperature=0.7,
             )
         )
-        text = response.text.strip()
-        # 確保不超過兩句
-        sentences = [s.strip() for s in text.replace("\n", " ").split(".") if s.strip()]
-        result = ". ".join(sentences[:2]) + ("." if sentences else "")
+        text = response.text.strip().replace("\n", " ")
+        sentences = [s.strip() for s in text.split(".") if s.strip()]
+        result = ". ".join(sentences[:4]) + ("." if sentences else "")
         return {"narrative": result}
 
     except Exception as e:
