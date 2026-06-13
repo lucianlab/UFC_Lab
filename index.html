@@ -613,36 +613,7 @@ body {
   color: var(--text-lo);
   margin-bottom: 7px;
 }
-.vs-breakdown-matchup {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  line-height: 1.55;
-  color: var(--text-hi);
-  margin-bottom: 14px;
-}
-.vs-breakdown-divider {
-  height: 1px;
-  background: var(--border);
-  margin-bottom: 14px;
-}
-.vs-breakdown-edge-label {
-  font-family: "DM Mono", monospace;
-  font-size: 7.5px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--text-lo);
-  margin-bottom: 8px;
-}
-.vs-breakdown-edge {
-  font-family: "Barlow", sans-serif;
-  font-size: 10.5px;
-  line-height: 1.68;
-  color: var(--text-md);
-  margin-bottom: 16px;
-}
-.vs-breakdown-section { margin-bottom: 14px; }
+.vs-breakdown-section { margin-bottom: 16px; }
 .vs-breakdown-section-label {
   font-family: "DM Mono", monospace;
   font-size: 7.5px;
@@ -657,8 +628,6 @@ body {
   line-height: 1.65;
   color: var(--text-md);
 }
-.vs-breakdown-section-text.hi { color: var(--text-hi); font-size: 11px; }
-.vs-breakdown-section-text.underdog { color: var(--text-lo); font-style: italic; }
 .vs-breakdown-loading {
   font-family: "DM Mono", monospace;
   font-size: 9px;
@@ -1825,7 +1794,7 @@ body {
             <div id="vs-breakdown-sections" style="display:none;transition:opacity 0.3s">
               <div class="vs-breakdown-section">
                 <div class="vs-breakdown-section-label">Matchup</div>
-                <div class="vs-breakdown-section-text hi" id="vs-bd-matchup"></div>
+                <div class="vs-breakdown-section-text" id="vs-bd-matchup"></div>
               </div>
               <div class="vs-breakdown-section">
                 <div class="vs-breakdown-section-label">Edge</div>
@@ -1837,10 +1806,11 @@ body {
               </div>
               <div class="vs-breakdown-section">
                 <div class="vs-breakdown-section-label">Underdog Chance</div>
-                <div class="vs-breakdown-section-text underdog" id="vs-bd-underdog"></div>
+                <div class="vs-breakdown-section-text" id="vs-bd-underdog"></div>
               </div>
             </div>
-            <div id="vs-breakdown-meth-link" style="display:none;margin-top:auto;padding-top:16px">
+            <div id="vs-breakdown-meth-link" style="display:none;margin-top:auto;padding-top:16px;display:flex;flex-direction:column;gap:6px">
+              <span id="vs-breakdown-map-link" onclick="vsGoToStyleMap()" style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-lo);letter-spacing:0.06em;cursor:pointer;transition:color 0.15s" onmouseenter="this.style.color='var(--text-md)'" onmouseleave="this.style.color='var(--text-lo)'">View in Style Map →</span>
               <span onclick="setMode('methodology');setTimeout(()=>methScrollTo('meth-9'),80);" style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-lo);letter-spacing:0.06em;cursor:pointer;transition:color 0.15s" onmouseenter="this.style.color='var(--text-md)'" onmouseleave="this.style.color='var(--text-lo)'">How this model works →</span>
             </div>
           </div>
@@ -2414,9 +2384,74 @@ const hlTrace={
   marker:{size:7,color:'#7a1f28',opacity:1,line:{color:'#b83040',width:1.5}},
   hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
 };
+// Blue highlight trace for VS overlay
+const hlTrace2={
+  type:'scatter3d', mode:'markers', x:[],y:[],z:[],text:[],
+  marker:{size:7,color:'#1a3050',opacity:1,line:{color:'#4a80d0',width:1.5}},
+  hovertemplate:'<b>%{text}</b><extra></extra>', showlegend:false,
+};
+// VS distance line trace
+const vsLineTrace={
+  type:'scatter3d', mode:'lines', x:[],y:[],z:[],
+  line:{color:'rgba(150,150,180,0.25)',width:1},
+  hoverinfo:'skip', showlegend:false,
+};
+let vsOverlayActive = false;
+let vsOverlayRed = null, vsOverlayBlue = null;
+
 function updateHlColor(){
   hlTrace.marker.color = isNebula ? 'rgba(255,255,255,0.25)' : '#7a1f28';
   hlTrace.marker.line.color = isNebula ? '#ffffff' : '#b83040';
+}
+
+function _univReact(){
+  Plotly.react('plot',[...univTraces,hlTrace,hlTrace2,vsLineTrace],univLayout,{responsive:true,displayModeBar:false});
+}
+
+function enterVsOverlay(redName, blueName){
+  const rf = nameToFighter[redName], bf = nameToFighter[blueName];
+  if(!rf || !bf) return;
+  vsOverlayActive = true;
+  vsOverlayRed = redName; vsOverlayBlue = blueName;
+  // Red highlight
+  hlTrace.x=[rf.x]; hlTrace.y=[rf.y]; hlTrace.z=[rf.z]; hlTrace.text=[rf.name];
+  updateHlColor();
+  // Blue highlight
+  hlTrace2.x=[bf.x]; hlTrace2.y=[bf.y]; hlTrace2.z=[bf.z]; hlTrace2.text=[bf.name];
+  // Distance line
+  vsLineTrace.x=[rf.x,bf.x]; vsLineTrace.y=[rf.y,bf.y]; vsLineTrace.z=[rf.z,bf.z];
+  // Dim all traces
+  univTraces.forEach(t=>{
+    t._savedOpacity = t.marker.opacity;
+    const dimmed = Array.isArray(t.marker.opacity)
+      ? t.marker.opacity.map(()=>0.06)
+      : 0.06;
+    t.marker.opacity = dimmed;
+  });
+  _univReact();
+  selectFighter(redName);
+}
+
+function exitVsOverlay(){
+  vsOverlayActive = false;
+  vsOverlayRed = null; vsOverlayBlue = null;
+  // Restore opacity
+  univTraces.forEach(t=>{
+    if(t._savedOpacity !== undefined){
+      t.marker.opacity = t._savedOpacity;
+      delete t._savedOpacity;
+    }
+  });
+  // Clear extra traces
+  hlTrace2.x=[]; hlTrace2.y=[]; hlTrace2.z=[]; hlTrace2.text=[];
+  vsLineTrace.x=[]; vsLineTrace.y=[]; vsLineTrace.z=[];
+  _univReact();
+}
+
+function vsGoToStyleMap(){
+  if(!vsRed || !vsBlue) return;
+  setMode('universe');
+  setTimeout(()=>enterVsOverlay(vsRed.name, vsBlue.name), 150);
 }
 
 const univLayout={
@@ -2432,10 +2467,17 @@ const univLayout={
   showlegend:false,
 };
 
-Plotly.newPlot('plot',[...univTraces,hlTrace],univLayout,{responsive:true,displayModeBar:false});
+Plotly.newPlot('plot',[...univTraces,hlTrace,hlTrace2,vsLineTrace],univLayout,{responsive:true,displayModeBar:false});
 
 document.getElementById('plot').on('plotly_click',data=>{
-  selectFighter(data.points[0].customdata);
+  const clickedName = data.points[0].customdata;
+  if(vsOverlayActive){
+    if(clickedName === vsOverlayRed){ selectFighter(clickedName); return; }
+    if(clickedName === vsOverlayBlue){ selectFighter(clickedName); return; }
+    // clicked someone else — exit VS overlay
+    exitVsOverlay();
+  }
+  selectFighter(clickedName);
 });
 
 function pct(val,max){ return Math.min(100,Math.round((val/max)*100))+'%'; }
@@ -2488,7 +2530,7 @@ function selectFighter(name){
   });
   updateHlColor();
   hlTrace.x=[f.x]; hlTrace.y=[f.y]; hlTrace.z=[f.z]; hlTrace.text=[f.name];
-  setTimeout(()=>Plotly.react('plot',[...univTraces,hlTrace],univLayout,{responsive:true,displayModeBar:false}),0);
+  setTimeout(()=>_univReact(),0);
 }
 
 // ── Legend ──
@@ -2620,7 +2662,7 @@ function applyTheme(){
     try {
       updateHlColor();
       rebuildTraces();
-      Plotly.react('plot',[...univTraces,hlTrace],univLayout,{responsive:true,displayModeBar:false});
+      _univReact();
       updateTierIcons();
       applyFilters();
     } catch(e) { console.error('theme toggle error:', e); }
