@@ -842,16 +842,21 @@ async def vs_narrative(inp: NarrativeInput):
         blue_desc  = ARCHETYPE_DESC.get(blue_arch, blue_arch)
         method_human = {"KO/TKO": "knockout", "Submission": "submission", "Decision": "decision"}.get(method_str, method_str)
 
+        underdog = inp.blue if inp.red_win_prob >= 0.5 else inp.red
+        favorite = winner
+
         prompt = (
-            "You are a UFC analyst. Based ONLY on the data below, write two very short sections.\n"
-            "Each section must be exactly 1 sentence, maximum 25 words.\n\n"
+            "You are a UFC analyst. Write exactly 4 labeled sections, each exactly 1 sentence (max 20 words). "
+            "No hedging, no bullet points, no extra text. Use last names only.\n\n"
             f"FIGHTERS:\n"
             f"- {inp.red}: {red_desc}. Stats: {red_stats}\n"
             f"- {inp.blue}: {blue_desc}. Stats: {blue_stats}\n\n"
-            f"MODEL OUTPUT: {winner} wins - {win_pct}% probability, predicted {method_human} ({round_str})\n"
-            f"KEY FACTORS: {shap_str}\n\n"
-            "MATCHUP: One punchy sentence describing this stylistic collision. Use last names. Be vivid, no hedging.\n"
-            "EDGE: One sentence explaining what the numbers say and why the model favors the predicted winner. Be specific."
+            f"MODEL: {winner} wins {win_pct}% via {method_human} ({round_str})\n"
+            f"KEY FACTORS (favor {winner}): {shap_str}\n\n"
+            "MATCHUP: What is the core stylistic tension of this fight?\n"
+            f"EDGE: How do the key factors translate into {favorite}'s path to victory?\n"
+            f"MOMENT: What is the single most likely decisive scene inside the cage?\n"
+            f"UNDERDOG CHANCE: What is {underdog}'s only realistic path to an upset?"
         )
 
         import json as _json, urllib.request as _ur
@@ -859,7 +864,7 @@ async def vs_narrative(inp: NarrativeInput):
         _payload = _json.dumps({
             "model": "gpt-4o-mini",
             "messages": [{"role": "user", "content": prompt_safe}],
-            "max_tokens": 220,
+            "max_tokens": 180,
             "temperature": 0.7
         }, ensure_ascii=False).encode("utf-8")
         _req = _ur.Request(
@@ -872,17 +877,23 @@ async def vs_narrative(inp: NarrativeInput):
         )
         _res = _json.loads(_ur.urlopen(_req).read())
         raw = _res["choices"][0]["message"]["content"].strip().encode("ascii", "ignore").decode("ascii")
-        matchup_text = ""
-        edge_text = ""
+        sections = {"matchup": "", "edge": "", "moment": "", "underdog": ""}
         for line in raw.split("\n"):
             line = line.strip()
-            if line.upper().startswith("MATCHUP:"):
-                matchup_text = line[8:].strip()
-            elif line.upper().startswith("EDGE:"):
-                edge_text = line[5:].strip()
-        if not matchup_text:
-            matchup_text = raw.replace("\n", " ").strip()
-        return {"matchup": matchup_text, "edge": edge_text}
+            lu = line.upper()
+            if lu.startswith("MATCHUP:"):
+                sections["matchup"] = line[8:].strip()
+            elif lu.startswith("EDGE:"):
+                sections["edge"] = line[5:].strip()
+            elif lu.startswith("MOMENT:"):
+                sections["moment"] = line[7:].strip()
+            elif lu.startswith("UNDERDOG CHANCE:"):
+                sections["underdog"] = line[16:].strip()
+            elif lu.startswith("UNDERDOG:"):
+                sections["underdog"] = line[9:].strip()
+        if not sections["matchup"]:
+            sections["matchup"] = raw.replace("\n", " ").strip()
+        return sections
 
     except Exception as e:
         print(f"Gemini error: {e}")

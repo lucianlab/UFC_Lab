@@ -642,6 +642,23 @@ body {
   color: var(--text-md);
   margin-bottom: 16px;
 }
+.vs-breakdown-section { margin-bottom: 14px; }
+.vs-breakdown-section-label {
+  font-family: "DM Mono", monospace;
+  font-size: 7.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-lo);
+  margin-bottom: 5px;
+}
+.vs-breakdown-section-text {
+  font-family: "Barlow", sans-serif;
+  font-size: 10.5px;
+  line-height: 1.65;
+  color: var(--text-md);
+}
+.vs-breakdown-section-text.hi { color: var(--text-hi); font-size: 11px; }
+.vs-breakdown-section-text.underdog { color: var(--text-lo); font-style: italic; }
 .vs-breakdown-loading {
   font-family: "DM Mono", monospace;
   font-size: 9px;
@@ -1804,11 +1821,28 @@ body {
           <!-- RIGHT: Fight Breakdown (full height) -->
           <div id="vs-breakdown-col">
             <div class="vs-breakdown-label">Fight Breakdown</div>
-            <div class="vs-breakdown-matchup" id="vs-breakdown-matchup"></div>
-            <div class="vs-breakdown-divider" id="vs-breakdown-divider" style="display:none"></div>
-            <div class="vs-breakdown-edge-label" id="vs-breakdown-edge-label" style="display:none">Model Edge</div>
-            <div class="vs-breakdown-edge" id="vs-breakdown-edge"></div>
             <div class="vs-breakdown-loading" id="vs-breakdown-loading">Analysing matchup…</div>
+            <div id="vs-breakdown-sections" style="display:none;transition:opacity 0.3s">
+              <div class="vs-breakdown-section">
+                <div class="vs-breakdown-section-label">Matchup</div>
+                <div class="vs-breakdown-section-text hi" id="vs-bd-matchup"></div>
+              </div>
+              <div class="vs-breakdown-section">
+                <div class="vs-breakdown-section-label">Edge</div>
+                <div class="vs-breakdown-section-text" id="vs-bd-edge"></div>
+              </div>
+              <div class="vs-breakdown-section">
+                <div class="vs-breakdown-section-label">The Moment</div>
+                <div class="vs-breakdown-section-text" id="vs-bd-moment"></div>
+              </div>
+              <div class="vs-breakdown-section">
+                <div class="vs-breakdown-section-label">Underdog Chance</div>
+                <div class="vs-breakdown-section-text underdog" id="vs-bd-underdog"></div>
+              </div>
+            </div>
+            <div id="vs-breakdown-meth-link" style="display:none;margin-top:auto;padding-top:16px">
+              <span onclick="setMode('methodology')" style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-lo);letter-spacing:0.06em;cursor:pointer;transition:color 0.15s" onmouseenter="this.style.color='var(--text-md)'" onmouseleave="this.style.color='var(--text-lo)'">How this model works →</span>
+            </div>
           </div>
 
           <!-- TR1-L: Win Probability + Finish -->
@@ -3227,17 +3261,16 @@ async function runVsAnalysis() {
       else if (rIsGrp && bIsGrp) subLines.push('A grappling chess match.');
       document.getElementById('fight-shape-sub').textContent = subLines.join(' ');
 
-      // Fight Breakdown — loading state then GPT two-part response
-      const _bMatchup = document.getElementById('vs-breakdown-matchup');
-      const _bEdge    = document.getElementById('vs-breakdown-edge');
-      const _bEdgeLbl = document.getElementById('vs-breakdown-edge-label');
-      const _bDiv     = document.getElementById('vs-breakdown-divider');
-      const _bLoad    = document.getElementById('vs-breakdown-loading');
-      if(_bMatchup){ _bMatchup.textContent=''; }
-      if(_bEdge){ _bEdge.textContent=''; }
-      if(_bEdgeLbl){ _bEdgeLbl.style.display='none'; }
-      if(_bDiv){ _bDiv.style.display='none'; }
+      // Fight Breakdown — 4-section GPT response
+      const _bLoad = document.getElementById('vs-breakdown-loading');
+      const _bSections = document.getElementById('vs-breakdown-sections');
+      const _bMethLink = document.getElementById('vs-breakdown-meth-link');
       if(_bLoad){ _bLoad.style.display='block'; }
+      if(_bSections){ _bSections.style.display='none'; _bSections.style.opacity='0'; }
+      if(_bMethLink){ _bMethLink.style.display='none'; }
+      ['vs-bd-matchup','vs-bd-edge','vs-bd-moment','vs-bd-underdog'].forEach(id=>{
+        const el=document.getElementById(id); if(el) el.textContent='';
+      });
 
       (async ()=>{
         try{
@@ -3257,22 +3290,26 @@ async function runVsAnalysis() {
           if(_bLoad) _bLoad.style.display='none';
           if(nr.ok){
             const nd = await nr.json();
-            if(nd.matchup && _bMatchup){
-              _bMatchup.style.opacity='0';
-              setTimeout(()=>{ _bMatchup.textContent=nd.matchup; _bMatchup.style.opacity='1'; },150);
-            }
-            if(nd.edge && _bEdge){
-              setTimeout(()=>{
-                if(_bDiv) _bDiv.style.display='block';
-                if(_bEdgeLbl) _bEdgeLbl.style.display='block';
-                _bEdge.style.opacity='0';
-                setTimeout(()=>{ _bEdge.textContent=nd.edge; _bEdge.style.opacity='1'; },100);
-              },300);
-            }
-            if(!nd.matchup && !nd.edge){
+            const map = [
+              ['vs-bd-matchup', nd.matchup],
+              ['vs-bd-edge',    nd.edge],
+              ['vs-bd-moment',  nd.moment],
+              ['vs-bd-underdog',nd.underdog]
+            ];
+            let hasContent = map.some(([,t])=>t);
+            map.forEach(([id, text], i) => {
+              if(text){ const el=document.getElementById(id); if(el) setTimeout(()=>{ el.textContent=text; },i*80); }
+            });
+            if(hasContent && _bSections){
+              _bSections.style.display='block';
+              setTimeout(()=>{ _bSections.style.opacity='1'; },50);
+              if(_bMethLink) setTimeout(()=>{ _bMethLink.style.display='block'; },400);
+            } else if(!hasContent){
               const fav=data.red_win_prob>=0.5?r.name.split(' ').pop():b.name.split(' ').pop();
               const pct=Math.round(Math.max(data.red_win_prob,1-data.red_win_prob)*100);
-              if(_bMatchup){ _bMatchup.textContent=fav+' holds a '+pct+'% statistical edge across multiple dimensions.'; }
+              const el=document.getElementById('vs-bd-matchup');
+              if(el) el.textContent=fav+' holds a '+pct+'% statistical edge across multiple dimensions.';
+              if(_bSections){ _bSections.style.display='block'; _bSections.style.opacity='1'; }
             }
           }
         }catch(e){ if(_bLoad) _bLoad.style.display='none'; }
