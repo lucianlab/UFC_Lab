@@ -825,7 +825,7 @@ class NarrativeInput(BaseModel):
 @app.post("/api/vs_narrative")
 async def vs_narrative(inp: NarrativeInput):
     api_key = os.getenv("OPENAI_API_KEY", "").strip()
-    print(f"NARRATIVE DEBUG: key length={len(api_key)}, starts={api_key[:8] if api_key else "EMPTY"}")
+    print(f"NARRATIVE DEBUG: key length={len(api_key)}, starts={api_key[:8] if api_key else chr(69)+chr(77)+chr(80)+chr(84)+chr(89)}")
     if not api_key:
         return {"narrative": ""}
 
