@@ -812,56 +812,25 @@ class NarrativeInput(BaseModel):
 
 @app.post("/api/vs_narrative")
 async def vs_narrative(inp: NarrativeInput):
-    api_key = os.getenv("GOOGLE_API_KEY", "")
+    api_key = os.getenv("OPENAI_API_KEY", "")
     if not api_key:
         return {"narrative": ""}
 
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-2.0-flash-exp")
-
-        winner     = inp.red  if inp.red_win_prob >= 0.5 else inp.blue
-        loser      = inp.blue if inp.red_win_prob >= 0.5 else inp.red
-        win_pct    = round(inp.red_win_prob * 100) if inp.red_win_prob >= 0.5 else round((1-inp.red_win_prob)*100)
-        method_str = inp.method
-        round_str  = f"R{inp.pred_round}" if inp.method != "Decision" else "decision"
-        shap_str   = _shap_to_english(inp.top_features, inp.red, inp.blue)
-        red_arch   = _get_archetype(inp.red)
-        blue_arch  = _get_archetype(inp.blue)
-        red_stats  = _fmt_stats(inp.red)
-        blue_stats = _fmt_stats(inp.blue)
-
-        red_desc  = ARCHETYPE_DESC.get(red_arch,  red_arch)
-        blue_desc = ARCHETYPE_DESC.get(blue_arch, blue_arch)
-        method_human = {"KO/TKO": "knockout", "Submission": "submission", "Decision": "decision"}.get(method_str, method_str)
-
-        prompt = (
-            "You are a passionate UFC analyst writing a pre-fight breakdown. "
-            "Write 3-4 sentences with genuine enthusiasm for the sport. "
-            "Do NOT mention specific past fights or career history. Analyze only from the data below.\n\n"
-            f"FIGHTERS:\n"
-            f"- {inp.red}: {red_desc}. Stats: {red_stats}\n"
-            f"- {inp.blue}: {blue_desc}. Stats: {blue_stats}\n\n"
-            f"MODEL OUTPUT: {winner} wins - {win_pct}% probability, predicted {method_human} ({round_str})\n"
-            f"KEY FACTORS THE MODEL IS WEIGHTING: {shap_str}\n\n"
-            "Write a flowing 3-4 sentence fight breakdown. "
-            "First sentence: describe the stylistic matchup in vivid, human terms - what kind of fight does this set up? "
-            "Second sentence: each fighter's path to victory based on their style and the key factors. "
-            "Third sentence: what the model sees in the numbers that drives its prediction. "
-            "Optional fourth sentence: the most likely decisive moment or dimension. "
-            "Use fighter last names only. Write with the energy of someone who loves this sport "
-            "- flowing prose, not bullet points, no hedging."
+        import urllib.request as _ur, json as _json
+        _data = _json.dumps({
+            "model": "gpt-4o-mini",
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 220,
+            "temperature": 0.7
+        }).encode()
+        _req = _ur.Request(
+            "https://api.openai.com/v1/chat/completions",
+            data=_data,
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
         )
-
-        response = model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(
-                max_output_tokens=220,
-                temperature=0.7,
-            )
-        )
-        text = response.text.strip().replace("\n", " ")
+        _res = _json.loads(_ur.urlopen(_req).read())
+        text = _res["choices"][0]["message"]["content"].strip().replace("\n", " ")
         sentences = [s.strip() for s in text.split(".") if s.strip()]
         result = ". ".join(sentences[:4]) + ("." if sentences else "")
         return {"narrative": result}
