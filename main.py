@@ -817,6 +817,37 @@ async def vs_narrative(inp: NarrativeInput):
         return {"narrative": ""}
 
     try:
+        winner     = inp.red  if inp.red_win_prob >= 0.5 else inp.blue
+        win_pct    = round(inp.red_win_prob * 100) if inp.red_win_prob >= 0.5 else round((1-inp.red_win_prob)*100)
+        method_str = inp.method
+        round_str  = f"R{inp.pred_round}" if inp.method != "Decision" else "decision"
+        shap_str   = _shap_to_english(inp.top_features, inp.red, inp.blue)
+        red_arch   = _get_archetype(inp.red)
+        blue_arch  = _get_archetype(inp.blue)
+        red_stats  = _fmt_stats(inp.red)
+        blue_stats = _fmt_stats(inp.blue)
+        red_desc   = ARCHETYPE_DESC.get(red_arch,  red_arch)
+        blue_desc  = ARCHETYPE_DESC.get(blue_arch, blue_arch)
+        method_human = {"KO/TKO": "knockout", "Submission": "submission", "Decision": "decision"}.get(method_str, method_str)
+
+        prompt = (
+            "You are a passionate UFC analyst writing a pre-fight breakdown. "
+            "Write 3-4 sentences with genuine enthusiasm for the sport. "
+            "Do NOT mention specific past fights or career history. Analyze only from the data below.\n\n"
+            f"FIGHTERS:\n"
+            f"- {inp.red}: {red_desc}. Stats: {red_stats}\n"
+            f"- {inp.blue}: {blue_desc}. Stats: {blue_stats}\n\n"
+            f"MODEL OUTPUT: {winner} wins - {win_pct}% probability, predicted {method_human} ({round_str})\n"
+            f"KEY FACTORS THE MODEL IS WEIGHTING: {shap_str}\n\n"
+            "Write a flowing 3-4 sentence fight breakdown. "
+            "First sentence: describe the stylistic matchup in vivid, human terms - what kind of fight does this set up? "
+            "Second sentence: each fighter's path to victory based on their style and the key factors. "
+            "Third sentence: what the model sees in the numbers that drives its prediction. "
+            "Optional fourth sentence: the most likely decisive moment or dimension. "
+            "Use fighter last names only. Write with the energy of someone who loves this sport "
+            "- flowing prose, not bullet points, no hedging."
+        )
+
         import urllib.request as _ur, json as _json
         _data = _json.dumps({
             "model": "gpt-4o-mini",
