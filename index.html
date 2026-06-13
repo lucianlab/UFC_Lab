@@ -2281,6 +2281,7 @@ body {
 
 <script>
 const API_BASE = 'https://web-production-88343.up.railway.app';  // 後端 (Railway)；同網域部署可改成 location.origin
+let nameToFighter = {}; // global, populated in boot()
 async function boot(){
   let FIGHTERS;
   try {
@@ -2312,7 +2313,6 @@ const WC_COLORS = {
 // ── UNIVERSE mode globals ──
 const byWC = {};
 FIGHTERS.forEach(f => { const wc=f.wc||'Unknown'; if(!byWC[wc])byWC[wc]=[]; byWC[wc].push(f); });
-const nameToFighter = {};
 FIGHTERS.forEach(f => nameToFighter[f.name]=f);
 const allNames = FIGHTERS.map(f=>f.name).sort();
 
@@ -4998,6 +4998,9 @@ function swapVsFighters(){
 })();
 
   window.setMode=setMode;
+  window.vsGoToStyleMap=vsGoToStyleMap;
+  window.enterVsOverlay=enterVsOverlay;
+  window.exitVsOverlay=exitVsOverlay;
 
   // Methodology scroll + TOC active state
   window.methScrollTo = function(id) {
