@@ -824,7 +824,8 @@ class NarrativeInput(BaseModel):
 
 @app.post("/api/vs_narrative")
 async def vs_narrative(inp: NarrativeInput):
-    api_key = os.getenv("OPENAI_API_KEY", "")
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    print(f"NARRATIVE DEBUG: key length={len(api_key)}, starts={api_key[:8] if api_key else "EMPTY"}")
     if not api_key:
         return {"narrative": ""}
 
@@ -883,8 +884,6 @@ async def vs_narrative(inp: NarrativeInput):
         return {"narrative": result}
 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        print(f"Narrative error: {type(e).__name__}: {e}")
+        print(f"Gemini error: {e}")
         return {"narrative": ""}
 
