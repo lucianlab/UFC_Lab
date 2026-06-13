@@ -825,7 +825,6 @@ class NarrativeInput(BaseModel):
 @app.post("/api/vs_narrative")
 async def vs_narrative(inp: NarrativeInput):
     api_key = os.getenv("OPENAI_API_KEY", "").strip()
-    print(f"NARRATIVE DEBUG: key length={len(api_key)}, starts={api_key[:8] if api_key else chr(69)+chr(77)+chr(80)+chr(84)+chr(89)}")
     if not api_key:
         return {"narrative": ""}
 
@@ -844,21 +843,17 @@ async def vs_narrative(inp: NarrativeInput):
         method_human = {"KO/TKO": "knockout", "Submission": "submission", "Decision": "decision"}.get(method_str, method_str)
 
         prompt = (
-            "You are a passionate UFC analyst writing a pre-fight breakdown. "
-            "Write 3-4 sentences with genuine enthusiasm for the sport. "
-            "Do NOT mention specific past fights or career history. Analyze only from the data below.\n\n"
+            "You are a passionate UFC analyst. Based ONLY on the data below, write exactly two short paragraphs.\n"
+            "Paragraph 1 label: MATCHUP:\n"
+            "Paragraph 2 label: EDGE:\n\n"
             f"FIGHTERS:\n"
             f"- {inp.red}: {red_desc}. Stats: {red_stats}\n"
             f"- {inp.blue}: {blue_desc}. Stats: {blue_stats}\n\n"
             f"MODEL OUTPUT: {winner} wins - {win_pct}% probability, predicted {method_human} ({round_str})\n"
-            f"KEY FACTORS THE MODEL IS WEIGHTING: {shap_str}\n\n"
-            "Write a flowing 3-4 sentence fight breakdown. "
-            "First sentence: describe the stylistic matchup in vivid, human terms - what kind of fight does this set up? "
-            "Second sentence: each fighter's path to victory based on their style and the key factors. "
-            "Third sentence: what the model sees in the numbers that drives its prediction. "
-            "Optional fourth sentence: the most likely decisive moment or dimension. "
-            "Use fighter last names only. Write with the energy of someone who loves this sport "
-            "- flowing prose, not bullet points, no hedging."
+            f"KEY FACTORS: {shap_str}\n\n"
+            "MATCHUP (1-2 sentences): describe this stylistic collision in vivid human terms. What kind of fight does this set up? Use last names only. Be punchy and enthusiastic.\n"
+            "EDGE (1-2 sentences): explain what the model sees in the numbers. Why does it favor the predicted winner? Be specific about the key factors above.\n"
+            "No hedging. No bullet points. Do not mention past fights."
         )
 
         import json as _json, urllib.request as _ur
@@ -866,7 +861,7 @@ async def vs_narrative(inp: NarrativeInput):
         _payload = _json.dumps({
             "model": "gpt-4o-mini",
             "messages": [{"role": "user", "content": prompt_safe}],
-            "max_tokens": 220,
+            "max_tokens": 260,
             "temperature": 0.7
         }, ensure_ascii=False).encode("utf-8")
         _req = _ur.Request(
@@ -878,12 +873,21 @@ async def vs_narrative(inp: NarrativeInput):
             }
         )
         _res = _json.loads(_ur.urlopen(_req).read())
-        text = _res["choices"][0]["message"]["content"].strip().replace("\n", " ").encode("ascii", "ignore").decode("ascii")
-        sentences = [s.strip() for s in text.split(".") if s.strip()]
-        result = ". ".join(sentences[:4]) + ("." if sentences else "")
-        return {"narrative": result}
+        raw = _res["choices"][0]["message"]["content"].strip().encode("ascii", "ignore").decode("ascii")
+        matchup_text = ""
+        edge_text = ""
+        for line in raw.split("\n"):
+            line = line.strip()
+            if line.upper().startswith("MATCHUP:"):
+                matchup_text = line[8:].strip()
+            elif line.upper().startswith("EDGE:"):
+                edge_text = line[5:].strip()
+        if not matchup_text and not edge_text:
+            # fallback: treat whole text as matchup
+            matchup_text = " ".join(raw.replace("\n", " ").split()[:60])
+        return {"matchup": matchup_text, "edge": edge_text}
 
     except Exception as e:
-        print(f"Gemini error: {e}")
+        print(f"Narrative error: {e}")
         return {"narrative": ""}
 

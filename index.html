@@ -584,21 +584,70 @@ body {
 }
 #vs-radar-col canvas { flex: 1; min-height: 0; max-height: 220px; }
 
-/* RIGHT COLUMN: 2×2 sub-grid */
+/* RIGHT COLUMN: Win(left) | Breakdown(right, full height) */
 #vs-right-grid {
   grid-column: 2; grid-row: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: 1fr auto;
   min-height: 0;
   border-bottom: 1px solid var(--border);
 }
-#vs-analysis-col {
-  grid-column: 2; grid-row: 1;
+/* Fight breakdown — right column, full height */
+#vs-breakdown-col {
+  grid-column: 2; grid-row: 1 / 3;
   border-left: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 14px 16px 10px 14px;
-  overflow: hidden;
+  padding: 20px 20px 16px 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+#vs-breakdown-col::-webkit-scrollbar { width: 1px; }
+#vs-breakdown-col::-webkit-scrollbar-thumb { background: var(--text-lo); }
+.vs-breakdown-label {
+  font-family: "DM Mono", monospace;
+  font-size: 7.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--champagne);
+  opacity: 0.6;
+  margin-bottom: 8px;
+}
+.vs-breakdown-matchup {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.65;
+  color: var(--text-hi);
+  margin-bottom: 16px;
+}
+.vs-breakdown-divider {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 14px;
+}
+.vs-breakdown-edge-label {
+  font-family: "DM Mono", monospace;
+  font-size: 7.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-lo);
+  margin-bottom: 8px;
+}
+.vs-breakdown-edge {
+  font-family: "Barlow", sans-serif;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--text-md);
+}
+.vs-breakdown-loading {
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  color: var(--text-lo);
+  letter-spacing: 0.08em;
+  opacity: 0.5;
+  margin-top: 12px;
 }
 #vs-win-col {
   grid-column: 1; grid-row: 1;
@@ -607,17 +656,14 @@ body {
   padding: 14px 14px 10px;
   overflow: hidden;
 }
+/* Similar fights moves to bottom-left */
 #vs-bottom-left {
   grid-column: 1; grid-row: 2;
   border-right: 1px solid var(--border);
   padding: 10px 14px;
   overflow: hidden;
 }
-#vs-bottom-right {
-  grid-column: 2; grid-row: 2;
-  padding: 10px 16px 10px 14px;
-  overflow: hidden;
-}
+#vs-bottom-right { display: none; }
 
 /* SHAP row: bottom full width */
 #vs-shap-row {
@@ -1726,6 +1772,9 @@ body {
 
     <!-- Verdict strip -->
     <div id="vs-verdict-strip" id="vs-verdict-strip"></div>
+    <!-- Hidden legacy elements (still referenced in JS) -->
+    <div id="fight-shape-verdict" style="display:none"></div>
+    <div id="fight-shape-sub" style="display:none"></div>
 
     <!-- Body -->
     <div id="vs-body">
@@ -1751,21 +1800,14 @@ body {
         <!-- RIGHT: 2×2 grid -->
         <div id="vs-right-grid">
 
-          <!-- TR1-L: Fight Shape -->
-          <div id="vs-analysis-col">
-            <div class="fight-shape-title">Fight Shape</div>
-            <div class="fight-shape-verdict" id="fight-shape-verdict">—</div>
-            <div class="fight-shape-sub" id="fight-shape-sub"></div>
-            <div id="vs-narrative" style="margin-top:8px;font-size:11px;color:var(--text-md);font-family:'Barlow',sans-serif;line-height:1.65;border-top:1px solid var(--border);padding-top:8px;max-height:none;overflow:visible;transition:opacity 0.3s"></div>
-            <div style="margin-top:8px;padding-top:7px;border-top:1px solid var(--border)">
-              <div style="font-family:'DM Mono',monospace;font-size:7.5px;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.18em;margin-bottom:5px">Style Distance</div>
-              <div class="sd-row">
-                <span class="sd-label">Identical</span>
-                <div class="sd-track"><div class="sd-fill" id="sd-fill" style="width:0%"></div></div>
-                <span class="sd-label">Polar Opposites</span>
-                <span class="sd-val" id="sd-val">—</span>
-              </div>
-            </div>
+          <!-- RIGHT: Fight Breakdown (full height) -->
+          <div id="vs-breakdown-col">
+            <div class="vs-breakdown-label">Fight Breakdown</div>
+            <div class="vs-breakdown-matchup" id="vs-breakdown-matchup"></div>
+            <div class="vs-breakdown-divider" id="vs-breakdown-divider" style="display:none"></div>
+            <div class="vs-breakdown-edge-label" id="vs-breakdown-edge-label" style="display:none">Model Edge</div>
+            <div class="vs-breakdown-edge" id="vs-breakdown-edge"></div>
+            <div class="vs-breakdown-loading" id="vs-breakdown-loading">Analysing matchup…</div>
           </div>
 
           <!-- TR1-L: Win Probability + Finish -->
@@ -1804,29 +1846,30 @@ body {
             </div>
           </div>
 
-          <!-- TR2-L: Confidence + DS info -->
+          <!-- TR2-L: Similar Fights -->
           <div id="vs-bottom-left">
-            <div class="vs-section-label">Model Confidence
-              <span id="vs-conf-label" style="float:right;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase"></span>
-            </div>
-            <div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden;margin-bottom:8px">
-              <div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:var(--text-lo)"></div>
-            </div>
-            <div id="vs-conf-breakdown" style="font-size:9px;color:var(--text-lo);font-family:'DM Mono',monospace;line-height:1.8;letter-spacing:0.03em"></div>
-          </div>
-
-          <!-- TR2-R: Similar Fights -->
-          <div id="vs-bottom-right">
             <div class="sm-title">Most Similar Past Matchups</div>
             <div id="sm-list"></div>
           </div>
 
+          <!-- TR2-R: hidden (breakdown col spans full height) -->
+          <div id="vs-bottom-right" style="display:none"></div>
+
         </div><!-- end vs-right-grid -->
 
-        <!-- SHAP: bottom full width -->
+        <!-- SHAP + Confidence: bottom full width -->
         <div id="vs-shap-row">
-          <div style="margin-bottom:8px">
-            <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-md);text-transform:uppercase;letter-spacing:0.18em;margin-bottom:5px">Key Prediction Factors</div>
+          <div style="display:flex;align-items:baseline;gap:24px;margin-bottom:8px;flex-wrap:wrap">
+            <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-md);text-transform:uppercase;letter-spacing:0.18em">Key Prediction Factors</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-left:auto">
+              <span style="font-family:'DM Mono',monospace;font-size:7.5px;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.14em">Confidence</span>
+              <div style="width:80px;height:3px;background:var(--surface-3);border-radius:2px;overflow:hidden"><div id="vs-conf-bar" style="height:100%;width:0%;border-radius:2px;transition:width 0.8s ease;background:var(--text-lo)"></div></div>
+              <span id="vs-conf-label" style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-md)"></span>
+              <span id="vs-conf-breakdown" style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-lo);letter-spacing:0.03em"></span>
+            </div>
+          </div>
+          <div style="margin-bottom:6px">
+            <div style="font-size:10px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6;max-width:900px">
             <div style="font-size:10px;color:var(--text-lo);font-family:'Barlow',sans-serif;line-height:1.6;max-width:900px">
               XGBoost trained on 6,180 UFC bouts (2013–2026) · AUC 0.63 · Features: career stats, recent form (last 3 fights), style-clash interactions (striker vs grappler KO threat × opponent defence), strength-of-schedule, age & prime window · Height/reach are absolute, not p4p-adjusted · Each prediction is run in both directions and averaged to remove red/blue corner bias.
             </div>
@@ -3189,9 +3232,17 @@ async function runVsAnalysis() {
       else if (rIsGrp && bIsGrp) subLines.push('A grappling chess match.');
       document.getElementById('fight-shape-sub').textContent = subLines.join(' ');
 
-      // Narrative — loading state then Gemini
-      const narrativeEl = document.getElementById('vs-narrative');
-      if(narrativeEl){ narrativeEl.style.opacity='0.35'; narrativeEl.textContent='Analysing matchup…'; }
+      // Fight Breakdown — loading state then GPT two-part response
+      const _bMatchup = document.getElementById('vs-breakdown-matchup');
+      const _bEdge    = document.getElementById('vs-breakdown-edge');
+      const _bEdgeLbl = document.getElementById('vs-breakdown-edge-label');
+      const _bDiv     = document.getElementById('vs-breakdown-divider');
+      const _bLoad    = document.getElementById('vs-breakdown-loading');
+      if(_bMatchup){ _bMatchup.textContent=''; }
+      if(_bEdge){ _bEdge.textContent=''; }
+      if(_bEdgeLbl){ _bEdgeLbl.style.display='none'; }
+      if(_bDiv){ _bDiv.style.display='none'; }
+      if(_bLoad){ _bLoad.style.display='block'; }
 
       (async ()=>{
         try{
@@ -3208,19 +3259,28 @@ async function runVsAnalysis() {
               top_features:     data.top_features||[]
             })
           });
+          if(_bLoad) _bLoad.style.display='none';
           if(nr.ok){
             const nd = await nr.json();
-            if(nd.narrative && nd.narrative.trim() && narrativeEl){
-              narrativeEl.style.opacity='0';
-              setTimeout(()=>{ narrativeEl.textContent=nd.narrative; narrativeEl.style.opacity='1'; },200);
-            } else if(narrativeEl){
+            if(nd.matchup && _bMatchup){
+              _bMatchup.style.opacity='0';
+              setTimeout(()=>{ _bMatchup.textContent=nd.matchup; _bMatchup.style.opacity='1'; },150);
+            }
+            if(nd.edge && _bEdge){
+              setTimeout(()=>{
+                if(_bDiv) _bDiv.style.display='block';
+                if(_bEdgeLbl) _bEdgeLbl.style.display='block';
+                _bEdge.style.opacity='0';
+                setTimeout(()=>{ _bEdge.textContent=nd.edge; _bEdge.style.opacity='1'; },100);
+              },300);
+            }
+            if(!nd.matchup && !nd.edge){
               const fav=data.red_win_prob>=0.5?r.name.split(' ').pop():b.name.split(' ').pop();
               const pct=Math.round(Math.max(data.red_win_prob,1-data.red_win_prob)*100);
-              narrativeEl.style.opacity='1';
-              narrativeEl.textContent=fav+' holds a '+pct+'% edge. The model sees the statistical weight favouring this outcome across multiple dimensions.';
+              if(_bMatchup){ _bMatchup.textContent=fav+' holds a '+pct+'% statistical edge across multiple dimensions.'; }
             }
-          } else if(narrativeEl){ narrativeEl.style.opacity='1'; narrativeEl.textContent=''; }
-        }catch(e){ if(narrativeEl){ narrativeEl.style.opacity='1'; narrativeEl.textContent=''; } }
+          }
+        }catch(e){ if(_bLoad) _bLoad.style.display='none'; }
       })();
 
       // Confidence
