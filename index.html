@@ -51,6 +51,30 @@
 
 * { margin:0; padding:0; box-sizing:border-box; }
 
+/* ─── Tap feedback reset ─── */
+button, [onclick] { -webkit-tap-highlight-color: transparent; transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* ─── Global press feedback ─── */
+button:active,
+[onclick]:active,
+.mode-btn:active,
+.legend-item:active,
+.sm-item:active,
+.helix-action-btn:active,
+.home-nav-item:active,
+.meth-toc-item:active,
+#new-matchup-btn:active,
+.header-brand:active,
+.ac-item:active,
+.vs-ac-item:active,
+.helix-ac-item:active,
+.b-mode-btn:active,
+.vs-picker:active,
+.b-pip:active {
+  transform: scale(0.97);
+  transition: transform 0.05s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
 ::selection {
   background: rgba(140, 40, 55, 0.55);
   color: var(--text-hi);
