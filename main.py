@@ -825,7 +825,6 @@ class NarrativeInput(BaseModel):
 @app.post("/api/vs_narrative")
 async def vs_narrative(inp: NarrativeInput):
     api_key = os.getenv("OPENAI_API_KEY", "").strip()
-    print(f"NARRATIVE DEBUG: key length={len(api_key)}, starts={api_key[:8] if api_key else chr(69)+chr(77)+chr(80)+chr(84)+chr(89)}")
     if not api_key:
         return {"narrative": ""}
 
@@ -872,10 +871,18 @@ async def vs_narrative(inp: NarrativeInput):
             }
         )
         _res = _json.loads(_ur.urlopen(_req).read())
-        text = _res["choices"][0]["message"]["content"].strip().replace("\n", " ").encode("ascii", "ignore").decode("ascii")
-        sentences = [s.strip() for s in text.split(".") if s.strip()]
-        result = ". ".join(sentences[:4]) + ("." if sentences else "")
-        return {"narrative": result}
+        raw = _res["choices"][0]["message"]["content"].strip().encode("ascii", "ignore").decode("ascii")
+        matchup_text = ""
+        edge_text = ""
+        for line in raw.split("\n"):
+            line = line.strip()
+            if line.upper().startswith("MATCHUP:"):
+                matchup_text = line[8:].strip()
+            elif line.upper().startswith("EDGE:"):
+                edge_text = line[5:].strip()
+        if not matchup_text:
+            matchup_text = raw.replace("\n", " ").strip()
+        return {"matchup": matchup_text, "edge": edge_text}
 
     except Exception as e:
         print(f"Gemini error: {e}")
