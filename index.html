@@ -1170,9 +1170,10 @@ body {
 /* ─── Home ─── */
 #home-mode {
   display: none;
-  position: absolute; inset: 0;
+  position: fixed;
+  top: 64px; left: 0; right: 0; bottom: 0;
   background: var(--obsidian);
-  z-index: 5;
+  z-index: 10;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -2129,42 +2130,6 @@ body {
     </div>
   </div><!-- end #helix-mode -->
 
-  <!-- HOME MODE -->
-  <div id="home-mode">
-    <div id="home-inner">
-      <div id="home-title">UFC Lab</div>
-      <div id="home-desc">Data Science &times; Mixed Martial Arts</div>
-      <div id="home-author">Chun Ju Hsieh &nbsp;&middot;&nbsp; Electrical Engineering &nbsp;&middot;&nbsp; National Taiwan University</div>
-      <div id="home-divider"></div>
-      <nav id="home-nav">
-        <div class="home-nav-item" onclick="setMode('universe')">
-          <span class="home-nav-name">Style Map</span>
-          <span class="home-nav-desc">Explore 1,239 fighters in 3-axis PCA space</span>
-        </div>
-        <div class="home-nav-item" onclick="setMode('vs')">
-          <span class="home-nav-name">Matchup Engine</span>
-          <span class="home-nav-desc">XGBoost prediction &middot; AUC 0.63 &middot; SHAP</span>
-        </div>
-        <div class="home-nav-item" onclick="setMode('builder')">
-          <span class="home-nav-name">Blueprint</span>
-          <span class="home-nav-desc">KNN matching in 14-dimensional style space</span>
-        </div>
-        <div class="home-nav-item" onclick="setMode('dna')">
-          <span class="home-nav-name">Meta Evolution</span>
-          <span class="home-nav-desc">How UFC striking and grappling evolved &middot; 2007&ndash;2026</span>
-        </div>
-        <div class="home-nav-item" onclick="setMode('helix')">
-          <span class="home-nav-name">Bout Graph</span>
-          <span class="home-nav-desc">PageRank &middot; fight network &middot; 34 communities</span>
-        </div>
-        <div class="home-nav-item" onclick="setMode('methodology')">
-          <span class="home-nav-name">Methodology</span>
-          <span class="home-nav-desc">Research process &middot; honest about limitations</span>
-        </div>
-      </nav>
-    </div>
-  </div><!-- end #home-mode -->
-
   <!-- METHODOLOGY MODE -->
   <div id="methodology-mode">
     <div id="meth-layout">
@@ -2406,6 +2371,42 @@ body {
   </div>
 
 </div>
+
+  <!-- HOME MODE -->
+  <div id="home-mode">
+    <div id="home-inner">
+      <div id="home-title">UFC Lab</div>
+      <div id="home-desc">Data Science &times; Mixed Martial Arts</div>
+      <div id="home-author">Chun Ju Hsieh &nbsp;&middot;&nbsp; Electrical Engineering &nbsp;&middot;&nbsp; National Taiwan University</div>
+      <div id="home-divider"></div>
+      <nav id="home-nav">
+        <div class="home-nav-item" onclick="setMode('universe')">
+          <span class="home-nav-name">Style Map</span>
+          <span class="home-nav-desc">Explore 1,239 fighters in 3-axis PCA space</span>
+        </div>
+        <div class="home-nav-item" onclick="setMode('vs')">
+          <span class="home-nav-name">Matchup Engine</span>
+          <span class="home-nav-desc">XGBoost prediction &middot; AUC 0.63 &middot; SHAP</span>
+        </div>
+        <div class="home-nav-item" onclick="setMode('builder')">
+          <span class="home-nav-name">Blueprint</span>
+          <span class="home-nav-desc">KNN matching in 14-dimensional style space</span>
+        </div>
+        <div class="home-nav-item" onclick="setMode('dna')">
+          <span class="home-nav-name">Meta Evolution</span>
+          <span class="home-nav-desc">How UFC striking and grappling evolved &middot; 2007&ndash;2026</span>
+        </div>
+        <div class="home-nav-item" onclick="setMode('helix')">
+          <span class="home-nav-name">Bout Graph</span>
+          <span class="home-nav-desc">PageRank &middot; fight network &middot; 34 communities</span>
+        </div>
+        <div class="home-nav-item" onclick="setMode('methodology')">
+          <span class="home-nav-name">Methodology</span>
+          <span class="home-nav-desc">Research process &middot; honest about limitations</span>
+        </div>
+      </nav>
+    </div>
+  </div><!-- end #home-mode -->
 
 <script>
 const API_BASE = 'https://web-production-88343.up.railway.app';  // 後端 (Railway)；同網域部署可改成 location.origin
@@ -3514,7 +3515,6 @@ function setMode(mode){
   document.getElementById('btn-helix').classList.toggle('active',mode==='helix');
   if(helixEl) helixEl.classList.remove('active');
   if(homeEl) homeEl.classList.remove('active');
-  document.getElementById('main').style.display='';
   const _methEl=document.getElementById('methodology-mode');
   if(_methEl) _methEl.classList.remove('active');
   const _authEl=document.getElementById('meth-author');
@@ -3523,7 +3523,6 @@ function setMode(mode){
   if(mode==='home'){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.remove('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
-    document.getElementById('main').style.display='none';
     if(homeEl) homeEl.classList.add('active');
     document.getElementById('header-sub').textContent='';
     return;
