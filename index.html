@@ -1822,7 +1822,7 @@ body {
   </div>
 
   <div id="mode-toggle">
-    <button class="mode-btn active" id="btn-universe" onclick="setMode('universe')">Style Map</button>
+    <button class="mode-btn" id="btn-universe" onclick="setMode('universe')">Style Map</button>
     <button class="mode-btn" id="btn-vs" onclick="setMode('vs')">Matchup Engine</button>
     <button class="mode-btn" id="btn-builder" onclick="setMode('builder')">Blueprint</button>
     <button class="mode-btn" id="btn-dna" onclick="setMode('dna')">Meta Evolution</button>
@@ -1835,12 +1835,12 @@ body {
 <div id="main" style="position:relative;">
 
   <!-- UNIVERSE MODE -->
-  <div id="plot">
+  <div id="plot" style="display:none">
     <div id="theme-toggle" title="Switch theme">⊹</div>
     <div id="theme-label">CLASSIC</div>
     <div id="universe-hint" style="position:absolute;bottom:16px;right:20px;font-family:'DM Mono',monospace;font-size:8px;color:#3a3748;letter-spacing:0.10em;pointer-events:none;text-align:right">SPACE &nbsp;reset view</div>
   </div>
-  <div id="sidebar">
+  <div id="sidebar" style="display:none">
     <div id="search-wrap">
       <input id="search" type="text" placeholder="Search fighter…" autocomplete="off">
       <div id="autocomplete"></div>
@@ -2583,7 +2583,7 @@ const univLayout={
     xaxis:{title:'Grappler ↔ Striker',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
     yaxis:{title:'Decision ↔ Finisher',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
     zaxis:{title:'High-Output ↔ Patient',color:'#272535',gridcolor:'#0f0f16',zerolinecolor:'#1a1a24'},
-    camera:{eye:{x:1.5,y:1.5,z:1.2}},
+    camera:{eye:{x:1.5,y:1.5,z:1.25},center:{x:0,y:0,z:0},up:{x:0,y:0,z:1}},
   },
   margin:{l:0,r:0,t:0,b:0},
   showlegend:false,
@@ -2822,7 +2822,7 @@ document.addEventListener('keydown', e=>{
       // full 模式：space 無效
     } else if(document.getElementById('plot').style.display!=='none'){
       // Universe：重置相機
-      Plotly.relayout('plot', {'scene.camera': {eye:{x:1.5,y:1.5,z:1.2}}});
+      Plotly.relayout('plot', {'scene.camera': {eye:{x:1.5,y:1.5,z:1.25},center:{x:0,y:0,z:0},up:{x:0,y:0,z:1}}});
     }
   }
 });
@@ -3590,6 +3590,7 @@ function setMode(mode){
     // search in sidebar, controlled by sideEl;
     document.getElementById('header-sub').textContent=FIGHTERS.length.toLocaleString()+' fighters · 3-axis PCA';
     const _m=document.getElementById('main'); if(_m){ _m.style.opacity='0'; setTimeout(()=>{ _m.style.opacity='1'; },20); }
+    setTimeout(()=>{ try{ Plotly.Plots.resize(document.getElementById('plot')); }catch(e){} },50);
   } else if(mode==='vs'){
     univEl.style.display='none'; sideEl.style.display='none';
     vsEl.classList.add('active'); bEl.classList.remove('active'); dnaEl.classList.remove('active');
