@@ -3482,9 +3482,7 @@ async function runVsAnalysis() {
         const el=document.getElementById(id); if(el) el.textContent='';
       });
 
-      (async ()=>{
-        try{
-          // Skip API call for default pair — use hardcoded result
+      // Default pair: skip GPT, use hardcoded narrative
       const _isDefault = r.name === VS_DEFAULT_RED && b.name === VS_DEFAULT_BLUE;
       if (_isDefault) {
         if(_bLoad) _bLoad.style.display='none';
@@ -3495,56 +3493,58 @@ async function runVsAnalysis() {
           ['vs-bd-moment',  nd.moment],
           ['vs-bd-underdog',nd.underdog]
         ];
-        let hasContent = map.some(([,t])=>t);
         map.forEach(([id, text], i) => {
-          if(text){ const el=document.getElementById(id); if(el) setTimeout(()=>{ el.textContent=text; },i*80); }
+          const el = document.getElementById(id);
+          if(el) setTimeout(()=>{ el.textContent = text; }, i*80);
         });
-        if(hasContent && _bSections){
+        if(_bSections){
           _bSections.style.display='block';
-          setTimeout(()=>{ _bSections.style.opacity='1'; },50);
-          if(_bMethLink) setTimeout(()=>{ _bMethLink.style.display='block'; },400);
+          setTimeout(()=>{ _bSections.style.opacity='1'; }, 50);
+          if(_bMethLink) setTimeout(()=>{ _bMethLink.style.display='block'; }, 400);
         }
       } else {
-      const nr = await fetch(API_BASE + '/api/vs_narrative', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({
-              red:              r.name,
-              blue:             b.name,
-              red_win_prob:     data.red_win_prob,
-              method:           data.method,
-              pred_round:       data.pred_round,
-              confidence_label: data.confidence_label,
-              top_features:     data.top_features||[]
-            })
-          });
-          if(_bLoad) _bLoad.style.display='none';
-          if(nr.ok){
-            const nd = await nr.json();
-            const map = [
-              ['vs-bd-matchup', nd.matchup],
-              ['vs-bd-edge',    nd.edge],
-              ['vs-bd-moment',  nd.moment],
-              ['vs-bd-underdog',nd.underdog]
-            ];
-            let hasContent = map.some(([,t])=>t);
-            map.forEach(([id, text], i) => {
-              if(text){ const el=document.getElementById(id); if(el) setTimeout(()=>{ el.textContent=text; },i*80); }
+        (async ()=>{
+          try{
+            const nr = await fetch(API_BASE + '/api/vs_narrative', {
+              method: 'POST',
+              headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({
+                red:              r.name,
+                blue:             b.name,
+                red_win_prob:     data.red_win_prob,
+                method:           data.method,
+                pred_round:       data.pred_round,
+                confidence_label: data.confidence_label,
+                top_features:     data.top_features||[]
+              })
             });
-            if(hasContent && _bSections){
-              _bSections.style.display='block';
-              setTimeout(()=>{ _bSections.style.opacity='1'; },50);
-              if(_bMethLink) setTimeout(()=>{ _bMethLink.style.display='block'; },400);
-            } else if(!hasContent){
-              const fav=data.red_win_prob>=0.5?r.name.split(' ').pop():b.name.split(' ').pop();
-              const pct=Math.round(Math.max(data.red_win_prob,1-data.red_win_prob)*100);
-              const el=document.getElementById('vs-bd-matchup');
-              if(el) el.textContent=fav+' holds a '+pct+'% statistical edge across multiple dimensions.';
-              if(_bSections){ _bSections.style.display='block'; _bSections.style.opacity='1'; }
+            if(_bLoad) _bLoad.style.display='none';
+            if(nr.ok){
+              const nd = await nr.json();
+              const map = [
+                ['vs-bd-matchup', nd.matchup],
+                ['vs-bd-edge',    nd.edge],
+                ['vs-bd-moment',  nd.moment],
+                ['vs-bd-underdog',nd.underdog]
+              ];
+              let hasContent = map.some(([,t])=>t);
+              map.forEach(([id, text], i) => {
+                if(text){ const el=document.getElementById(id); if(el) setTimeout(()=>{ el.textContent=text; },i*80); }
+              });
+              if(hasContent && _bSections){
+                _bSections.style.display='block';
+                setTimeout(()=>{ _bSections.style.opacity='1'; },50);
+                if(_bMethLink) setTimeout(()=>{ _bMethLink.style.display='block'; },400);
+              } else if(!hasContent){
+                const fav=data.red_win_prob>=0.5?r.name.split(' ').pop():b.name.split(' ').pop();
+                const pct=Math.round(Math.max(data.red_win_prob,1-data.red_win_prob)*100);
+                const el=document.getElementById('vs-bd-matchup');
+                if(el) el.textContent=fav+' holds a '+pct+'% statistical edge across multiple dimensions.';
+                if(_bSections){ _bSections.style.display='block'; _bSections.style.opacity='1'; }
+              }
             }
-          }
-        }catch(e){ if(_bLoad) _bLoad.style.display='none'; }
-      })();
+          }catch(e){ if(_bLoad) _bLoad.style.display='none'; }
+        })();
       } // end else (non-default pair)
 
       // Confidence
