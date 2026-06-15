@@ -1675,12 +1675,14 @@ body {
   color: var(--text-hi);
 }
 
-#meth-content::-webkit-scrollbar { width: 1px; }
+#meth-content::-webkit-scrollbar { width: 4px; }
 #meth-content::-webkit-scrollbar-track { background: transparent; }
-#meth-content::-webkit-scrollbar-thumb { background: var(--text-lo); border-radius: 1px; }
-#meth-toc::-webkit-scrollbar { width: 1px; }
+#meth-content::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
+#meth-content::-webkit-scrollbar-thumb:hover { background: var(--text-lo); }
+#meth-toc::-webkit-scrollbar { width: 4px; }
 #meth-toc::-webkit-scrollbar-track { background: transparent; }
-#meth-toc::-webkit-scrollbar-thumb { background: var(--text-lo); border-radius: 1px; }
+#meth-toc::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
+#meth-toc::-webkit-scrollbar-thumb:hover { background: var(--text-lo); }
 
 #helix-mode {
   display: none; position: absolute; inset: 0;
