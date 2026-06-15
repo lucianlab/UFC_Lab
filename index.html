@@ -2371,6 +2371,14 @@ body {
           <span class="meth-toc-num">09</span>
           <span class="meth-toc-text">How This Model Works</span>
         </a>
+        <a class="meth-toc-item" href="#meth-10" onclick="methScrollTo('meth-10')">
+          <span class="meth-toc-num">10</span>
+          <span class="meth-toc-text">Known Limitations</span>
+        </a>
+        <a class="meth-toc-item" href="#meth-11" onclick="methScrollTo('meth-11')">
+          <span class="meth-toc-num">11</span>
+          <span class="meth-toc-text">Future Work</span>
+        </a>
       </nav>
 
       <!-- Content -->
@@ -2555,6 +2563,48 @@ body {
 
           <div class="meth-sub">What the model cannot see</div>
           <p class="meth-p">Weight cut severity. Injury status. Training camp quality. Coaching adjustments. The physical condition visible at the weigh-in. These are the variables the betting market prices in during fight week &mdash; and the primary reason a clean model ceiling sits below market accuracy. The model works with what is officially recorded. Everything else is the gap.</p>
+        </div>
+
+        <div class="meth-section" id="meth-10">
+          <div class="meth-section-header">
+            <span class="meth-section-num">10</span>
+            <span class="meth-section-title">Known Limitations</span>
+          </div>
+
+          <div class="meth-sub">Bout Graph: PageRank as a Proxy for Dominance</div>
+          <p class="meth-p">The Bout Graph uses PageRank to approximate fighter influence across UFC history. While the algorithm captures something real &mdash; beating a highly-connected fighter does transfer prestige &mdash; it produces several counterintuitive results that are worth addressing directly.</p>
+
+          <div class="meth-sub">Volume bias</div>
+          <p class="meth-p">Fighters with long careers accumulate PageRank simply by winning many bouts, regardless of opponent quality. Curtis Blaydes (#18) outranks Tom Aspinall (#68) despite Aspinall being the current heavyweight champion &mdash; because Blaydes has 14 graph wins across a decade, while Aspinall has 8. More fights means more inbound edges, and PageRank rewards that.</p>
+
+          <div class="meth-sub">Loss distribution</div>
+          <p class="meth-p">A single loss to a high-PR node can paradoxically hurt a fighter&rsquo;s rank. Aspinall&rsquo;s one career loss is to Blaydes &mdash; meaning Aspinall&rsquo;s score has an outbound edge flowing directly to a competitor in the same division. Fighters who lose to many different opponents dilute this effect; fighters who lose to one dominant node concentrate it.</p>
+
+          <div class="meth-sub">Community isolation</div>
+          <p class="meth-p">PageRank flows more freely within tightly connected clusters. Ilia Topuria (#35) has defeated Alexander Volkanovski, Max Holloway, and Charles Oliveira &mdash; three fighters with substantial graph authority &mdash; yet ranks below Shavkat Rakhmonov (#13), whose best win is Ian Machado Garry. The difference is that Topuria&rsquo;s victories are concentrated in the featherweight and lightweight communities, where PR scores circulate internally before reaching him. Rakhmonov&rsquo;s undefeated record in a less densely connected cluster accumulates without outflow.</p>
+
+          <div class="meth-sub">Undefeated records as sinks</div>
+          <p class="meth-p">Fighters with zero losses act as PageRank sinks &mdash; score flows in and never leaves. This inflates the rankings of undefeated fighters regardless of who they have actually beaten, and explains results like Sean Strickland at #1 despite Alex Pereira holding wins over both Strickland and Adesanya. These are not bugs to be fixed in isolation &mdash; they are properties of the algorithm itself.</p>
+
+          <div class="meth-sub">The feature overlap problem</div>
+          <p class="meth-p">The Matchup Engine uses win rate, recent win rate, and win streak as predictive features. These are structurally similar to what a casual observer would use to assess a fight &mdash; record and momentum. If the model and the human are consuming the same signal, the model&rsquo;s edge is limited to processing speed, not insight. A more rigorous design would use only technical fight data as features and treat wins and losses as labels exclusively.</p>
+        </div>
+
+        <div class="meth-section" id="meth-11">
+          <div class="meth-section-header">
+            <span class="meth-section-num">11</span>
+            <span class="meth-section-title">Future Work</span>
+          </div>
+          <p class="meth-p">Three problems worth solving, and why they haven&rsquo;t been solved yet.</p>
+
+          <div class="meth-sub">1. Rethinking the feature space</div>
+          <p class="meth-p">A more interesting architecture would use only technical fight data as features: significant strikes per round, takedown defense percentage, control time, submission attempts. Wins and losses would serve only as labels. The hypothesis is that such a model might identify stylistic mismatches that human intuition misses &mdash; a high-volume striker who statistically struggles against pressure fighters, for instance, regardless of their current win streak. This retraining has not been done because it requires rethinking the feature engineering pipeline from scratch, not merely rerunning the existing build script.</p>
+
+          <div class="meth-sub">2. Data freshness</div>
+          <p class="meth-p">All fight and fighter data was collected in a single scrape through UFC 328 (May 2025). The dataset does not include subsequent events &mdash; among them UFC Freedom 250 (June 14, 2026), where Ilia Topuria suffered his first career loss to Justin Gaethje, Alex Pereira was knocked out by Ciryl Gane in a heavyweight title challenge, and several other results materially shifted the lightweight and heavyweight landscapes. Individual Fight Night cards in the intervening weeks are similarly absent. The fix is an automated scraping pipeline that updates after each event. The cost &mdash; in infrastructure, data validation, and model retraining &mdash; is high enough that it has not been implemented. For now, the cutoff date is disclosed rather than obscured.</p>
+
+          <div class="meth-sub">3. PageRank redesign</div>
+          <p class="meth-p">A more defensible graph would apply exponential time decay to edges (a win from 2015 should carry a fraction of the weight of a win from 2024), normalize for opponent PageRank at the time of the fight rather than current value, and treat cross-division wins as a separate edge type with an explicit weight multiplier. These changes would likely surface more intuitive results &mdash; Topuria above Rakhmonov, Aspinall above Blaydes &mdash; but would also make the algorithm less transparent and harder to explain in a single paragraph. That tradeoff is part of the reason the simpler version ships first.</p>
         </div>
 
       </div><!-- end #meth-content -->
