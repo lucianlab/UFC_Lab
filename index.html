@@ -1121,7 +1121,95 @@ body {
   padding: 16px 28px 12px;
   min-height: 0;
 }
-#dna-canvas { width: 100% !important; height: 100% !important; }
+#dna-canvas { width: 100% !important; height: 100% !important; cursor: pointer; }
+
+/* ── DNA Year Detail Panel ── */
+#dna-detail {
+  position: absolute; inset: 0;
+  display: none;
+  flex-direction: row;
+  background: var(--obsidian);
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+#dna-detail.visible { display: flex; }
+#dna-detail-bar-col {
+  width: 120px; flex-shrink: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 0 0 0 28px; gap: 0;
+}
+#dna-detail-year-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 48px; font-weight: 600;
+  color: var(--text-hi); letter-spacing: 0.04em;
+  line-height: 1; margin-bottom: 24px;
+  writing-mode: vertical-rl; text-orientation: mixed;
+  transform: rotate(180deg);
+}
+#dna-detail-bar {
+  width: 28px; height: 220px;
+  display: flex; flex-direction: column;
+  border-radius: 2px; overflow: hidden;
+}
+#dna-detail-bar-str {
+  background: rgba(184,48,64,0.75);
+  transition: flex 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+#dna-detail-bar-grp {
+  background: rgba(42,80,144,0.75);
+  transition: flex 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+#dna-detail-bar-labels {
+  margin-top: 12px; display: flex;
+  flex-direction: column; gap: 6px; align-items: flex-start;
+}
+.dna-detail-bar-label {
+  font-family: 'DM Mono', monospace; font-size: 8px;
+  letter-spacing: 0.1em; color: var(--text-lo);
+  display: flex; align-items: center; gap: 5px;
+}
+.dna-detail-bar-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+#dna-detail-divider { width: 1px; background: var(--border); margin: 40px 0; flex-shrink: 0; }
+#dna-detail-text-col {
+  flex: 1; padding: 48px 56px 48px 48px;
+  display: flex; flex-direction: column;
+  justify-content: center; overflow-y: auto; min-width: 0;
+}
+#dna-detail-subtitle {
+  font-family: 'DM Mono', monospace; font-size: 8px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--champagne); opacity: 0.7; margin-bottom: 20px;
+}
+#dna-detail-narrative {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px; line-height: 1.75;
+  color: var(--text-md); max-width: 680px;
+}
+#dna-detail-stats {
+  margin-top: 32px; display: flex; gap: 32px; flex-wrap: wrap;
+}
+.dna-detail-stat { display: flex; flex-direction: column; gap: 4px; }
+.dna-detail-stat-val {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px; font-weight: 600;
+  color: var(--text-hi); letter-spacing: 0.04em;
+}
+.dna-detail-stat-val.str { color: rgba(184,48,64,0.9); }
+.dna-detail-stat-val.grp { color: rgba(74,128,208,0.9); }
+.dna-detail-stat-label {
+  font-family: 'DM Mono', monospace; font-size: 8px;
+  color: var(--text-lo); letter-spacing: 0.1em; text-transform: uppercase;
+}
+#dna-detail-back {
+  margin-top: 36px;
+  font-family: 'DM Mono', monospace; font-size: 8px;
+  letter-spacing: 0.12em; color: var(--text-lo);
+  cursor: pointer; display: inline-flex; align-items: center;
+  gap: 6px; transition: color 0.15s; user-select: none; align-self: flex-start;
+}
+#dna-detail-back:hover { color: var(--text-md); }
 
 /* Tooltip */
 #dna-tooltip {
@@ -2131,8 +2219,43 @@ body {
     </div>
 
     <!-- Chart -->
-    <div id="dna-chart-wrap">
+    <div id="dna-chart-wrap" style="position:relative">
       <canvas id="dna-canvas"></canvas>
+      <div id="dna-detail">
+        <div id="dna-detail-bar-col">
+          <div id="dna-detail-year-label"></div>
+          <div id="dna-detail-bar">
+            <div id="dna-detail-bar-str"></div>
+            <div id="dna-detail-bar-grp"></div>
+          </div>
+          <div id="dna-detail-bar-labels">
+            <div class="dna-detail-bar-label">
+              <div class="dna-detail-bar-dot" style="background:rgba(184,48,64,0.8)"></div>
+              <span id="dna-detail-str-pct"></span>
+            </div>
+            <div class="dna-detail-bar-label">
+              <div class="dna-detail-bar-dot" style="background:rgba(42,80,144,0.8)"></div>
+              <span id="dna-detail-grp-pct"></span>
+            </div>
+          </div>
+        </div>
+        <div id="dna-detail-divider"></div>
+        <div id="dna-detail-text-col">
+          <div id="dna-detail-subtitle"></div>
+          <div id="dna-detail-narrative"></div>
+          <div id="dna-detail-stats">
+            <div class="dna-detail-stat">
+              <div class="dna-detail-stat-val str" id="dna-detail-str-wr"></div>
+              <div class="dna-detail-stat-label">Striking win rate</div>
+            </div>
+            <div class="dna-detail-stat">
+              <div class="dna-detail-stat-val grp" id="dna-detail-grp-wr"></div>
+              <div class="dna-detail-stat-label">Grappling win rate</div>
+            </div>
+          </div>
+          <div id="dna-detail-back">← Back to all years</div>
+        </div>
+      </div>
     </div>
 
     <!-- Axis labels -->
@@ -2468,7 +2591,7 @@ body {
         </div>
         <div class="home-nav-item" onclick="setMode('dna')">
           <span class="home-nav-name">Meta Evolution</span>
-          <span class="home-nav-desc">How UFC striking and grappling evolved &middot; 2007&ndash;2026</span>
+          <span class="home-nav-desc">Style trends &amp; champion eras &middot; 2007&ndash;2026</span>
         </div>
         <div class="home-nav-item" onclick="setMode('helix')">
           <span class="home-nav-name">Bout Graph</span>
@@ -4076,6 +4199,45 @@ async function bLoadLeaderboard(){
 //  DNA MODE — pure Canvas, no Chart.js dependency
 // ══════════════════════════════════════════════════════
 
+
+// ── DNA Year Narrative ──────────────────────────────────────────────────────
+const DNA_NARRATIVE = {"2007": {"subtitle": "The Origin of Modern Dynasties", "text": "This was the year several of the UFC’s defining storylines were born. Anderson Silva had already entered a state of total middleweight dominance, dismantling Nate Marquardt and Rich Franklin one after another — the Silva dynasty was becoming the UFC’s central narrative. At welterweight, Matt Serra delivered one of the greatest upsets in combat sports history, knocking out Georges St-Pierre at UFC 69. But GSP answered by the year’s end, taking an interim title and laying the foundation for what would become his greatest, most unassailable reign. At light heavyweight, Chuck Liddell fell to Quinton “Rampage” Jackson — an old era closing its doors. Randy Couture came out of retirement to reclaim heavyweight gold, a last blaze of glory from a living legend."}, "2008": {"subtitle": "The Builder Year", "text": "GSP walked into UFC 83 and took Matt Serra apart, reclaiming the welterweight throne and beginning a run of dominance that would define an era. Anderson Silva kept sharpening his legend, defeating Dan Henderson and Patrick Côté with terrifying composure. BJ Penn seized the lightweight title and defended it against Sean Sherk, establishing himself as the pound-for-pound threat at 155 pounds. In the heavyweight division, Brock Lesnar knocked out Randy Couture — technically imperfect, commercially enormous. UFC was becoming something bigger than itself, and Lesnar was the symbol of that transformation."}, "2009": {"subtitle": "The Peak of the Old Guard", "text": "GSP’s dominance over BJ Penn and Thiago Alves felt almost clinical — welterweight belonged to him and everyone knew it. Silva continued to own the middleweight division, even if his performance against Thales Leites frustrated fans. Penn was unstoppable at lightweight, defeating Kenny Florian and Diego Sanchez in consecutive dominant performances — the most complete year of his reign. Brock Lesnar unified the heavyweight title at UFC 100, the commercial peak of UFC’s mainstream expansion. And Lyoto Machida rose to light heavyweight gold, briefly opening what looked like a new era."}, "2010": {"subtitle": "The Old Guard Cracks", "text": "Anderson Silva’s five-round war against Chael Sonnen at UFC 117 — nearly losing everything before submitting Sonnen in the final round — somehow made his legend larger, not smaller. Frankie Edgar beat BJ Penn twice, transferring lightweight power from one generation to the next. Cain Velasquez ended Brock Lesnar’s heavyweight reign with primal force. And at year’s end, the WEC merged into UFC — José Aldo and Dominick Cruz arrived as champions, making the smaller weight classes a permanent part of the main stage."}, "2011": {"subtitle": "The New King Is Crowned", "text": "Jon Jones destroyed Shogun Rua at UFC 128, becoming the youngest champion in UFC history at just 23. He then dismantled Rampage Jackson and Lyoto Machida — the Jones era had arrived, and it would prove suffocating for 205 pounds. GSP continued his welterweight reign without interruption. Aldo began his own dynasty at featherweight. Dominick Cruz unified the bantamweight title, defeating Urijah Faber and Demetrious Johnson. Junior dos Santos knocked out Cain Velasquez, beginning a heavyweight carousel that would spin for years."}, "2012": {"subtitle": "Dynasties Deepen and a New One Begins", "text": "Silva crushed Sonnen in their rematch, erasing the memory of their first fight in the most emphatic way possible. Jon Jones defeated Rashad Evans and Vitor Belfort — 205 pounds was entirely his. Benson Henderson took the lightweight title from Edgar, beginning the post-Penn era at 155. But the year’s most significant development was the creation of the flyweight division at UFC 152, where Demetrious Johnson defeated Joseph Benavidez to become the inaugural champion. Nobody could have known they were watching the beginning of one of the most statistically perfect title reigns in combat sports history."}, "2013": {"subtitle": "The Year the Dynasties Fell", "text": "Chris Weidman knocked out Anderson Silva and ended the greatest title reign middleweight MMA had ever seen. GSP defeated Nick Diaz and Johny Hendricks — then vacated, walking away at the summit, his welterweight reign ending with him still on top. Jon Jones survived Alexander Gustafsson’s extraordinary challenge in what many called a fight-of-the-year candidate, then held. Cain Velasquez reasserted himself at heavyweight. And Ronda Rousey formally became the UFC’s female centerpiece — her dominance a mirror image of what Silva had been, violent and seemingly invincible."}, "2014": {"subtitle": "Transition and the Rise of New Champions", "text": "The post-GSP welterweight division found its footing slowly — Johny Hendricks won the title, then lost it to Robbie Lawler at year’s end, shifting 170 pounds from technical precision toward raw, bloodied war. TJ Dillashaw’s stunning upset of Renan Barão at bantamweight was a technical masterpiece, proof that smaller weight classes could produce fights as compelling as any in the promotion. Weidman defended against Machida, proving his Silva victories were no fluke. DJ continued to reign over the flyweight division in near-total silence — dominant, efficient, and criminally underappreciated."}, "2015": {"subtitle": "History Concentrated Into One Year", "text": "Jon Jones was stripped of the light heavyweight title following an off-octagon incident. Daniel Cormier stepped into the vacancy. Luke Rockhold dismantled Weidman, cracking the middleweight stability that had followed Silva’s reign. Then came December 12th: Conor McGregor countered José Aldo with a left hand thirteen seconds into their featherweight title fight, the fastest championship knockout in UFC history. A decade of Aldo’s dominance collapsed in less than a breath. Holly Holm knocked Rousey unconscious, shattering the invincibility myth that had made Rousey the face of women’s MMA. Fabricio Werdum ended Cain’s heavyweight dynasty. Joanna Jędrzejczyk began her own at strawweight. This year did not evolve — it detonated."}, "2016": {"subtitle": "The Commercial Supernova", "text": "Michael Bisping arrived at UFC 199 on seventeen days’ notice and knocked out Luke Rockhold to win the middleweight title — one of the three biggest upsets in UFC championship history. Middleweight descended into beautiful chaos. Then Conor McGregor defeated Eddie Alvarez to hold featherweight and lightweight titles simultaneously, the first simultaneous dual champion in UFC history. The promotion was no longer a niche product. Stipe Miocic defeated Werdum and began what would become the most stable heavyweight reign in UFC history. Tyron Woodley unseated Robbie Lawler. Amanda Nunes defeated Miesha Tate, then dismantled Rousey — and with those two performances, she became the most dominant women’s fighter the sport had ever produced."}, "2017": {"subtitle": "Legends Revisit, New Orders Emerge", "text": "GSP returned after years away and defeated Bisping to claim the middleweight title — then vacated quickly, his legacy intact, the division restless again. Robert Whittaker stepped into order. Max Holloway beat Aldo a second time, making it official: featherweight belonged to him now, not the man who had ruled it for a decade. Rose Namajunas upset Joanna at strawweight in a statement of composure under pressure. Cris Cyborg claimed women’s featherweight gold. And at UFC 216, Demetrious Johnson submitted Ray Borg mid-air — arm extended before Borg had finished falling — and broke Anderson Silva’s record with his eleventh consecutive title defense. The most technically dominant reign in UFC history had reached its absolute peak."}, "2018": {"subtitle": "Old Crowns Fall, New Dynasties Ignite", "text": "Khabib Nurmagomedov defeated Al Iaquinta for the vacant lightweight title at UFC 223, then choked Conor McGregor unconscious at UFC 229 in a fight that transcended sport. The Khabib era was open and it felt impenetrable. Henry Cejudo defeated Demetrious Johnson — ending DJ’s flyweight reign at 2,142 days, the second-longest title reign in UFC history — in a split decision that still draws debate. Daniel Cormier knocked out Stipe Miocic at heavyweight, achieving double champion status. Jon Jones returned to 205 pounds and defeated Gustafsson again. Amanda Nunes destroyed Cris Cyborg, making her case as the greatest women’s fighter who has ever lived."}, "2019": {"subtitle": "New Eras Confirmed", "text": "Kamaru Usman took the welterweight title from Tyron Woodley and immediately made the division his property. Israel Adesanya unified the middleweight title against Robert Whittaker and announced himself as the pound-for-pound talent he had always claimed to be. Stipe Miocic avenged his knockout loss to Daniel Cormier and returned to the heavyweight summit. Henry Cejudo added bantamweight gold to his collection, one of the most decorated American combat sports athletes alive. Alexander Volkanovski dethroned Holloway at featherweight. Zhang Weili became China’s first UFC champion. The new order was no longer emerging — it had arrived."}, "2020": {"subtitle": "The Year of Quiet Permanence", "text": "The pandemic stripped fights of their noise and somehow made the outcomes feel more permanent. Khabib submitted Justin Gaethje at UFC 254 and removed his gloves, placing them on the canvas, retiring with a 29–0 record and a 931-day lightweight reign — and the knowledge that nothing left in the division could threaten him. Adesanya dispatched Yoel Romero and Paulo Costa with a precision that bordered on contempt. Stipe completed his Cormier trilogy. Jon Jones vacated light heavyweight, and Jan Błachowicz stepped into a vacuum. Brandon Moreno and Deiveson Figueiredo fought to a draw — one of the great rivalries of the modern era beginning its long and beautiful arc."}, "2021": {"subtitle": "Fire, Age, and the Transmission of Legacy", "text": "Francis Ngannou destroyed Stipe Miocic and introduced a kind of violence at heavyweight that felt categorically different. Charles Oliveira fought Michael Chandler and made a case for himself as the most gifted submission artist in the division’s history, claiming the lightweight title vacated by Khabib. Brandon Moreno became the first Mexican-born UFC champion, defeating Figueiredo in a fight that mattered to an entire generation. Glover Teixeira, 42 years old, choked Jan Błachowicz unconscious — an act of defiance against time itself. Kamaru Usman’s year was his finest — methodical, ruthless, untouchable. Julianna Peña submitted Amanda Nunes with a rear-naked choke and cracked one of the most impenetrable auras in the sport."}, "2022": {"subtitle": "Empires End, a New Eagle Lands", "text": "Leon Edwards landed a left head kick in the fifth round to knock out Kamaru Usman, ending one of the great welterweight reigns in a single devastating moment. Alex Pereira — already 2–0 against Adesanya in kickboxing, including a knockout — defeated him in their first MMA meeting at UFC 281 to become middleweight champion, beginning a rivalry that would define the sport for the next several years. Islam Makhachev defeated Charles Oliveira and claimed the lightweight title — the heir to Khabib had arrived, and the lineage was unbroken. Volkanovski defended featherweight. Valentina Shevchenko retained her women’s flyweight title in a controversial split decision over Taila Santos — her narrowest win in years, one that showed the dynasty was no longer untouchable."}, "2023": {"subtitle": "Legends Ascend, Chaos Returns", "text": "Jon Jones moved up to heavyweight and defeated Ciryl Gane for the title, completing a legacy that needed only one more chapter to become something permanent. In middleweight, Adesanya reversed his Pereira loss — and was then stunned by Sean Strickland in one of the year’s great upsets. Alexa Grasso ended Valentina Shevchenko’s long flyweight dynasty. Sean O’Malley defeated Aljamain Sterling to bring a different kind of charisma to the bantamweight title. Islam Makhachev defended against Volkanovski twice, his position at 155 growing more secure with every performance. Volkanovski held at featherweight, his two-division ambition earning him an undeniable place among the sport’s all-time greats."}, "2024": {"subtitle": "A New Generation Takes the Stage", "text": "Ilia Topuria knocked out Alexander Volkanovski, then defeated Max Holloway, establishing himself as featherweight’s new sovereign in the span of one year. Alex Pereira at light heavyweight was a force of nature — three defenses in twelve months, defeating Jamahal Hill, Jiří Procházka, and Khalil Rountree Jr. — the most concentrated single-year dominance of any champion in recent memory. Dricus du Plessis defeated Strickland and then Adesanya, making it clear that the Adesanya era had genuinely ended. Belal Muhammad ended Leon Edwards’ welterweight reign. Merab Dvalishvili seized bantamweight gold from O’Malley. Valentina reclaimed women’s flyweight. The guard had fully changed."}, "2025": {"subtitle": "The Great Dispersal", "text": "Entering 2026, nine of eleven undisputed championships had changed hands since the start of 2025. Tom Aspinall became the undisputed heavyweight champion after Jon Jones retired. Islam Makhachev broke the lightweight record with four consecutive defenses, then vacated and moved to welterweight, defeating Jack Della Maddalena at UFC 322 to become a two-division champion. Ilia Topuria vacated featherweight and knocked out Charles Oliveira to take the vacant lightweight title. Khamzat Chimaev defeated Dricus du Plessis at UFC 319 to become middleweight champion. Alex Pereira reclaimed light heavyweight gold from Magomed Ankalaev. The sport had never cycled through so much change in a single calendar year."}, "2026": {"subtitle": "The New Order Under Examination", "text": "What began in 2025 continues to be tested. Sean Strickland defeated Khamzat Chimaev at UFC 328 in Newark by split decision — Chimaev’s first professional loss — and reclaimed middleweight gold. Carlos Ulberg, one knee blown out in the opening minutes of UFC 327 in Miami, absorbed punishment from Jiří Procházka and then found one left hook — knocking Procházka cold, winning the vacant light heavyweight title in what may be the most dramatic single moment of 2026. The question that defines this year is not who was great before — it is whether Topuria, Makhachev, Aspinall, Strickland, Ulberg, and Volkanovski can build something that lasts long enough to be called a dynasty, or whether the sport has entered an era of beautiful, permanent uncertainty."}};
+let _dnaDetailYear = null;
+
+function dnaOpenYear(yr) {
+  const d = _dnaYearly.find(y => y.year == yr);
+  if (!d) return;
+  const n = DNA_NARRATIVE[String(yr)];
+  if (!n) return;
+  _dnaDetailYear = yr;
+
+  document.getElementById('dna-detail-year-label').textContent = yr;
+  document.getElementById('dna-detail-subtitle').textContent   = n.subtitle;
+  document.getElementById('dna-detail-narrative').textContent  = n.text;
+
+  const sp = d.pct_striking  || 50;
+  const gp = d.pct_grappling || 50;
+  document.getElementById('dna-detail-bar-str').style.flex = sp;
+  document.getElementById('dna-detail-bar-grp').style.flex = gp;
+  document.getElementById('dna-detail-str-pct').textContent = sp + '% striking';
+  document.getElementById('dna-detail-grp-pct').textContent = gp + '% grappling';
+
+  const sw = d.str_winrate != null ? d.str_winrate + '%' : '—';
+  const gw = d.grp_winrate != null ? d.grp_winrate + '%' : '—';
+  document.getElementById('dna-detail-str-wr').textContent = sw;
+  document.getElementById('dna-detail-grp-wr').textContent = gw;
+
+  const panel = document.getElementById('dna-detail');
+  panel.classList.add('visible');
+  requestAnimationFrame(() => { panel.style.opacity = '1'; });
+}
+
+function dnaCloseYear() {
+  _dnaDetailYear = null;
+  const panel = document.getElementById('dna-detail');
+  panel.style.opacity = '0';
+  setTimeout(() => { panel.classList.remove('visible'); }, 300);
+}
 let _dnaInited   = false;
 let _dnaYearly   = [];
 let _dnaChamps   = [];
@@ -4190,6 +4352,31 @@ async function dnaInit(){
   });
 
   canvas.addEventListener('mouseleave', ()=>{ ttEl.style.display='none'; });
+
+  canvas.addEventListener('click', evt=>{
+    const rect2 = canvas.getBoundingClientRect();
+    const mx = evt.clientX - rect2.left;
+    const my = evt.clientY - rect2.top;
+    for(const pt of _dnaChampPts){
+      if(Math.sqrt((mx-pt.px)**2+(my-pt.py)**2) <= pt.r+4) return;
+    }
+    if(_dnaYearly.length){
+      const pad2 = dnaGetPad(canvas);
+      const chartW2 = rect2.width - pad2.l - pad2.r;
+      const xi = Math.floor((mx - pad2.l) / (chartW2 / _dnaYearly.length));
+      if(xi >= 0 && xi < _dnaYearly.length){
+        ttEl.style.display = 'none';
+        dnaOpenYear(_dnaYearly[xi].year);
+      }
+    }
+  });
+
+  const backBtn = document.getElementById('dna-detail-back');
+  if(backBtn) backBtn.addEventListener('click', dnaCloseYear);
+
+  document.addEventListener('keydown', evt=>{
+    if(evt.key === 'Escape' && _dnaDetailYear !== null) dnaCloseYear();
+  });
 }
 
 function dnaGetPad(canvas){
